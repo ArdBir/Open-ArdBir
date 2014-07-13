@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Konstant  P", "Konstant  I", "Konstant  D", "Windowset  ", "Use in Boil", "Calibration"};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      "};
-char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time Pump Rest", "Pump on Boil ", "Pump Stop   "};
+char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pump on Boil ", "Pump Stop at ", "PID Pipe ", "Iodine  "};
 
 byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -37,7 +37,7 @@ void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
   //lcd.print(Version16);
-  lcd.print(F("2.6.63"));
+  lcd.print(F("2.6.70"));
   lcd.write(7);
 }
 
@@ -228,13 +228,13 @@ void UnitSet(byte unitSet, byte i){
   switch(i){
      
     case(0):// Scala Temp
-        lcd.setCursor(14,1);
+        lcd.setCursor(15,1);
         lcd.write((byte)0);  
         break;
       
     case(1)://Sensore
       lcd.setCursor(9,1);
-      if (unitSet==0)lcd.print(F("Inside "));
+      if (unitSet==0)lcd.print(F(" Inside"));
       else lcd.print(F("Outside"));
       break;
       
@@ -277,6 +277,20 @@ void UnitSet(byte unitSet, byte i){
       lcd.print(unitSet);
       //Gradi();
       lcd.write((byte)0);
+      break;
+      
+    case(8)://Pipe
+      lcd.setCursor(9,1);
+      if (unitSet==0)lcd.print(F("Passive"));
+      else lcd.print(F(" Atcive"));
+      break;
+    
+    case(9): //Iodio
+      if (unitSet==0){
+        lcd.setCursor(9,1);
+        lcd.print(F("    OFF"));
+      }else CountDown(unitSet*60,9,1,1);
+      break;
   }  
 }
 
@@ -513,6 +527,13 @@ void Credits(){
   viewCredits(2,1,"L. Di Michele",999);
   
   lcd.clear();  
+  
+  viewCredits(1,0,"Translations:",750);
+  viewCredits(2,1," A. Moiseyev ",999);//Russo
+  viewCredits(2,1," A. Mondejar ",999);//Spagnolo
+  viewCredits(2,1," C.M. Macedo ",999);//Portoghese
+  
+  lcd.clear();
 }
 
 
@@ -638,15 +659,18 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
+  //Presentazione(0,0);
   ArdBir1(4,0);
 }
 
+
 void PartenzaRitardata(){
   lcd.setCursor(0,0);
-  lcd.print(F("   Start Now?   "));
+  //lcd.print(F("   Start Now?   "));
+  lcd.print(F("  Delay Start?  "));
   lcd.setCursor(0,1);
   LCDSpace(9);
-  lcd.print(F("Yes No ")); 
+  lcd.print(F("No Yes")); 
 }
 
 void ImpostaTempo(unsigned long Time){

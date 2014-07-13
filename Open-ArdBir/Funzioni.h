@@ -1,25 +1,143 @@
+void Buzzer(byte NumBeep, int Period){
+  for (byte i=0; i < NumBeep; i++){
+    digitalWrite (Buzz, HIGH);
+    delay (Period);
+    digitalWrite(Buzz, LOW);
+    delay(100);
+  }
+}
+void r_set(byte& data, int addr){
+  data=EEPROM.read(addr);
+  //delay(150);
+/*  
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data byte("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+
+void read_set(byte& data, int addr){
+  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
+  
+/* 
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data byte("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+
+void read_set(float& data, int addr){
+  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
+  
+/* 
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data float("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+void read_set(double& data, int addr){
+  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
+  
+/*  
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data double("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+void read_set(int& data, int addr){
+  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
+  
+/*  
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data int("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+
+void read_set(unsigned int& data, int addr){
+  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
+  
+/*  
+  Serial.print (F("READ--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data u_int("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}
+
+
+void save_set (int addr, int data){
+  EEPROM.write(addr,highByte(data));
+  EEPROM.write((addr+1),lowByte(data));
+  
+/*
+  Serial.print (F("WRITE--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));
+  Serial.print (F(" Data word("));
+  Serial.print (data); 
+  Serial.println (F(")"));
+*/
+}  
+void save_set (int addr, byte data){
+  EEPROM.write(addr,data);
+
+/*
+  Serial.print (F("WRITE--> "));
+  Serial.print (F("Addr("));
+  Serial.print (addr);
+  Serial.print (F(")"));  
+  Serial.print (F(" Data byte("));
+  Serial.print (data);
+  Serial.println (F(")"));
+*/
+}
+
 void CountDown(unsigned long Tempo, byte posX, byte posY, byte numH){
   //numH = 1 Ore a 1 cifra
   //numH = 2 Ore a 2 cifre
   
   byte Ore, Minuti, Secondi;
- 
   Ore= (byte)(Tempo/3600);
   Minuti= (byte)((Tempo%3600)/60);
   Secondi= (byte)(Tempo%60);
   
   lcd.setCursor(posX, posY);
   if (numH==2){
-    if(Ore<10)lcd.print(F("0"));
+    if(Ore<10)lcd.print("0");
   }
   lcd.print(Ore);
-      
-  if(Minuti<10)lcd.print(F(":0"));
-  else lcd.print(F(":"));
+  
+  lcd.print(F(":"));    
+  if(Minuti<10)lcd.print("0");
   lcd.print(Minuti);
-      
-  if(Secondi<10)lcd.print(F(":0"));
-  else lcd.print(F(":"));
+  
+  lcd.print(F(":"));    
+  if(Secondi<10)lcd.print("0");
   lcd.print(Secondi);
 }
 
@@ -189,4 +307,5 @@ byte Set(byte& Set, byte Up, byte Low, byte Step, long Timer, byte Verso){
     }		
   }   
 }
+
 

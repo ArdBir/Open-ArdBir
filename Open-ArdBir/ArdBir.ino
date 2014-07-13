@@ -88,15 +88,16 @@ Copyright (C) 2012  Stephen Mathison
 
 // Testing PCB
 //#include "Pcb_05.h"
-//#include "Pcb_11s.h"
+#include "Pcb_11s.h"
 //#include "Pcb_14.h"
 
 // Supported PCB
 //#include "Pcb_ArdBir_DanielXan.h"
 //#include "Pcb_Brauduino_DanielXan.h"
-#include "Pcb_Brauduino_Original.h"
+//#include "Pcb_Brauduino_Original.h"
 
 // Porzioni di codice
+#include "Presentazione.h"
 #include "ArdBir1.h"
 #include "Funzioni.h"
 
@@ -114,6 +115,10 @@ Copyright (C) 2012  Stephen Mathison
 // LANGUAGE ESP
 //#include "LCD16x2_ESP.h"
 //#include "LCD20x4_ESP.h"
+
+// LANGUAGE POR
+//#include "LCD16x2_POR.h" ** Not Available
+//#include "LCD20x4_POR.h"
 
 // *****
 
@@ -142,14 +147,11 @@ boolean tempReached  = false;
 boolean pumpRest     = false;
 boolean resume       = false;
 boolean IodineTest  = false;
-//boolean IodineTest1  = false;
-//boolean IodineTest2  = false;
 boolean DelayedMode  = false;
 
 
 float mset_temp;
 float stageTemp;
-//float boil_output;  // boil output %
 float boilStageTemp;
 float Temp_Now;
 
@@ -157,6 +159,8 @@ float Temp_Now;
 byte x;
 byte ScaleTemp       = EEPROM.read(15);
 byte SensorType      = EEPROM.read(16);
+byte setPumpBoil     = EEPROM.read(21);
+
 int  stageTime;
 byte hopTime;
 byte mainMenu        = 0;
@@ -174,17 +178,15 @@ byte boil_output        ;  // boil output %
 float p_C[]    ={  75.00,20.00,0.25,   55.00,25.00,0.25,   50.00,35.00,0.25,   60.00, 45.00,0.25,   70.00, 50.00,0.25,   76.00, 60.00,0.25,  76.00, 60.00,0.25,  80.00, 75.00,0.25 }; 
 float p_F[]    ={ 167.00,68.00,0.25,  131.00,77.00,0.25,  122.00,95.00,0.25,  140.00,113.00,0.25,  158.00,122.00,0.25,  168.75,140.00,0.25, 176.00,167.00,0.25, 176.00,167.00,0.25 }; 
 
-int   p_PID[]  ={ 100, -100, 1,       100, -100, 1,       100, -100, 1,      7500, 1000, 250,      100, 0, 1,            50, -50, 1 }; 
-byte  p_Unit[] ={   1, 0, 1,             1, 0, 1,         105, 90, 1,         221, 194, 1,          15, 5, 1,             5, 0, 1,            1, 0, 1,           0, 0, 0  }; 
+int   p_PID[]  ={ 100, -100, 1,    400, -200, 1,    100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1 }; 
+byte  p_Unit[] ={   1, 0, 1,         1, 0, 1,       105, 90, 1,      221, 194, 1,       15, 5, 1,    5, 0, 1,     1, 0, 1,    0, 0, 0,    1, 0, 1,     90, 0, 1}; 
+
 
 //Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &Setpoint, 100, 20, 5, DIRECT);
+//PID myPID(&Input, &Output, &Setpoint, 95, 10, 0, DIRECT);
+PID myPID(&Input, &Output, &Setpoint, 95, 40, 0, DIRECT);
 
-
-//byte degC[8]         = {B01000, B10100, B01000, B00111, B01000, B01000, B01000, B00111};  // [8] degree c sybmol 
-//byte degF[8]         = {B01000, B10100, B01000, B00111, B00100, B00110, B00100, B00100};  // [1] degree f symbol
 byte SP_Symbol[8]    = {B11100, B10000, B11100, B00111, B11101, B00111, B00100, B00100};  // [2] SP Symbol
-
 byte PumpONOFF[8]    = {B00000, B01110, B01010, B01110, B01000, B01000, B01000, B00000};  // [3] Pump Symbol 
 byte RevPumpONOFF[8] = {B11111, B10001, B10101, B10001, B10111, B10111, B10111, B11111};  // [4] Reverse PUMP Symbol
 
@@ -203,17 +205,7 @@ int freeRam () {
 }
 */
 
-/*
-void display_lcd (byte posX, byte posY, const char* lable){
-  lcd.setCursor(posX, posY);
-  lcd.print(lable);
-}
-*/
-
 void Gradi(){
-  //if (ScaleTemp==0)lcd.write((byte)0);
-  //else lcd.write(1);
-  
   if (ScaleTemp==0){
     byte degC[8] = {B01000, B10100, B01000, B00111, B01000, B01000, B01000, B00111};  // [1] degree c sybmol 
     lcd.createChar(0, degC);// Celsius  
@@ -228,9 +220,9 @@ void pauseStage(){
   if (btn_Press(Button_start, 250)){
     Buzzer(3,100);
     stage_pause = true;
-    heat_off(mheat);
-    pump_off(mpump);
-
+    
+    allOFF();
+ 
     while (stage_pause){
       Temperature();
       Pause_Stage(Temp_Now,TimeLeft);
@@ -242,10 +234,14 @@ void pauseStage(){
   } 
 }
 
-
-void Temperature(){// reads the DS18B20 temerature probe 
+void dsInizializza(){
   ds.reset();
   ds.skip();
+}
+
+void Temperature(){// reads the DS18B20 temerature probe 
+  dsInizializza();
+  
   // start conversion and return
   if (!(Conv_start)){
     ds.write(0x44,0);
@@ -256,16 +252,16 @@ void Temperature(){// reads the DS18B20 temerature probe
     Busy = ds.read_bit();
     if (Busy == 0)return;
 
-    ds.reset();
-    ds.skip();
+    dsInizializza();
+    
     ds.write(0xBE);  
     for ( byte i = 0; i < 9; i++) {           // with crc we need 9 bytes
       data[i] = ds.read();
     } 
     /* add this routine for crc version */
     if ( OneWire::crc8(data, 8) != data[8]) {  //if checksum fails start a new conversion right away
-      ds.reset();
-      ds.skip();
+      dsInizializza();
+      
       ds.write(0x44,0);
       Conv_start = true;
       return;
@@ -273,8 +269,9 @@ void Temperature(){// reads the DS18B20 temerature probe
     }
 
     unsigned int raw = (data[1] << 8) + data[0];
-    if (ScaleTemp==0)Temp_Now = (raw & 0xFFFC) * 0.0625;
-    else Temp_Now = ((raw & 0xFFFC) * 0.0625) * 1.8 + 32.0;
+    
+    Temp_Now = (raw & 0xFFFC) * 0.0625;
+    if (ScaleTemp==1)Temp_Now = Temp_Now * 1.8 + 32.0;
 
     byte Correzione = word(EEPROM.read(9),EEPROM.read(10));
     Temp_Now = Temp_Now + (Correzione/10.0);
@@ -286,22 +283,15 @@ void Temperature(){// reads the DS18B20 temerature probe
 
 // PID_HEAT modified to use SetMode(MANUAL)
 void PID_HEAT (boolean autoMode){
-  //autoMode = TRUE PID Control
-  //autoMode = TRUE PWM Control
-  /*
-  if (autoMode){
-    if ((Setpoint - Input)<11)myPID.Compute();//was 6, getting close, start feeding the PID -mdw
-    if((Setpoint - Input)>9)Output=100;    // was 5, ignore PID and go full speed -mdw  // set the output to full on
-  }
-  */
+  //autoMode = TRUE  PID Control
+  //autoMode = FALSE PWM Control
   if (autoMode){
     float DeltaPID=5.0;
     if(ScaleTemp==1)DeltaPID=9.0;
     
-    if ((Setpoint - Input) < DeltaPID*1.2) myPID.Compute();//was 6, getting close, start feeding the PID -mdw
-    if ((Setpoint - Input) > DeltaPID)     Output=100;    // was 5, ignore PID and go full speed -mdw  // set the output to full on
+    if((Setpoint - Input) < DeltaPID*1.2) myPID.Compute();//was 6, getting close, start feeding the PID -mdw
+    if ((Setpoint - Input) > DeltaPID)    Output=100;    // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
-
 
   // PWM the output
   unsigned long now = millis();
@@ -315,7 +305,7 @@ void load_pid_settings (){
   read_set(eepromKi,2);
   read_set(eepromKd,4);
   
-  eepromKi = eepromKi/100;
+  eepromKi = eepromKi/400;
 
   myPID.SetTunings(eepromKp,eepromKi,eepromKd); // send the PID settings to the PID
 
@@ -379,12 +369,18 @@ void quit_mode (boolean& processLoop){
     if ((digitalRead(Button_dn)==0) && (digitalRead(Button_up)==0)){
       mheat = false;
       mpump=false;
-      heat_off(mheat);
-      pump_off(mpump);
+      
+      allOFF();
+      
       processLoop = false;
       Clear_2_3();
     }
   }
+}
+
+void allOFF(){
+  heat_off(mheat);
+  pump_off(mpump);
 }
 
 void heat_on(){
@@ -432,6 +428,81 @@ void pump_prime(){
   }Menu_2(); 
 }
 
+void pump_rest (byte stage){
+  byte TimePumpCycle = EEPROM.read(19);
+  byte TimePumpRest = EEPROM.read(20);
+  byte TempPumpRest;
+  
+  setPumpBoil = EEPROM.read(21);
+  
+  //Condizioni per il ripristino a POMPA ON
+  float DeltaTemp;//Stabilisce il Delta in base al sensore
+  
+  if (SensorType==0){ 
+    //Sensore INTERNO
+    DeltaTemp= TimePumpRest*stageTemp/70;
+  }else{
+    //Sensore ESTERNO
+    DeltaTemp= TimePumpRest*stageTemp/35;
+  }
+  
+  if (ScaleTemp==0)r_set(TempPumpRest,22);
+  else r_set(TempPumpRest,23);
+  
+  if (Temp_Now >= TempPumpRest){
+    if (SensorType==0){ 
+      //Sensore Interno
+      pump_off(mpump);
+      //pumpRest=true;
+      return;
+    
+    }else{
+      // Modifica per sensore sulla pompa
+    
+      //Determina il Delta in cui tenere spento
+      if (tempReached){
+        if (Temp_Now < (boilStageTemp-(DeltaTemp*2))){
+          pump_on();
+          pumpRest=false;
+        }else{ 
+          pump_off(mpump);
+        }
+      }else{
+        pump_on();
+        pumpRest=false;
+      }
+    }
+  }else{
+    if (stage==8){
+      //Siamo in fase di BOIL
+      if (setPumpBoil==0){ //POMPA OFF
+        pump_off(mpump); // Turn OFF the pump in BOIL stage
+      }else{
+        pump_on();
+        pumpRest=false;
+      }
+    }else{//Durante le fasi 
+      
+      if (stage==99)return; // Non effettua i controlli perchè siamo in MANUAL MODE
+      
+      //Se non viene raggiunto il limite di tempo POMPA ON
+      if ((pumpTime < TimePumpCycle)){ // starts pumps and heat
+        pump_on();
+        pumpRest = false; 
+      }else{//Se non viene raggiunto il limite di tempo POMPA OFF
+        
+        allOFF();
+        
+        pumpRest = true;
+
+        //Viene raggiunta la fine della PAUSA POMPA
+        //Viene raggiunta la soglia di abbassamento Temperatura
+        //Si azzera il PumpTime per cominciare un altro ciclo
+        if(pumpTime>=(TimePumpCycle + TimePumpRest) || ((stageTemp - Temp_Now) > DeltaTemp))pumpTime = 0;
+      } 
+    }
+  }
+}
 
 void pump_control(){//ON-OFF Manuale
   //turns the pump on or off
@@ -445,83 +516,6 @@ void pump_control(){//ON-OFF Manuale
     }
   }
 }
-
-void pump_rest (byte stage){
-  byte TimePumpCycle = EEPROM.read(19);
-  byte TimePumpRest = EEPROM.read(20);
-  byte setPumpBoil = EEPROM.read(21);
-  byte TempPumpRest;
-  
-  //Condizioni per il ripristino a POMPA ON
-  float DeltaTemp;//Stabilisce il Delta in base al sensore
- 
-  if (SensorType==0){
-   
-    //Sensore INTERNO
-    DeltaTemp= (0.45 * TimePumpRest);
-    if (ScaleTemp==1)DeltaTemp= (0.80 * TimePumpRest);    
-  }else{
-    
-    //Sensore ESTERNO
-    DeltaTemp= (1.30 * TimePumpRest);
-    if (ScaleTemp==1)DeltaTemp= (2.35 * TimePumpRest);    
-  }
- 
-  if (ScaleTemp==0)r_set(TempPumpRest,22);
-  else r_set(TempPumpRest,23);
-  
-  if (Temp_Now >= TempPumpRest){
-    if (SensorType==0){ 
-      //Sensore Interno
-      pump_off(mpump);
-      //pumpRest=true;
-    
-    }else{
-      // Modifica per sensore sulla pompa
-    
-      //Determina il Delta in cui tenere spento
-      if (tempReached){
-        if (Temp_Now < (boilStageTemp-(DeltaTemp*2))){
-          pump_on();
-          pumpRest=false;
-        }else{ 
-          pump_off(mpump);
-          //pumpRest=true;
-        }
-      }else{
-        pump_on();
-        pumpRest=false;
-      }
-    }
-  }else{
-    if (stage==8){
-      //Siamo in fase di BOIL
-      if (setPumpBoil==0){ //POMPA OFF
-        pump_off(mpump); // Turn OFF the pump in BOIL stage
-        //pumpRest = true;
-      }else{
-        pump_on();
-        pumpRest=false;
-      }
-    }else{//Durante le fasi 
-      //Se non viene raggiunto il limite di tempo POMPA ON
-      if ((pumpTime < TimePumpCycle)){ // starts pumps and heat
-        pump_on();
-        pumpRest = false; 
-      }else{//Se non viene raggiunto il limite di tempo POMPA OFF
-        pump_off(mpump);
-        heat_off(mheat);
-        pumpRest = true;
-
-        //Viene raggiunta la fine della PAUSA POMPA
-        //Viene raggiunta la soglia di abbassamento Temperatura
-        //Si azzera il PumpTime per cominciare un altro ciclo
-        if(pumpTime>=(TimePumpCycle + TimePumpRest) || ((stageTemp - Temp_Now) > DeltaTemp))pumpTime = 0;
-      } 
-    }
-  }
-}
-
 
 void start_time (){
   start = millis();
@@ -546,9 +540,7 @@ void Timing(byte stage, boolean Test, byte Type){
     
     if (Type==2){
       if(IodineTest)second=0;// starts counting down when temp reached
-      //if(IodineTest1)second=0;// starts counting down when temp reached
-      //if(IodineTest2)second=0;// starts counting down when temp reached
-    }
+     }
     
     if (second>59){
       second = 0;
@@ -616,9 +608,7 @@ void stage_loop (){
       if (TimeLeft < 6 ) Buzzer(1, 150);
       if (TimeLeft == 0) Buzzer(1, 1000); 
       
-      if ((x-1)==7 && IodineTest==false)Iodine_Test(); 
-      //if ((x-1)==6 && IodineTest1==false)Iodine_Test(); 
-      //if ((x-1)==7 && IodineTest2==false)Iodine_Test(); 
+      if ((x-1)==7 && IodineTest==false)Iodine_Test();
 
       if ((x-1)==8 && tempBoilReached && Temp_Now >= boilStageTemp) {  //if temp reached during boil
       
@@ -673,17 +663,15 @@ void stage_loop (){
     
     if (btn_Press(Button_enter,2500)){
       boolean flag_SaltoStep;
-      //Buzzer(3,50);
-      //delay(200);
-      Buzzer(3,50);
       
-      SaltoStep();
-      //LCD_Procedo();
-      
-      if ((x-1) != 0)wait_for_confirm(flag_SaltoStep,1,2,1);
-      if(flag_SaltoStep){
-        Clear_2_3();
-        return;
+      if ((x-1) != 0){
+        Buzzer(3,50);
+        SaltoStep();
+        wait_for_confirm(flag_SaltoStep,1,2,1);
+        if(flag_SaltoStep){
+          Clear_2_3();
+          return;
+        }
       }
     }  
   }
@@ -705,6 +693,9 @@ void add_malt (){
 }
 
 void Iodine_Test (){
+  byte IodineTime=EEPROM.read(25);
+  byte TempoRimasto=stageTime;
+  
   boolean Test = true;
   
   if (ScaleTemp==0)read_set(Setpoint,StageAddr-5);
@@ -718,7 +709,6 @@ void Iodine_Test (){
   
   while (Test){
     Timing(6, true, 2);
-    //Timing(7, true, 2);
 
     Temperature();
     Input = Temp_Now;
@@ -732,12 +722,12 @@ void Iodine_Test (){
     delay (135);
     
     quit_mode(Test);  
-    if (btn_Press(Button_start,50)){
+    
+    if (btn_Press(Button_start,50) || IodineTime!=0 && TimeSpent>=IodineTime*60){
       Test = false;
-      
-      if(x==8)IodineTest = true;
-      //IodineTest1 = true;
-      //if(x==8)IodineTest2 = true;
+      IodineTest = true;
+      TimeSpent=0;
+      stageTime=TempoRimasto;
       TimeLeft= stageTime * 60;
     }
   }
@@ -752,7 +742,6 @@ void remove_malt (){
   x = 8;               // used add to stage count on the final stage for the resume 
   EEPROM.write(83,lowByte(x)); // stores the stage number for the resume
   pump_off(mpump);
-  //heat_off(mheat);
 
   //***** Reset della pompa al cambio step
   pumpRest = false;
@@ -761,7 +750,9 @@ void remove_malt (){
   RemoveMalt();
 
   // Pausa senza PID (gli enzimi ormai sono distrutti)
-  wait_for_confirm(malt,2,2,1);
+  if (EEPROM.read(24)==1 && SensorType==0)wait_for_confirm(malt,1,2,1);
+  else wait_for_confirm(malt,2,2,1);
+  
   if (malt==false){
     stageTime = EEPROM.read(71);
     EEPROM.write(84,lowByte(stageTime));
@@ -781,6 +772,9 @@ void manual_mode (){
   
   boolean reachedBeep = false;
   
+  boolean FlagSpentLeft=false;
+  boolean SpentLeft =false;
+  
   load_pid_settings();
   r_set(boil_output,8);
   
@@ -788,13 +782,16 @@ void manual_mode (){
   wait_for_confirm(manualLoop,2,2,2);
 
   Menu_1();//Pulisce lo schermo
-
+  
   tempReached = false;
   TimeSpent = 0;
+  TimeLeft=0;
   
-  float DeltaSetPoint;
-  if (ScaleTemp==0)DeltaSetPoint = 2.0;
-  else DeltaSetPoint = 3.6;
+  byte cntTime = 1;
+  
+  
+  float DeltaSetPoint = 2.0;
+  if (ScaleTemp==1)DeltaSetPoint = 3.6;
   
   while (manualLoop){            // manual loop
     Temperature();
@@ -806,9 +803,14 @@ void manual_mode (){
       if(Input>=Setpoint)tempReached = true;
     }else{
       if ((Input + DeltaSetPoint) < Setpoint && Verso==1){
-        tempReached = false;
-        reachedBeep=false;
-        TimeSpent = 0;
+        tempReached   = false;
+        reachedBeep   = false;
+        
+        FlagSpentLeft = false;
+        SpentLeft     = false;
+        TimeSpent     = 0;
+        TimeLeft      = 60;
+        
       }
     }
     
@@ -819,16 +821,33 @@ void manual_mode (){
       }
     } 
     
-    //Timing(7, tempReached, 1);
     Timing(8, tempReached, 1);
 
+    // START + ENTER = COUNTDOWN MODE
+    if ((digitalRead(Button_start)==0) && (digitalRead(Button_enter)==0)){
+      delay(350);
+      if ((digitalRead(Button_start)==0) && (digitalRead(Button_enter)==0)){
+        Buzzer(2,35);
+        FlagSpentLeft=true;
+        if (SpentLeft) SpentLeft = false;
+        else           SpentLeft =  true;
+      }
+    }
+   
     quit_mode(manualLoop);
     heat_control();
-    pump_control();
+    pump_control();  
+
+    if(SpentLeft){
+      CntDwn(cntTime*60);
+      LeggiPulsante(Verso,Timer);
     
-    LeggiPulsante(Verso, Timer);
-    
-    Manuale(mset_temp,Temp_Now,boilStageTemp);
+      Set(cntTime,240,1,1,Timer,Verso);
+      TimeLeft=cntTime*60;
+    }else{
+      LeggiPulsante(Verso, Timer);
+      Manuale(mset_temp,Temp_Now,boilStageTemp);
+    }
     
     if (Setpoint >= boilStageTemp && Input >= Setpoint){ 
       Set(boil_output,100,0,1,Timer,Verso);
@@ -837,7 +856,7 @@ void manual_mode (){
       Boil(boil_output,Temp_Now,0);
       
       if (mheat)PID_HEAT(false); //set heat in manual mode
-      
+       
       if(mpump)pump_rest(8); //Forced Boil Stage for Pump Control
       
     }else{
@@ -845,10 +864,22 @@ void manual_mode (){
       else Set(mset_temp,230,68,0.25, Timer, Verso);
   
       if (mheat)PID_HEAT(true); //set heat in auto mode
-      
-      if(mpump)pump_rest(8); //Forced Boil Stage for Pump Control
-      
-    }CntDwn(TimeSpent);
+      if(mpump)pump_rest(99);    //Forced normal Stage for jump Pump Control
+    }
+
+    if(FlagSpentLeft){
+      CntDwn( TimeLeft);
+        
+      if (TimeLeft < 6 ) Buzzer(1, 135);
+      if (TimeLeft == 0){ 
+        Buzzer(3, 850);
+        
+        FlagSpentLeft = false;
+        SpentLeft     = false;
+        TimeSpent     = 0;
+        TimeLeft      = 60;
+      }
+    }else CntDwn(TimeSpent);  
   }lcd.clear();
 }
 
@@ -882,11 +913,6 @@ void WaitStart(){
   Clear_2_3();
   
   if(Procedo){
-
-//  RIMUOVERE SERVE SOLO ALLA FASE DI TEST
-//    stageTime=1;
-//  --------------------------------------
-
     TimeLeft=(unsigned long)stageTime*60;
     
     start_time();
@@ -985,10 +1011,7 @@ void auto_mode (){
         stageTime = EEPROM.read(StageAddr+4); // gets stage time
         EEPROM.write(84,lowByte(stageTime));// saves the intial stage time
        
-        if(x==7 && stageTime==0)IodineTest=true;
-        //if(x==6 && stageTime==0)IodineTest1=true;
-        //if(x==7 && stageTime==0)IodineTest2=true;
-        
+        if(x==7 && stageTime==0)IodineTest=true; 
       } 
       TimeLeft= stageTime * 60;
       
@@ -1101,7 +1124,7 @@ void set_PID (){
 }
 
 void set_Unit (){
-  byte a = 0;
+  byte a;
 
   byte unitSet;
 
@@ -1112,7 +1135,8 @@ void set_Unit (){
   
   byte setAddr = 15;
 
-  for(byte i=0;i<8;i++){
+  for(byte i=0;i<10;i++){
+    a=i*3;
     if ((i==2 && ScaleTemp==1) || (i==3 && ScaleTemp==0))unitLoop=false;
     else unitLoop= true;    
     
@@ -1128,12 +1152,13 @@ void set_Unit (){
         ScaleTemp=unitSet;
         Gradi();
       }
+    
       UnitSet(unitSet,i);
   
       LeggiPulsante(Verso, Timer);
       
       if(i!=7){
-        Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);         
+        Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);           
       }else{
         if(ScaleTemp==0){
           Set(unitSet,EEPROM.read(17), 80, 1, Timer, Verso);
@@ -1143,13 +1168,15 @@ void set_Unit (){
       }
       
       quit_mode(unitLoop);
-      if (!unitLoop)i=8;
+      if (!unitLoop)i=10;
 
       if(btn_Press(Button_enter,50)){
-        if(i<2 || i>3){
+        
+        if(i!=2 || i!=3){
           save_set(setAddr,lowByte(unitSet));
-
-          if (i==0){
+          
+          
+          if (i==0){ 
             ScaleTemp=unitSet;
             Gradi();
           }
@@ -1157,41 +1184,58 @@ void set_Unit (){
       
           if (i==5 && SensorType==1){ //Il SENSORE E' ESTERNO
             save_set(21,lowByte(1));//La pompa deve essere OBBLIGATORIAMENTE ON
+            setPumpBoil = 1;
             //Il Pump Rest viene settato a 0
-            save_set(22,lowByte(105));
-            save_set(23,lowByte(221));
-            unitLoop = false;
+            unitSet=105; //°F = 221
+            save_set(22, lowByte(unitSet));
+            save_set(23, lowByte((byte)((unitSet * 1.8) + 32)));
+            save_set(24,lowByte(1));
+            //unitLoop = false;
             i=8;
+            setAddr=23;
           }
-                    
+      
+
+          if(i==6){
+            //setPumpBoil = EEPROM.read(21);
+            if(EEPROM.read(21)==0){
+              unitSet=80; //°F = 176
+              save_set(22, lowByte(unitSet));
+              save_set(23, lowByte((byte)((unitSet * 1.8) + 32)));
+              i=7;
+              setAddr=22;
+            }
+          }
+          
+          
           if(i==7){
             if (ScaleTemp==0){// °C
               save_set(22,lowByte(unitSet));
-              save_set(23,lowByte((int)((unitSet*1.8)+32)));      
+              save_set(23,lowByte((byte)((unitSet*1.8)+32)));      
             }else{// °F
-              save_set(22,lowByte((int)((unitSet-32)/1.8)));
+              save_set(22,lowByte((byte)((unitSet-32)/1.8)));
               save_set(23,lowByte(unitSet));  
             }  
-            i==8;
+            setAddr+=1;
           }
         }else{
           if (i==2){
             save_set(setAddr, lowByte(unitSet));
-            save_set(setAddr+1, lowByte(int((unitSet * 1.8) + 32)));
+            save_set(setAddr+1, lowByte((byte)((unitSet * 1.8) + 32)));
             boilStageTemp = unitSet;
           }
           
           if(i==3){
-            save_set(setAddr-1 ,lowByte( int((unitSet - 32) / 1.8)));
+            save_set(setAddr-1 ,lowByte((byte)((unitSet - 32) / 1.8)));
             save_set(setAddr, lowByte(unitSet));
             boilStageTemp = unitSet;
           }
+          setAddr=18;
         }
         unitLoop = false;
       }         
     }
     setAddr+=1;
-    a+=3;
   }Clear_2_3(); 
 }
 
@@ -1361,13 +1405,6 @@ void set_Stages (){
         LeggiPulsante(Verso, Timer);   
         Set(stagetimeSet, 140, 1, 1, Timer, Verso);
        
-       /* 
-        if (i!=6 && i!=7 && btn_Press(Button_start,50)){    // Viene memorizzato il tempo a 0
-          save_set(StageAddr+4,lowByte(0));
-          TempTimeLoop = false;
-        }
-      */
-      
         if (btn_Press(Button_enter,50)){
           if (stagetimeSet>0){
             save_set(StageAddr+4,lowByte(stagetimeSet));
@@ -1392,20 +1429,15 @@ void set_Stages (){
 byte Congruita(byte& numRicetta, byte Verso){  
   if (EEPROM.read(89+numRicetta)==0){
     boolean Controllo=true;
-    //byte numControllo=numRicetta; 
     
     while(Controllo){
-      //if(Verso==1)if(numControllo<10)numControllo++;
       if(Verso==1)if(numRicetta<10)numRicetta++;
       else Controllo=false; 
         
-      //if(Verso==2)if(numControllo>1)numControllo--;
       if(Verso==2)if(numRicetta>1)numRicetta--;
       else Controllo=false;
       
-      //if (EEPROM.read(89+numControllo)==1){
       if (EEPROM.read(89+numRicetta)==1){ 
-        //numRicetta=numControllo;
         Controllo=false;
       }
     }
@@ -1459,7 +1491,6 @@ void loadRecipe(){
       if (btn_Press(Button_start,50)){
         Clear_2_3();
         LeggoRicetta(numRicetta);
-        //SwapRecipe(numRicetta, 0);
         
         int Da;
   
@@ -1467,7 +1498,6 @@ void loadRecipe(){
         Da= 100 + ((numRicetta-1)*52);
         for (int j=30; j<82; j++){ 
           save_set (j, (byte)EEPROM.read(Da));
-          //delay(75);
           Da++;
         }
         ricettaLoop = false;  
@@ -1499,7 +1529,6 @@ void saveRecipe(){
   
     byte NomeRicetta[10];
     byte pos = 0; 
-    //NomeRicetta[pos] = 32;
     NomeRicetta[pos] = 97;
   
     Clear_2_3();
@@ -1521,7 +1550,6 @@ void saveRecipe(){
       
       if(btn_Press(Button_enter,50)){
         pos++;
-        //NomeRicetta[pos]=32;
         NomeRicetta[pos]=97;
       }
     
@@ -1553,7 +1581,6 @@ void saveRecipe(){
       return;
     }else{
       SalvaRicetta();
-      //SwapRecipe(numRicetta, 1);
       
       int Da;
   
@@ -1561,7 +1588,6 @@ void saveRecipe(){
       Da= 100 + ((numRicetta-1)*52);
       for (byte j=30; j<82; j++){ 
         save_set (Da, (byte)EEPROM.read(j));
-        //delay(75);
         Da++;
       }
       
@@ -1569,12 +1595,9 @@ void saveRecipe(){
       //Nome Ricetta
       for (pos=0; pos<10; pos++){
         save_set(620 + pos + ((numRicetta - 1)*10),NomeRicetta[pos]);
-        //delay(75);
-        //EEPROM.write(620 + pos + ((numRicetta - 1)*10),NomeRicetta[pos]);
       }
       //Byte di Controllo
       save_set(89+numRicetta,(byte)1);
-      //EEPROM.write(89+numRicetta,1);
     }
   }
 }
@@ -1619,7 +1642,6 @@ void deleteRecipe(){
       if (btn_Press(Button_start,50)){
         Cancellazione(numRicetta);
         save_set(89+numRicetta,(byte)0);
-        //EEPROM.write(89+numRicetta,0);
         ricettaLoop = false;  
         i=100;  
       }
@@ -1642,7 +1664,6 @@ void initializeRecipe(){
     Inizializza();      	
     for(byte i=1; i<11; i++){
       save_set(89+i,(byte)0);
-      //EEPROM.write(89+i,0);
     }	
   }
 }
@@ -1839,9 +1860,8 @@ void setup(){
   //tell the PID to range between 0 and the full window size
   myPID.SetMode(AUTOMATIC);
 
-  heat_off(mheat);
-  pump_off(mpump);
-
+  allOFF();
+ 
   if (ScaleTemp==0){
     boilStageTemp = EEPROM.read(17);
     mset_temp = 35;
@@ -1873,9 +1893,7 @@ void loop(){
   TimeLeft=0;
   
   IodineTest=false;
-  //IodineTest1=false;
-  //IodineTest2=false;
-
+ 
   switch(mainMenu){
 
     case (1):
@@ -1913,8 +1931,9 @@ void loop(){
     DelayedMode=false;
     mheat=false;
     mpump=false;  
-    heat_off(mheat);
-    pump_off(mpump);
+    
+    allOFF();
+    
     Temperature();
     LCD_Default(Temp_Now);
 
@@ -1925,3 +1944,4 @@ void loop(){
     break;    
   }
 }
+

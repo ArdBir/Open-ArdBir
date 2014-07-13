@@ -1,5 +1,7 @@
 Open ArdBir 2012-2014
 ===========
+Version 2.6.70b7
+
 Version 2.6.63b2
 - Correction of errors display
 - Fix failure of the pump break during the mash out
