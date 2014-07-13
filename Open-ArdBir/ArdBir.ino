@@ -1,3 +1,5 @@
+float Isteresi = 5.0;
+boolean GAS = true;
 /*
 brauduino semi automated single vessel RIMS
 created by s.mathison
@@ -273,9 +275,9 @@ void Temperature(){// reads the DS18B20 temerature probe
     Temp_Now = (raw & 0xFFFC) * 0.0625;
     if (ScaleTemp==1)Temp_Now = Temp_Now * 1.8 + 32.0;
 
-    byte Correzione = word(EEPROM.read(9),EEPROM.read(10));
+    int Correzione = word(EEPROM.read(9),EEPROM.read(10));
     Temp_Now = Temp_Now + (Correzione/10.0);
-
+    
     Conv_start = false;
     return;
   } 
@@ -285,14 +287,36 @@ void Temperature(){// reads the DS18B20 temerature probe
 void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
+  float Delta, IsteresiProporzionale;
+  
+  if (Input==Isteresi)Input=Input+1;
+  
+  if (GAS==true)IsteresiProporzionale = (Isteresi * (Setpoint/Input)) - (Isteresi-(Input*(Isteresi/2)/boilStageTemp))  ;
+  else IsteresiProporzionale = 0.0;
+  
+  Delta = Setpoint-(Input+IsteresiProporzionale);
+  
   if (autoMode){
     float DeltaPID=5.0;
     if(ScaleTemp==1)DeltaPID=9.0;
     
-    if((Setpoint - Input) < DeltaPID*1.2) myPID.Compute();//was 6, getting close, start feeding the PID -mdw
-    if ((Setpoint - Input) > DeltaPID)    Output=100;    // was 5, ignore PID and go full speed -mdw  // set the output to full on
+    if (Delta /DeltaPID <= 0.75){
+      //IL VALORE VA MODULATO 
+      if (GAS==true){
+        Output = 0;
+        if (Delta/Isteresi >  0.00) Output = 15;
+        if (Delta/Isteresi >= 0.15) Output = 35;
+        if (Delta/Isteresi >= 0.35) Output = 50;
+        if (Delta/Isteresi >= 0.50) Output = 75;
+                                   
+        goto PWM;
+        
+      }else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
+    //IL VALORE E' DIRETTO
+    } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
-
+  
+PWM:
   // PWM the output
   unsigned long now = millis();
   if(now - w_StartTime>WindowSize)w_StartTime += WindowSize; //time to shift the Relay Window
@@ -1824,17 +1848,17 @@ void setup_mode (){
       Menu_3_4();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 2;
-      if (btn_Press(Button_dn,50))setupMenu = 4;
+      //if (btn_Press(Button_dn,50))setupMenu = 4;
       if (btn_Press(Button_enter,50))RecipeMenu();
       break;
-      
+      /*
       case(4):
       Menu_3_5();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 3;
       if (btn_Press(Button_enter,50))Credits();
       break;
-      
+      */
     }
   }lcd.clear();
 }   

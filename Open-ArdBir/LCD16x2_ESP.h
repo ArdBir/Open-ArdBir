@@ -37,7 +37,7 @@ void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
   //lcd.print(Version16);
-  lcd.print(F("2.6.70"));
+  lcd.print(F("2.7.01"));
   lcd.write(7);
 }
 
