@@ -1,5 +1,6 @@
 float Isteresi = 5.0;
 boolean GAS = true;
+
 /*
 brauduino semi automated single vessel RIMS
 created by s.mathison
@@ -82,8 +83,6 @@ Copyright (C) 2012  Stephen Mathison
 #include <LiquidCrystal.h>
 #include <OneWire.h>
 #include <PID_v1.h>
-//#include <SD.h>
-//#include <Serial.h>
 
 // SETTING PCB*****
 // Select your PCB Version
@@ -123,8 +122,6 @@ Copyright (C) 2012  Stephen Mathison
 //#include "LCD20x4_POR.h"
 
 // *****
-
-//#include "Recipe.h"
 
 // global variables
 unsigned long TimeLeft;
@@ -176,7 +173,7 @@ byte hopAdd             ;
 byte nmbrHops           ;
 byte boil_output        ;  // boil output %
 
- //Setting 8 Stages
+//Setting 8 Stages
 float p_C[]    ={  75.00,20.00,0.25,   55.00,25.00,0.25,   50.00,35.00,0.25,   60.00, 45.00,0.25,   70.00, 50.00,0.25,   76.00, 60.00,0.25,  76.00, 60.00,0.25,  80.00, 75.00,0.25 }; 
 float p_F[]    ={ 167.00,68.00,0.25,  131.00,77.00,0.25,  122.00,95.00,0.25,  140.00,113.00,0.25,  158.00,122.00,0.25,  168.75,140.00,0.25, 176.00,167.00,0.25, 176.00,167.00,0.25 }; 
 
@@ -287,26 +284,37 @@ void Temperature(){// reads the DS18B20 temerature probe
 void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
-  float Delta, IsteresiProporzionale;
   
-  if (Input==Isteresi)Input=Input+1;
+  float IsteresiProporzionale;
+  
+  if (Input==Isteresi) Input = Input + 1;
   
   if (GAS==true)IsteresiProporzionale = (Isteresi * (Setpoint/Input)) - (Isteresi-(Input*(Isteresi/2)/boilStageTemp))  ;
   else IsteresiProporzionale = 0.0;
   
-  Delta = Setpoint-(Input+IsteresiProporzionale);
+  //Delta = Setpoint-(Input + IsteresiProporzionale);
+  
+  //float DeltaPID = 5.0;
+  //if(ScaleTemp==1)DeltaPID = 9.0 ;
   
   if (autoMode){
-    float DeltaPID=5.0;
-    if(ScaleTemp==1)DeltaPID=9.0;
-    
-    if (Delta /DeltaPID < 1.00){
+    if ((Setpoint-(Input + IsteresiProporzionale))/Isteresi < 1.00){
       //IL VALORE VA MODULATO 
-      if (GAS==true)Output= int(Delta/Isteresi*100);
+      if (GAS==true) Output = int((Setpoint-(Input + IsteresiProporzionale))/Isteresi*100);
       else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
+  
+  if (Output <= 5.00) Output = 5.00;
+  if (Output <=-0.15) Output = 0.00;
+  
+  /*
+  Serial.print (F("Rapporto Delta/DeltaPID= "));
+  Serial.print(Delta/DeltaPID);
+  Serial.print(F("     Output= "));
+  Serial.println(Output);
+  */
   
   // PWM the output
   if (GAS==true)WindowSize = 60000;
@@ -1895,12 +1903,12 @@ void setup(){
   // write custom symbol to LCD
   //lcd.createChar(0, degC);         // Celsius
   //lcd.createChar(1, degF);         // Faherenheit
-  lcd.createChar(2, SP_Symbol);    // Set Point
-  lcd.createChar(3, PumpONOFF);    // Pump
-  lcd.createChar(4, RevPumpONOFF);    // Pump
-  lcd.createChar(5, HeatONOFF);    // Resistor ON-OFF
-  lcd.createChar(6, RevHeatONOFF); // Heat On-OFF
-  lcd.createChar(7, Language);     // Language Symbol 
+  lcd.createChar(2, SP_Symbol);      // Set Point
+  lcd.createChar(3, PumpONOFF);      // Pump
+  lcd.createChar(4, RevPumpONOFF);   // Pump
+  lcd.createChar(5, HeatONOFF);      // Resistor ON-OFF
+  lcd.createChar(6, RevHeatONOFF);   // Heat On-OFF
+  lcd.createChar(7, Language);       // Language Symbol 
 }
 
 void loop(){

@@ -614,9 +614,9 @@ void Credits(){
   Clear_2_3();    
   
   viewCredits(4,2,"Traduzioni:",750);
-  viewCredits(3,3," A. Moiseyev ",999);//Russo
-  viewCredits(3,3," A. Mondejar ",999);//Spagnolo
-  viewCredits(3,3," C.M. Macedo ",999);//Portoghese
+  viewCredits(3,4,"A. Moiseyev",999);//Russo
+  viewCredits(3,4,"A. Mondejar",999);//Spagnolo
+  viewCredits(3,4,"C.M. Macedo",999);//Portoghese
   
   Clear_2_3(); 
 }
