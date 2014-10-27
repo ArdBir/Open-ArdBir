@@ -119,7 +119,7 @@ Copyright (C) 2012  Stephen Mathison
 //#include "LCD20x4_ESP.h"
 
 // LANGUAGE POR
-//#include "LCD16x2_POR.h" ** Not Available
+//#include "LCD16x2_POR.h" 
 //#include "LCD20x4_POR.h"
 
 // *****
@@ -300,25 +300,19 @@ void PID_HEAT (boolean autoMode){
     float DeltaPID=5.0;
     if(ScaleTemp==1)DeltaPID=9.0;
     
-    if (Delta /DeltaPID <= 0.75){
+    if (Delta /DeltaPID < 1.00){
       //IL VALORE VA MODULATO 
-      if (GAS==true){
-        Output = 0;
-        if (Delta/Isteresi >  0.00) Output = 15;
-        if (Delta/Isteresi >= 0.15) Output = 35;
-        if (Delta/Isteresi >= 0.35) Output = 50;
-        if (Delta/Isteresi >= 0.50) Output = 75;
-                                   
-        goto PWM;
-        
-      }else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
+      if (GAS==true)Output= int(Delta/Isteresi*100);
+      else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
   
-PWM:
   // PWM the output
+  if (GAS==true)WindowSize = 60000;
+  
   unsigned long now = millis();
+  
   if(now - w_StartTime>WindowSize)w_StartTime += WindowSize; //time to shift the Relay Window
   if((Output*(WindowSize/100)) > now - w_StartTime)heat_on();
   else heat_off(mheat);
