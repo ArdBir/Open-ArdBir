@@ -285,45 +285,57 @@ void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
   
-  float IsteresiProporzionale;
+  float Delta, IsteresiProporzionale;
   
   if (Input==Isteresi) Input = Input + 1;
   
   if (GAS==true)IsteresiProporzionale = (Isteresi * (Setpoint/Input)) - (Isteresi-(Input*(Isteresi/2)/boilStageTemp))  ;
   else IsteresiProporzionale = 0.0;
   
-  //Delta = Setpoint-(Input + IsteresiProporzionale);
+  Delta = Setpoint-(Input + IsteresiProporzionale);
   
   //float DeltaPID = 5.0;
   //if(ScaleTemp==1)DeltaPID = 9.0 ;
   
   if (autoMode){
-    if ((Setpoint-(Input + IsteresiProporzionale))/Isteresi < 1.00){
+    if (Delta/Isteresi < 1.00){
       //IL VALORE VA MODULATO 
-      if (GAS==true) Output = int((Setpoint-(Input + IsteresiProporzionale))/Isteresi*100);
+      if (GAS==true) Output = int(Delta/Isteresi*100);
       else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
   
-  if (Output <= 5.00) Output = 5.00;
-  if (Output <=-0.15) Output = 0.00;
-  
-  /*
-  Serial.print (F("Rapporto Delta/DeltaPID= "));
-  Serial.print(Delta/DeltaPID);
-  Serial.print(F("     Output= "));
-  Serial.println(Output);
-  */
+  if (Output         <=  5.00) Output = 5.00;
+  if (Delta/Isteresi <= -0.10) Output = 0.00;
   
   // PWM the output
   if (GAS==true)WindowSize = 60000;
   
   unsigned long now = millis();
+  /*
+  Serial.print(F("Input: "));
+  Serial.print(Input);
+  Serial.print(F("   SetPoint: "));
+  Serial.print(Setpoint);
+  Serial.print(F("   Rapporto= "));
+  Serial.print(Delta/Isteresi);
+  Serial.print(F("   Output= "));
+  Serial.print(Output);
+  Serial.print(F("   Tempo= "));
+  Serial.print(int((now - w_StartTime)/1000));
+  Serial.print(F("   PWM= "));
+  Serial.print(int(Output*(WindowSize/100)/1000));  
+  */
+  if(now - w_StartTime > WindowSize) w_StartTime += WindowSize; //time to shift the Relay Window
   
-  if(now - w_StartTime>WindowSize)w_StartTime += WindowSize; //time to shift the Relay Window
-  if((Output*(WindowSize/100)) > now - w_StartTime)heat_on();
-  else heat_off(mheat);
+  if((Output*(WindowSize/100)) > now - w_StartTime){
+    heat_on();
+    //Serial.println(F("   ACCESO"));
+  }else{
+    heat_off(mheat);
+    //Serial.println(F("   SPENTO"));
+  }
 }
 
 void load_pid_settings (){
