@@ -285,32 +285,29 @@ void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
   
-  float Delta, IsteresiProporzionale;
+  float Rapporto, Delta, IsteresiProporzionale;
   
-  if (Input==Isteresi) Input = Input + 1;
   
-  if (GAS==true)IsteresiProporzionale = (Isteresi * (Setpoint/Input)) - (Isteresi-(Input*(Isteresi/2)/boilStageTemp))  ;
+  if (GAS==true)IsteresiProporzionale = Isteresi / Input;
   else IsteresiProporzionale = 0.0;
   
   Delta = Setpoint-(Input + IsteresiProporzionale);
-  
-  //float DeltaPID = 5.0;
-  //if(ScaleTemp==1)DeltaPID = 9.0 ;
+  Rapporto= Delta/Isteresi;
   
   if (autoMode){
-    if (Delta/Isteresi < 1.00){
+    if (Rapporto < 0.25){
       //IL VALORE VA MODULATO 
-      if (GAS==true) Output = int(Delta/Isteresi*100);
+      if (GAS==true) Output = Arrotonda025(Rapporto) * 100;
       else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
   
-  if (Output         <=  5.00) Output = 5.00;
-  if (Delta/Isteresi <= -0.10) Output = 0.00;
+  if (Output   <= 25.00) Output = 10.00;
+  if (Rapporto <=  0.01) Output = 0.00;
   
   // PWM the output
-  if (GAS==true)WindowSize = 60000;
+  if (GAS==true)WindowSize = 40000;
   
   unsigned long now = millis();
   /*
@@ -319,7 +316,7 @@ void PID_HEAT (boolean autoMode){
   Serial.print(F("   SetPoint: "));
   Serial.print(Setpoint);
   Serial.print(F("   Rapporto= "));
-  Serial.print(Delta/Isteresi);
+  Serial.print(Rapporto);
   Serial.print(F("   Output= "));
   Serial.print(Output);
   Serial.print(F("   Tempo= "));
@@ -1862,17 +1859,17 @@ void setup_mode (){
       Menu_3_4();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 2;
-      //if (btn_Press(Button_dn,50))setupMenu = 4;
+      if (btn_Press(Button_dn,50))setupMenu = 4;
       if (btn_Press(Button_enter,50))RecipeMenu();
       break;
-      /*
+      
       case(4):
       Menu_3_5();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 3;
       if (btn_Press(Button_enter,50))Credits();
       break;
-      */
+      
     }
   }lcd.clear();
 }   
