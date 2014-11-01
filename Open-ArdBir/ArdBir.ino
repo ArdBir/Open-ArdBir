@@ -1,5 +1,17 @@
-float Isteresi = 5.0;
-boolean GAS = true;
+//   CONTROL PAUSE PIPE In-Out
+// TRUE  = Pause Active 
+// FALSE = Pause Inactive
+boolean Flag_PutPipe = false;
+boolean Flag_RemovePipe = false;
+
+//CONTROL PAUSE IODINE TEST (Not Active)
+//boolean Flag_IodineTest = false;
+
+//   GAS Heat
+// TRUE  = GAS      System Heat
+// FALSE = ELECTRIC System Heat
+boolean GAS = false;
+
 
 /*
 brauduino semi automated single vessel RIMS
@@ -285,8 +297,8 @@ void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
   
+  float Isteresi = 5.0;
   float Rapporto, Delta, IsteresiProporzionale;
-  
   
   if (GAS==true)IsteresiProporzionale = Isteresi / Input;
   else IsteresiProporzionale = 0.0;
@@ -295,6 +307,7 @@ void PID_HEAT (boolean autoMode){
   Rapporto= Delta/Isteresi;
   
   if (autoMode){
+    
     if (Rapporto < 0.25){
       //IL VALORE VA MODULATO 
       if (GAS==true) Output = Arrotonda025(Rapporto) * 100;
@@ -305,34 +318,19 @@ void PID_HEAT (boolean autoMode){
   
   if (Output   <= 25.00) Output = 10.00;
   if (Rapporto <=  0.01) Output = 0.00;
+  if (Input>=Setpoint && Setpoint>=boilStageTemp) Output = boil_output;
   
   // PWM the output
   if (GAS==true)WindowSize = 40000;
   
   unsigned long now = millis();
-  /*
-  Serial.print(F("Input: "));
-  Serial.print(Input);
-  Serial.print(F("   SetPoint: "));
-  Serial.print(Setpoint);
-  Serial.print(F("   Rapporto= "));
-  Serial.print(Rapporto);
-  Serial.print(F("   Output= "));
-  Serial.print(Output);
-  Serial.print(F("   Tempo= "));
-  Serial.print(int((now - w_StartTime)/1000));
-  Serial.print(F("   PWM= "));
-  Serial.print(int(Output*(WindowSize/100)/1000));  
-  */
+  
+  
+// PWM  
   if(now - w_StartTime > WindowSize) w_StartTime += WindowSize; //time to shift the Relay Window
   
-  if((Output*(WindowSize/100)) > now - w_StartTime){
-    heat_on();
-    //Serial.println(F("   ACCESO"));
-  }else{
-    heat_off(mheat);
-    //Serial.println(F("   SPENTO"));
-  }
+  if((Output*(WindowSize/100)) > now - w_StartTime)heat_on();
+  else heat_off(mheat);
 }
 
 void load_pid_settings (){
@@ -1059,13 +1057,13 @@ void auto_mode (){
 //      INSERIMENTO PAUSA AGGIUNTIVA        
         Temperatura_Raggiunta();
                 
-        add_malt();
+        if (Flag_PutPipe==true) add_malt();
         if (!(b_Enter))break;
 
         Menu_2();
       }
       if(i==(7)&& b_Enter){   // at the end of the last step pauses to remove the malt pipe before the boil
-        remove_malt();
+        if (Flag_RemovePipe==true) remove_malt();
         if (!(b_Enter))break;
 
         Menu_2();
