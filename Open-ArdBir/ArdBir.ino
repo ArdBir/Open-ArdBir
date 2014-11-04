@@ -1,16 +1,29 @@
-//   CONTROL PAUSE PIPE In-Out
-// TRUE  = Pause Active 
-// FALSE = Pause Inactive
-boolean Flag_PutPipe = false;
-boolean Flag_RemovePipe = false;
+//SET PCB
+// 1 Brauduino Original (Matho's PCB)
+// 2 Brauduino by DanielXan
+// 3 ArdBir by DanielXan
+#define PCBType 4
 
-//CONTROL PAUSE IODINE TEST (Not Active)
-//boolean Flag_IodineTest = false;
+// SET LCD and Language
+// LCD 16 or 20
+#define LCDType 20
+
+// LANGUAGE
+// 1 English
+// 2 Italian
+// 3 Spanish
+// 4 Portuguese
+#define LCDLanguage 2
+
+//   CONTROL PAUSE PIPE In-Out
+boolean SkipAddMalt    = false;
+boolean SkipRemoveMalt = false;
+
+//CONTROL PAUSE IODINE TEST
+boolean SkipIodineTest = false;
 
 //   GAS Heat
-// TRUE  = GAS      System Heat
-// FALSE = ELECTRIC System Heat
-boolean GAS = false;
+boolean UseGAS         = false;
 
 
 /*
@@ -74,8 +87,9 @@ Copyright (C) 2012  Stephen Mathison
  - Italian Language
  - English Language
  - Spanish Language
+ - Portuguese Language
  
- compiled on Arduino V1.0.5
+ compiled on Arduino V1.0.6
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -97,11 +111,9 @@ Copyright (C) 2012  Stephen Mathison
 #include <PID_v1.h>
 
 // SETTING PCB*****
-// Select your PCB Version
-
 // Testing PCB
 //#include "Pcb_05.h"
-#include "Pcb_11s.h"
+//#include "Pcb_11s.h"
 //#include "Pcb_14.h"
 
 // Supported PCB
@@ -109,31 +121,49 @@ Copyright (C) 2012  Stephen Mathison
 //#include "Pcb_Brauduino_DanielXan.h"
 //#include "Pcb_Brauduino_Original.h"
 
+#if PCBType == 1 
+  #include "Pcb_Brauduino_Original.h"
+#elif PCBType == 2 
+  #include "Pcb_Brauduino_DanielXan.h"
+#elif PCBType == 3 
+  #include "Pcb_ArdBir_DanielXan.h"ù
+#elif PCBType == 4 
+  #include "Pcb_11s.h"
+#endif
+
+
+
 // Porzioni di codice
 #include "Presentazione.h"
 #include "ArdBir1.h"
 #include "Funzioni.h"
 
+
 // SETTING LCD*****
-// Select your LCD
+#if LCDType == 16 
+    #if LCDLanguage == 1
+        #include "LCD20x4_ENG.h"
+    #elif LCDLanguage == 2
+        #include "LCD20x4_ITA.h"
+    #elif LCDLanguage == 3
+        #include "LCD20x4_ESP.h"
+    #elif LCDLanguage == 4 
+        #include "LCD20x4_POR.h"
+    #endif
+#endif
 
-// LANGUAGE ITA
-//#include "LCD16x2_ITA.h"
-#include "LCD20x4_ITA.h"
+#if LCDType == 20
+    #if LCDLanguage == 1
+        #include "LCD20x4_ENG.h"
+    #elif LCDLanguage == 2
+        #include "LCD20x4_ITA.h"
+    #elif LCDLanguage == 3
+        #include "LCD20x4_ESP.h"
+    #elif LCDLanguage == 4 
+        #include "LCD20x4_POR.h"
+    #endif
+#endif
 
-// LANGUAGE ENG
-//#include "LCD16x2_ENG.h"
-//#include "LCD20x4_ENG.h"
-
-// LANGUAGE ESP
-//#include "LCD16x2_ESP.h"
-//#include "LCD20x4_ESP.h"
-
-// LANGUAGE POR
-//#include "LCD16x2_POR.h" 
-//#include "LCD20x4_POR.h"
-
-// *****
 
 // global variables
 unsigned long TimeLeft;
@@ -157,7 +187,7 @@ boolean b_Enter      = false;
 boolean tempReached  = false;
 boolean pumpRest     = false;
 boolean resume       = false;
-boolean IodineTest  = false;
+boolean IodineTest   = false;
 boolean DelayedMode  = false;
 
 
@@ -300,7 +330,7 @@ void PID_HEAT (boolean autoMode){
   float Isteresi = 5.0;
   float Rapporto, Delta, IsteresiProporzionale;
   
-  if (GAS==true)IsteresiProporzionale = Isteresi / Input;
+  if (UseGAS==true)IsteresiProporzionale = Isteresi / Input;
   else IsteresiProporzionale = 0.0;
   
   Delta = Setpoint-(Input + IsteresiProporzionale);
@@ -310,7 +340,7 @@ void PID_HEAT (boolean autoMode){
     
     if (Rapporto < 0.25){
       //IL VALORE VA MODULATO 
-      if (GAS==true) Output = Arrotonda025(Rapporto) * 100;
+      if (UseGAS==true) Output = Arrotonda025(Rapporto) * 100;
       else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
@@ -321,7 +351,7 @@ void PID_HEAT (boolean autoMode){
   if (Input>=Setpoint && Setpoint>=boilStageTemp) Output = boil_output;
   
   // PWM the output
-  if (GAS==true)WindowSize = 40000;
+  if (UseGAS==true)WindowSize = 40000;
   
   unsigned long now = millis();
   
@@ -641,12 +671,12 @@ void stage_loop (){
       if (TimeLeft < 6 ) Buzzer(1, 150);
       if (TimeLeft == 0) Buzzer(1, 1000); 
       
-      if ((x-1)==7 && IodineTest==false)Iodine_Test();
+      if ((x-1)==7 && IodineTest==false && SkipIodineTest==false)Iodine_Test();
 
       if ((x-1)==8 && tempBoilReached && Temp_Now >= boilStageTemp) {  //if temp reached during boil
       
         Set(boil_output,100,0,1,Timer,Verso);
-        Output = boil_output;
+        //Output = boil_output;
         
         Boil(boil_output,Temp_Now,1);
         PID_HEAT(false); //set heat in manual mode
@@ -884,7 +914,7 @@ void manual_mode (){
     
     if (Setpoint >= boilStageTemp && Input >= Setpoint){ 
       Set(boil_output,100,0,1,Timer,Verso);
-      Output = boil_output;
+      //Output = boil_output;
 
       Boil(boil_output,Temp_Now,0);
       
@@ -1057,13 +1087,13 @@ void auto_mode (){
 //      INSERIMENTO PAUSA AGGIUNTIVA        
         Temperatura_Raggiunta();
                 
-        if (Flag_PutPipe==true) add_malt();
+        if (SkipAddMalt==false) add_malt();
         if (!(b_Enter))break;
 
         Menu_2();
       }
       if(i==(7)&& b_Enter){   // at the end of the last step pauses to remove the malt pipe before the boil
-        if (Flag_RemovePipe==true) remove_malt();
+        if (SkipRemoveMalt==false) remove_malt();
         if (!(b_Enter))break;
 
         Menu_2();
@@ -1878,9 +1908,13 @@ void setup(){
 
   // SETTING LCD*****
   // Select your LCD
-//  lcd.begin(16,2);
-  lcd.begin(20,4);
+  #if LCDType == 16
+    lcd.begin(16,2);
+  #elif LCDType == 20
+    lcd.begin(20,4);
+  #endif
 
+  
   pinMode (Button_up, INPUT_PULLUP);
   pinMode (Button_dn, INPUT_PULLUP);
   pinMode (Button_start, INPUT_PULLUP);

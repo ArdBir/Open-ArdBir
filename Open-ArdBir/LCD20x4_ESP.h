@@ -36,7 +36,7 @@ void Clear_2_3(){
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   //lcd.print(Version20);
-  lcd.print(F("2.7.01 "));
+  lcd.print(F("2.7.1b7"));
   lcd.write(7);
 }
 
@@ -589,8 +589,8 @@ void viewCredits(byte X, byte Y, const char* Testo, int Pausa){
 void Credits(){
   lcd.clear();
   
-  Intestazione();
-  delay(1500);
+  //Intestazione();
+  //delay(1500);
   
   viewCredits(3,2,"Idea Original:",750);
   viewCredits(2,3,"Stephen Mathison",2000);

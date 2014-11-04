@@ -498,8 +498,8 @@ void viewCredits(byte X, byte Y, const char* Testo, int Pausa){
 void Credits(){
   lcd.clear();
   
-  Intestazione();
-  delay(1500);
+  //Intestazione();
+  //delay(1500);
   
   viewCredits(1,0,"Ideia Original:",750);
   viewCredits(0,1,"Stephen Mathison",2000);
