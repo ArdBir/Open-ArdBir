@@ -126,7 +126,7 @@ Copyright (C) 2012  Stephen Mathison
 #elif PCBType == 2 
   #include "Pcb_Brauduino_DanielXan.h"
 #elif PCBType == 3 
-  #include "Pcb_ArdBir_DanielXan.h"ù
+  #include "Pcb_ArdBir_DanielXan.h"
 #elif PCBType == 4 
   #include "Pcb_11s.h"
 #endif
@@ -142,17 +142,15 @@ Copyright (C) 2012  Stephen Mathison
 // SETTING LCD*****
 #if LCDType == 16 
     #if LCDLanguage == 1
-        #include "LCD20x4_ENG.h"
+        #include "LCD16x2_ENG.h"
     #elif LCDLanguage == 2
-        #include "LCD20x4_ITA.h"
+        #include "LCD16x2_ITA.h"
     #elif LCDLanguage == 3
-        #include "LCD20x4_ESP.h"
+        #include "LCD16x2_ESP.h"
     #elif LCDLanguage == 4 
-        #include "LCD20x4_POR.h"
+        #include "LCD16x2_POR.h"
     #endif
-#endif
-
-#if LCDType == 20
+#elif LCDType == 20
     #if LCDLanguage == 1
         #include "LCD20x4_ENG.h"
     #elif LCDLanguage == 2
@@ -1908,6 +1906,7 @@ void setup(){
 
   // SETTING LCD*****
   // Select your LCD
+
   #if LCDType == 16
     lcd.begin(16,2);
   #elif LCDType == 20
