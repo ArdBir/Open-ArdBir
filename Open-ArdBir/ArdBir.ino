@@ -336,16 +336,24 @@ void PID_HEAT (boolean autoMode){
   
   if (autoMode){
     
-    if (Rapporto < 0.25){
+    if (Rapporto < 1.00){
       //IL VALORE VA MODULATO 
-      if (UseGAS==true) Output = Arrotonda025(Rapporto) * 100;
-      else myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
+      if (UseGAS==true) {
+        //SEZIONE GAS
+        Output = Arrotonda025(Rapporto) * 100;
+        if (Rapporto <= 0.25) Output = 15.00;
+        if (Rapporto <= 0.10) Output =  0.00;
+      }
+      else {
+        //SEZIONE ELETTRICA
+        myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
+      }
+      
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
   
-  if (Output   <= 25.00) Output = 10.00;
-  if (Rapporto <=  0.01) Output = 0.00;
+  //FASE DI BOIL RAGGIUNTA
   if (Input>=Setpoint && Setpoint>=boilStageTemp) Output = boil_output;
   
   // PWM the output

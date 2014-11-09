@@ -598,25 +598,25 @@ void Credits(){
 
   Clear_2_3();
 
-  viewCredits(4,2,"Modifica FW:",750);
+  viewCredits(4,2,"Modifica  FW:",750);
   viewCredits(4,3,"Mike  Wilson",1750);
   viewCredits(4,3,"Massimo Nevi",1750);
   
   Clear_2_3();
   
-  viewCredits(4,2,"PCB & Tests:",750);
-  viewCredits(3,3,"  DanielXan ",999);
-  viewCredits(3,3,"SavioThechnic",999);
-  viewCredits(3,3,"   A. Tidei  ",999);
-  viewCredits(3,3," D. Arzarello",999);
-  viewCredits(3,3,"L. Di Michele",999);
+  viewCredits(2,2,"PCB  &  Tests:",750);
+  viewCredits(2,3,"  Daniel Xan  ",999);
+  viewCredits(2,3,"Savio Thechnic",999);
+  viewCredits(2,3,"   A.  Tidei  ",999);
+  viewCredits(2,3," D. Arzarello ",999);
+  viewCredits(2,3,"L.  Di Michele",999);
   
   Clear_2_3();    
   
   viewCredits(4,2,"Traduzioni:",750);
-  viewCredits(3,4,"A. Moiseyev",999);//Russo
-  viewCredits(3,4,"A. Mondejar",999);//Spagnolo
-  viewCredits(3,4,"C.M. Macedo",999);//Portoghese
+  viewCredits(4,3,"A. Moiseyev",999);//Russo
+  viewCredits(4,3,"A. Mondejar",999);//Spagnolo
+  viewCredits(4,3,"C.M. Macedo",999);//Portoghese
   
   Clear_2_3(); 
 }
