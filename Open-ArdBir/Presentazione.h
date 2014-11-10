@@ -25,7 +25,7 @@ void Presentazione(byte posX, byte posY){
   byte Arduino6[8] = {B11101, B11011, B00110, B11110, B11100, B11000, B10000, B00000};
   */
   
-  /*
+  
   // AHB symbol
   byte AHB1[8] = {B00000, B00011, B01111, B11011, B10101, B10001, B10101, B10101};
   byte AHB2[8] = {B11111, B11111, B11111, B10101, B10101, B10001, B10101, B10101};
@@ -33,7 +33,7 @@ void Presentazione(byte posX, byte posY){
   byte AHB4[8] = {B11111, B11101, B10110, B01001, B00100, B00011, B00000, B00000};
   byte AHB5[8] = {B11011, B10001, B10101, B11011, B10001, B10001, B11011, B01110};
   byte AHB6[8] = {B11111, B10111, B01101, B10010, B00100, B11000, B00000, B00000};
-  */
+  
   
   // AREA BIRRA symbol
   byte AreaBirra1[8] = {B00000, B01111, B10000, B10000, B10000, B10000, B10000, B10000};
@@ -60,7 +60,7 @@ void Presentazione(byte posX, byte posY){
   delay(2000);
   */
 
-  /*
+  
   lcd.createChar(1, AHB1);
   lcd.createChar(2, AHB2);
   lcd.createChar(3, AHB3);
@@ -74,7 +74,7 @@ void Presentazione(byte posX, byte posY){
   lcd.setCursor(posX+5,posY+1);
   lcd.print(F("Home Brewer"));
   delay(2000);
-  */
+  
   
   
   lcd.createChar(1, AreaBirra1);

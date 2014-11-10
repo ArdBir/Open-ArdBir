@@ -37,7 +37,7 @@ void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
   //lcd.print(Version16);
-  lcd.print(F("2.7.01"));
+  lcd.print(F("2.7.2 "));
   lcd.write(7);
 }
 
@@ -505,8 +505,8 @@ void viewCredits(byte X, byte Y, const char* Testo, int Pausa){
 void Credits(){
   lcd.clear();
   
-  //Intestazione();
-  //delay(1500);
+  Intestazione();
+  delay(1500);
   
   viewCredits(0,0,"Idea  Originale:",750);
   viewCredits(0,1,"Stephen Mathison",2000);
@@ -659,7 +659,7 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  //Presentazione(0,0);
+  Presentazione(0,0);
   ArdBir1(4,0);
 }
 

@@ -16,15 +16,17 @@
 #define LCDLanguage 2
 
 //   CONTROL PAUSE PIPE In-Out
-boolean SkipAddMalt    = false;
-boolean SkipRemoveMalt = false;
+#define SkipAddMalt     false
+#define SkipRemoveMalt  false
 
 //CONTROL PAUSE IODINE TEST
-boolean SkipIodineTest = false;
+#define SkipIodineTest  false
 
 //   GAS Heat
-boolean UseGAS         = false;
-
+// false ELECTRIC
+// true  GAS
+#define UseGAS true
+#define Isteresi 5
 
 /*
 brauduino semi automated single vessel RIMS
@@ -237,7 +239,7 @@ byte RevPumpONOFF[8] = {B11111, B10001, B10101, B10001, B10111, B10111, B10111, 
 
 
 /*
-int freeRam () {
+int freeRam() {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
@@ -324,43 +326,56 @@ void Temperature(){// reads the DS18B20 temerature probe
 void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
+   
+  #if UseGAS == true
+    float DeltaPID = Isteresi;
+  #elif UseGAS == false 
+    float DeltaPID = 5.00;
+  #endif
   
-  float Isteresi = 5.0;
   float Rapporto, Delta, IsteresiProporzionale;
   
-  if (UseGAS==true)IsteresiProporzionale = Isteresi / Input;
-  else IsteresiProporzionale = 0.0;
+  #if UseGAS == true
+    IsteresiProporzionale = DeltaPID / Input;
+  #else 
+    IsteresiProporzionale = 0.0;
+  #endif
   
-  Delta = Setpoint-(Input + IsteresiProporzionale);
-  Rapporto= Delta/Isteresi;
+  Delta = Setpoint - (Input + IsteresiProporzionale);
+  Rapporto= Delta / DeltaPID;
   
   if (autoMode){
     
     if (Rapporto < 1.00){
       //IL VALORE VA MODULATO 
-      if (UseGAS==true) {
+      #if UseGAS == true
         //SEZIONE GAS
         Output = Arrotonda025(Rapporto) * 100;
-        if (Rapporto <= 0.25) Output = 15.00;
-        if (Rapporto <= 0.10) Output =  0.00;
-      }
-      else {
+        if (Rapporto < 0.25) Output = 15.00;
+        if (Rapporto < 0.10) Output =  0.00;
+      #else
         //SEZIONE ELETTRICA
         myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
-      }
+      #endif
       
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
   }
   
+  
+  
   //FASE DI BOIL RAGGIUNTA
+  // Il valore di Output viene riassegnato
   if (Input>=Setpoint && Setpoint>=boilStageTemp) Output = boil_output;
   
+  
+  
   // PWM the output
-  if (UseGAS==true)WindowSize = 40000;
+  #if UseGAS == true
+    WindowSize = 40000;
+  #endif
   
   unsigned long now = millis();
-  
   
 // PWM  
   if(now - w_StartTime > WindowSize) w_StartTime += WindowSize; //time to shift the Relay Window
@@ -370,17 +385,17 @@ void PID_HEAT (boolean autoMode){
 }
 
 void load_pid_settings (){
-  read_set(eepromKp,0);
-  read_set(eepromKi,2);
-  read_set(eepromKd,4);
+    read_set(eepromKp,0);
+    read_set(eepromKi,2);
+    read_set(eepromKd,4);
   
-  eepromKi = eepromKi/400;
+    eepromKi = eepromKi/400;
 
-  myPID.SetTunings(eepromKp,eepromKi,eepromKd); // send the PID settings to the PID
+    myPID.SetTunings(eepromKp,eepromKi,eepromKd); // send the PID settings to the PID
 
-  read_set(WindowSize,6);
-  myPID.SetOutputLimits(0.0, 100.0);
-  myPID.SetSampleTime(3500);
+    read_set(WindowSize,6);
+    myPID.SetOutputLimits(0.0, 100.0);
+    myPID.SetSampleTime(3500);
 }  
 
 boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display){ 
@@ -677,7 +692,11 @@ void stage_loop (){
       if (TimeLeft < 6 ) Buzzer(1, 150);
       if (TimeLeft == 0) Buzzer(1, 1000); 
       
-      if ((x-1)==7 && IodineTest==false && SkipIodineTest==false)Iodine_Test();
+      if ((x-1)==7 && IodineTest==false ) {
+        #if SkipIodineTest == false
+          Iodine_Test();
+        #endif
+      }
 
       if ((x-1)==8 && tempBoilReached && Temp_Now >= boilStageTemp) {  //if temp reached during boil
       
@@ -844,7 +863,10 @@ void manual_mode (){
   boolean FlagSpentLeft=false;
   boolean SpentLeft =false;
   
-  load_pid_settings();
+  #if UseGAS == false 
+    load_pid_settings();
+  #endif
+  
   r_set(boil_output,8);
   
   prompt_for_water();
@@ -1024,7 +1046,11 @@ void Temperatura_Raggiunta(){
 
 void auto_mode (){
   StageAddr=30;
-  load_pid_settings();
+  
+  #if UseGAS == false 
+    load_pid_settings();
+  #endif
+  
 
 //  check_for_resume();
   if(EEPROM.read(82)){ // FLAG Automode Started
@@ -1093,13 +1119,17 @@ void auto_mode (){
 //      INSERIMENTO PAUSA AGGIUNTIVA        
         Temperatura_Raggiunta();
                 
-        if (SkipAddMalt==false) add_malt();
+        #if SkipAddMalt == false
+          add_malt();
+        #endif
         if (!(b_Enter))break;
 
         Menu_2();
       }
       if(i==(7)&& b_Enter){   // at the end of the last step pauses to remove the malt pipe before the boil
-        if (SkipRemoveMalt==false) remove_malt();
+        #if SkipRemoveMalt == false
+          remove_malt();
+        #endif
         if (!(b_Enter))break;
 
         Menu_2();
