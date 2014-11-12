@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Kostante  P", "Kostante  I", "Kostante  D", "Finestra ms", "Uso in Boll", "Calibraz.  "};
+char *PIDName[]   ={"Uso ", "Kostante  P", "Kostante  I", "Kostante  D", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
 char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "In Bollitura ", "Fermo Pompa ", "PID Pipe  " , "TimeIodio"};
 
@@ -188,29 +188,35 @@ void Menu_3_1_x(byte i){
 }  
 
 void PidSet(int pidSet, byte i){
-  if(i==4||i==5)lcd.setCursor(11,1);
+  LCDSpace(1);
+  
+  if(i==5||i>=6)lcd.setCursor(11,1);
   else lcd.setCursor(12,1);
-   
-  if (i<3||i==4){
-    if (pidSet<=-10 && pidSet>-100 )LCDSpace(1);
+ 
+  if (i>0 && i<4||i==5){
+    if (pidSet<=-10 && pidSet>-100)LCDSpace(1);
     if (pidSet<0 && pidSet>-10)LCDSpace(2);
     if (pidSet<10 && pidSet>=0)LCDSpace(3);
     if (pidSet>=10 && pidSet<100)LCDSpace(2);
-    if (pidSet>=100)LCDSpace(1);  
-    lcd.print(pidSet);
-    if(i==4)lcd.print(F("%"));
-  }
-  if(i==3){  
-    if (pidSet<1000)LCDSpace(1);
-    lcd.print(pidSet);
+    if (pidSet>=100)LCDSpace(1);
   }
   
-  if(i==5){
+  if(i>=6){
     float OffSet=pidSet/10.0;
-    if (OffSet>=0)LCDSpace(1);
+    if (OffSet>=0 && OffSet<10)LCDSpace(1);
     lcd.print(OffSet);
-    LCDSpace(1);
+    return;
   }
+  
+  if (i==0){
+    lcd.setCursor(7,1);
+    if (pidSet==0)lcd.print(F("Elettrico"));
+    else          lcd.print(F("      Gas"));
+  }else lcd.print(pidSet);
+
+  if(i==5)lcd.print(F("%"));
+
+  
 }
 
 void Menu_3_2(){
@@ -666,7 +672,7 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  Presentazione(0,0);
+  //Presentazione(0,0);
   ArdBir1(4,0);
 }
 

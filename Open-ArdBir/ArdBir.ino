@@ -22,11 +22,13 @@
 //CONTROL PAUSE IODINE TEST
 #define SkipIodineTest  false
 
+/*
 //   GAS Heat
 // false ELECTRIC
 // true  GAS
 #define UseGAS true
 #define Isteresi 5
+*/
 
 /*
 brauduino semi automated single vessel RIMS
@@ -106,6 +108,9 @@ Copyright (C) 2012  Stephen Mathison
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
+
+#define SerialMonitor false
+
 //libraries
 #include <EEPROM.h>
 #include <LiquidCrystal.h>
@@ -136,9 +141,9 @@ Copyright (C) 2012  Stephen Mathison
 
 
 // Porzioni di codice
-#include "Presentazione.h"
-#include "ArdBir1.h"
 #include "Funzioni.h"
+//#include "Presentazione.h"
+#include "ArdBir1.h"
 
 
 // SETTING LCD*****
@@ -190,7 +195,6 @@ boolean resume       = false;
 boolean IodineTest   = false;
 boolean DelayedMode  = false;
 
-
 float mset_temp;
 float stageTemp;
 float boilStageTemp;
@@ -201,6 +205,8 @@ byte x;
 byte ScaleTemp       = EEPROM.read(15);
 byte SensorType      = EEPROM.read(16);
 byte setPumpBoil     = EEPROM.read(21);
+byte UseGAS          = EEPROM.read(11);
+byte Isteresi        = EEPROM.read(12);
 
 int  stageTime;
 byte hopTime;
@@ -219,8 +225,9 @@ byte boil_output        ;  // boil output %
 float p_C[]    ={  75.00,20.00,0.25,   55.00,25.00,0.25,   50.00,35.00,0.25,   60.00, 45.00,0.25,   70.00, 50.00,0.25,   76.00, 60.00,0.25,  76.00, 60.00,0.25,  80.00, 75.00,0.25 }; 
 float p_F[]    ={ 167.00,68.00,0.25,  131.00,77.00,0.25,  122.00,95.00,0.25,  140.00,113.00,0.25,  158.00,122.00,0.25,  168.75,140.00,0.25, 176.00,167.00,0.25, 176.00,167.00,0.25 }; 
 
-int   p_PID[]  ={ 100, -100, 1,    400, -200, 1,    100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1 }; 
-byte  p_Unit[] ={   1, 0, 1,         1, 0, 1,       105, 90, 1,      221, 194, 1,       15, 5, 1,    5, 0, 1,     1, 0, 1,    0, 0, 0,    1, 0, 1,     90, 0, 1}; 
+//int   p_PID[]  ={ 100, -100, 1,    400, -200, 1,    100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1 }; 
+int   p_PID[]  ={   1, 0, 1,   100, -100, 1,   400, -200, 1,   100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1,   100, 10, 1 }; 
+byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   105, 90, 1,   221, 194, 1,   15, 5, 1,   5, 0, 1,   1, 0, 1,   0, 0, 0,   1, 0, 1,   90, 0, 1}; 
 
 
 //Specify the links and initial tuning parameters
@@ -235,8 +242,6 @@ byte RevPumpONOFF[8] = {B11111, B10001, B10101, B10001, B10111, B10111, B10111, 
 // ****************************************
 // ******** start of  the funtions ******** 
 // ****************************************
-
-
 
 /*
 int freeRam() {
@@ -326,20 +331,18 @@ void Temperature(){// reads the DS18B20 temerature probe
 void PID_HEAT (boolean autoMode){
   //autoMode = TRUE  PID Control
   //autoMode = FALSE PWM Control
-   
-  #if UseGAS == true
-    float DeltaPID = Isteresi;
-  #elif UseGAS == false 
-    float DeltaPID = 5.00;
-  #endif
   
+  float DeltaPID;
   float Rapporto, Delta, IsteresiProporzionale;
   
-  #if UseGAS == true
+  if (UseGAS == 1) {
+    DeltaPID = Isteresi/10;
     IsteresiProporzionale = DeltaPID / Input;
-  #else 
+    WindowSize = 40000;
+  }else{  
+    DeltaPID = 5.00;
     IsteresiProporzionale = 0.0;
-  #endif
+  }  
   
   Delta = Setpoint - (Input + IsteresiProporzionale);
   Rapporto= Delta / DeltaPID;
@@ -348,15 +351,15 @@ void PID_HEAT (boolean autoMode){
     
     if (Rapporto < 1.00){
       //IL VALORE VA MODULATO 
-      #if UseGAS == true
+      if (UseGAS == 1){
         //SEZIONE GAS
         Output = Arrotonda025(Rapporto) * 100;
         if (Rapporto < 0.25) Output = 15.00;
         if (Rapporto < 0.10) Output =  0.00;
-      #else
+      }else{
         //SEZIONE ELETTRICA
         myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
-      #endif
+      }
       
     //IL VALORE E' DIRETTO
     } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
@@ -367,13 +370,6 @@ void PID_HEAT (boolean autoMode){
   //FASE DI BOIL RAGGIUNTA
   // Il valore di Output viene riassegnato
   if (Input>=Setpoint && Setpoint>=boilStageTemp) Output = boil_output;
-  
-  
-  
-  // PWM the output
-  #if UseGAS == true
-    WindowSize = 40000;
-  #endif
   
   unsigned long now = millis();
   
@@ -1178,47 +1174,81 @@ void auto_mode (){
 }
 
 void set_PID (){
-  byte a = 0;
-  boolean pidLoop = false;
+  
+  boolean pidLoop = true;
   int pidSet;
 
   byte Verso=0;
   unsigned long Timer=0;
 
+  pidSet = UseGAS;
+  
+  while (pidLoop){
+    Menu_3_1_x(0);
+    LeggiPulsante(Verso, Timer);
+    PidSet(pidSet,0);
+    Set(pidSet, p_PID[0], p_PID[1], p_PID[2], Timer, Verso);
+    if(btn_Press(Button_enter,50)){     
+      UseGAS = pidSet;
+      save_set(11, UseGAS);
+      pidLoop = false;
+    }
+  }
+  
+  
+  byte InizioCiclo = 1;
   byte setAddr = 0;
-
-  for(byte i = 0; i < 6; i++){
+  byte a;
+  
+  if (pidSet==1){
+    InizioCiclo =  7;
+    setAddr     = 12;
+  }
+  pidLoop=false;
+  
+//  for(byte i = 0; i < 6; i++){
+  for(byte i = InizioCiclo; i < 8; i++){
+    a = i*3;
     
-    if (i<4||i==5)read_set(pidSet,setAddr);
-    else r_set(boil_output,setAddr);
-    pidLoop= true;
+    if (i<5||i==6) read_set(pidSet,setAddr);
+    if (i==7)      r_set   (Isteresi,setAddr);
+    else           r_set   (boil_output,setAddr);
+    
+    if (i==7 && UseGAS==0)pidLoop=false;
+    else pidLoop= true;
 
     while (pidLoop){
       Menu_3_1_x(i);
       
       LeggiPulsante(Verso, Timer);
       
-      if(i==4){
+      if(i==5){
         PidSet(boil_output,i);
         Set(boil_output, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
-      }else{ 
-        PidSet(pidSet,i);
-
-        if(i<3)Set(pidSet, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
-        else   Set(pidSet, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
+      }else{
+        if(i==7){
+          PidSet(Isteresi,i);
+          Set(Isteresi, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
+        }else{
+          PidSet(pidSet,i);
+          Set(pidSet, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
+        }
       }
       quit_mode(pidLoop);
-      if (!pidLoop)i=6;
+      if (!pidLoop)i=8;
 
       if(btn_Press(Button_enter,50)){     
-        if(i==4)save_set(setAddr,boil_output);
-        else save_set(setAddr,pidSet);
+        if(i==7) save_set(12,Isteresi);
+        else{
+          if(i==5) save_set(setAddr, boil_output);
+          else save_set(setAddr,pidSet);
+        }
         pidLoop = false;
       }
    }  
-   if (i<4 || i==5)setAddr+=2;
+   if (i<5 || i==6)setAddr+=2;
    else setAddr+=1;
-   a+=3;
+   //a+=3;
  }Clear_2_3();
 }
 
@@ -1235,7 +1265,8 @@ void set_Unit (){
   byte setAddr = 15;
 
   for(byte i=0;i<10;i++){
-    a=i*3;
+    a = i*3;
+     
     if ((i==2 && ScaleTemp==1) || (i==3 && ScaleTemp==0))unitLoop=false;
     else unitLoop= true;    
     
@@ -1361,6 +1392,8 @@ void set_Stages (){
   StageAddr =30;
   
   for (byte i=0; i<8; i++){ // loops for the number of stages
+     a = i*3;
+    
     TempTimeLoop = true;
     autoLoop = true;
 
@@ -1518,7 +1551,7 @@ void set_Stages (){
       }
     } 
     StageAddr+=5;
-    a+=3;
+    //a+=3;
   }
   if(Control)set_hops();
   Clear_2_3();
@@ -1923,25 +1956,27 @@ void setup_mode (){
       Menu_3_4();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 2;
-      if (btn_Press(Button_dn,50))setupMenu = 4;
+      //if (btn_Press(Button_dn,50))setupMenu = 4;
       if (btn_Press(Button_enter,50))RecipeMenu();
       break;
-      
+      /*
       case(4):
       Menu_3_5();
       if (btn_Press(Button_start,50))setupLoop=false;
       if (btn_Press(Button_up,50))setupMenu = 3;
       if (btn_Press(Button_enter,50))Credits();
       break;
-      
+      */
     }
   }lcd.clear();
 }   
 
 void setup(){
   // Start up the library
-  //Serial.begin(9600);
-
+  #if SerialMonitor == true
+    Serial.begin(9600);
+  #endif
+  
   // SETTING LCD*****
   // Select your LCD
 
@@ -2031,6 +2066,7 @@ void loop(){
     mainMenu = 0;    
     break;
 */
+
   default: 
     DelayedMode=false;
     mheat=false;

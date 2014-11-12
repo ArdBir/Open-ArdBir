@@ -11,7 +11,7 @@ void scriviSprite(byte posX, byte posY){
     }
   }
  
-  lcd.setCursor(posX+5,posY+0);
+  //lcd.setCursor(posX+5,posY+0);
 }  
 
 void Presentazione(byte posX, byte posY){   
@@ -54,6 +54,7 @@ void Presentazione(byte posX, byte posY){
     
   scriviSprite(posX, posY);
 
+  lcd.setCursor(posX+5,posY+0);
   lcd.print(F("ARDUINO"));
   lcd.setCursor(posX+5,posY+1);
   lcd.print(F("Open Source"));
@@ -70,10 +71,14 @@ void Presentazione(byte posX, byte posY){
   
   scriviSprite(posX, posY);
   
-  lcd.print(F("AUSSIE"));
-  lcd.setCursor(posX+5,posY+1);
-  lcd.print(F("Home Brewer"));
-  delay(2000);
+  display_lcd(posX+5,posY+0,"AUSSIE",0);
+  display_lcd(posX+5,posY+1,"Home Brewer",2000);
+  
+//  lcd.setCursor(posX+5,posY+0);
+//  lcd.print(F("AUSSIE"));
+//  lcd.setCursor(posX+5,posY+1);
+//  lcd.print(F("Home Brewer"));
+//  delay(2000);
   
   
   
@@ -86,10 +91,14 @@ void Presentazione(byte posX, byte posY){
     
   scriviSprite(posX, posY);
 
-  lcd.print(F("AREA BIRRA"));
-  lcd.setCursor(posX+5,posY+1);
-  lcd.print(F("Forum"));
-  delay(2000);
+  display_lcd(posX+5,posY+0,"AREA BIRRA",0);
+  display_lcd(posX+5,posY+1,"Forum",2000);
+  
+//  lcd.setCursor(posX+5,posY+0);
+//  lcd.print(F("AREA BIRRA"));
+//  lcd.setCursor(posX+5,posY+1);
+//  lcd.print(F("Forum"));
+//  delay(2000);
 }
 
 
