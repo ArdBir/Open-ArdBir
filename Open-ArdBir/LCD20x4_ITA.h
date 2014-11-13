@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Kostante   P", "Kostante   I", "Kostante   D", "Finestra  ms", "PWM Bollit.  ", "Calibrazione", "Isteresi    "};
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
-char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ebollizione", "Ciclo Pompa", "Pausa Pompa", "Pmp on Boil", "Fermo Pompa", "PID Pipe   ", "TempoIodio "};
+char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ciclo Pompa", "Pausa Pompa", "Pmp PreMash", "Pmp on Boil", "Fermo Pompa", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodio "};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -36,7 +36,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.7.2b2"));
+  lcd.print(F("2.7.2b4"));
   lcd.write(7);
 }
 
@@ -288,71 +288,57 @@ void UnitSet(byte unitSet, byte i){
       break;
       
     case(1)://Sensore
-      //lcd.setCursor(11,2);
       if (unitSet==0)lcd.print(F("Interno"));
       else lcd.print(F("Esterno"));
       break;
       
-    default:// Temperatura di Ebollizione
-      //lcd.setCursor(14,2);
+    case(2):// Temperatura di Ebollizione
       LCDSpace(3);
       PrintTemp(unitSet,0);
-      /*
-      if (unitSet<100)LCDSpace(1);
-      lcd.print(unitSet);
-      lcd.write((byte)0);
-      */
       break;
-    /*
-    case(3):// Temperatura di Ebollizione F
-      //lcd.setCursor(14,2);
-      LCDSpace(3);
-      if (unitSet<100)LCDSpace(1);
-      lcd.print(unitSet);
-      lcd.write((byte)0);
-      break;
-    */  
-    case(4):// Durata Ciclo Pompa
-      //lcd.setCursor(15,2);
+    
+    case(3):// Durata Ciclo Pompa
       LCDSpace(4);
       if (unitSet<10)LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
     
-    case(5)://Durata Pausa Pompa
-      //lcd.setCursor(16,2);
+    case(4)://Durata Pausa Pompa
       LCDSpace(5);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
     
+    case(5):
+      LCDSpace(4);
+      if (unitSet==0)lcd.print(F("OFF"));
+      if (unitSet==1)lcd.print(F(" ON"));
+      break;
+    
     case(6):
-      //lcd.setCursor(15,2);
       LCDSpace(4);
       if (unitSet==0)lcd.print(F("OFF"));
       if (unitSet==1)lcd.print(F(" ON"));
       break;
       
     case(7):
-      //lcd.setCursor(15,2);
       LCDSpace(3);
       PrintTemp(unitSet,0);
-      /*
-      if (unitSet<10)LCDSpace(1);
-      if (unitSet<100)LCDSpace(1);
-      lcd.print(unitSet);
-      lcd.write((byte)0);
-      */
       break;
       
     case(8)://Pipe
-      //LCDSpace(1);
       if (unitSet==0)lcd.print(F("Passivo"));
       else lcd.print(F("Attivo "));
       break;
     
-    case(9): //Iodio
+    default:
+      LCDSpace(5);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+        
+    case(12): //Iodio
       //CntDwn(unitSet*60);
       if (unitSet==0){
         lcd.setCursor(12,2);
@@ -759,8 +745,13 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  //Presentazione(2,1);
-  ArdBir1(6,1);
+  #if UseLubuntu == true
+    Presentazione(2,1);
+  #endif
+  
+  #if SerialMonitor == false
+    ArdBir1(6,1);
+  #endif
 }
 
 void PartenzaRitardata(){
