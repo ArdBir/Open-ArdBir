@@ -1,6 +1,6 @@
-char *PIDName[]   ={"Konstant  P", "Konstant  I", "Konstant  D", "Windowset  ", "Use in Boil", "Calibration"};
+char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "Windowset  ", "Use in Boil", "Calibration", "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      "};
-char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pump on Boil ", "Pump Stop at ", "PID Pipe ", "Iodine  "};
+char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pmp PreMash", "Pump on Boil ", "Pump Stop at ", "PID Pipe ", "Skip Add      ", "Skip Remove ", "Skip Iodine ", "Iodine  "};
 
 byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -36,7 +36,6 @@ void Clear_2_3(){
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
-  //lcd.print(Version16);
   lcd.print(F("2.7.2 "));
   lcd.write(7);
 }
@@ -148,9 +147,9 @@ void Boil(float Heat, float Temp, byte Tipo){
   }
   
   lcd.setCursor(1,1);
-  lcd.print(F("H="));    //Display output%
+  lcd.print(F("H="));       //Display output%
   if (Heat<100)LCDSpace(1); //added space as place holder for <100
-  lcd.print(Heat,0); //Display output%
+  lcd.print(Heat,0);        //Display output%
   lcd.print(F("% ")); 
   
   lcd.setCursor(10,0);
@@ -181,6 +180,7 @@ void Menu_3(){
 void Menu_3_1(){
   lcd.setCursor(0,0);
   lcd.print(F("P.I.D.PARAMETERS"));
+  lcd.print(F("   PID -- PWM   "));
 }     
 void Menu_3_1_x(byte i){
   lcd.setCursor(0,1);
@@ -188,29 +188,35 @@ void Menu_3_1_x(byte i){
 }  
 
 void PidSet(int pidSet, byte i){
-  if(i==4||i==5)lcd.setCursor(11,1);
+  LCDSpace(1);
+  
+  if(i==5||i>=6)lcd.setCursor(11,1);
   else lcd.setCursor(12,1);
-   
-  if (i<3||i==4){
-    if (pidSet<=-10 && pidSet>-100 )LCDSpace(1);
+ 
+  if (i>0 && i<4||i==5){
+    if (pidSet<=-10 && pidSet>-100)LCDSpace(1);
     if (pidSet<0 && pidSet>-10)LCDSpace(2);
     if (pidSet<10 && pidSet>=0)LCDSpace(3);
     if (pidSet>=10 && pidSet<100)LCDSpace(2);
-    if (pidSet>=100)LCDSpace(1);  
-    lcd.print(pidSet);
-    if(i==4)lcd.print(F("%"));
-  }
-  if(i==3){  
-    if (pidSet<1000)LCDSpace(1);
-    lcd.print(pidSet);
+    if (pidSet>=100)LCDSpace(1);
   }
   
-  if(i==5){
+  if(i>=6){
     float OffSet=pidSet/10.0;
-    if (OffSet>=0)LCDSpace(1);
+    if (OffSet>=0 && OffSet<10)LCDSpace(1);
     lcd.print(OffSet);
-    LCDSpace(1);
+    return;
   }
+  
+  if (i==0){
+    lcd.setCursor(7,1);
+    if (pidSet==0)lcd.print(F(" Electric"));
+    else          lcd.print(F("      Gas"));
+  }else lcd.print(pidSet);
+
+  if(i==5)lcd.print(F("%"));
+
+  
 }
 
 void Menu_3_2(){
@@ -238,33 +244,32 @@ void UnitSet(byte unitSet, byte i){
       else lcd.print(F("Outside"));
       break;
       
-    default: // Temperatura di Ebollizione
+    case(2): // Temperatura di Ebollizione
       lcd.setCursor(12,1);
       if (unitSet<100)LCDSpace(1);
       lcd.print(unitSet);
       lcd.write((byte)0);
       break;
-    /*
-    case(3):// Temperatura di Ebollizione F
-      lcd.setCursor(12,1);
-      if (unitSet<100)LCDSpace(1);
-      lcd.print(unitSet);
-      lcd.write((byte)0);
-      break;
-    */  
-    case(4):// Durata Ciclo Pompa
+    
+    case(3):// Durata Ciclo Pompa
       lcd.setCursor(13,1);
       if (unitSet<10)LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
     
-    case(5)://Durata Pausa Pompa
+    case(4)://Durata Pausa Pompa
       lcd.setCursor(14,1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
     
+    case(5):
+      lcd.setCursor(13,1);
+      if (unitSet==0)lcd.print(F("OFF"));
+      if (unitSet==1)lcd.print(F(" ON"));
+      break;
+      
     case(6):
       lcd.setCursor(13,1);
       if (unitSet==0)lcd.print(F("OFF"));
@@ -285,7 +290,13 @@ void UnitSet(byte unitSet, byte i){
       else lcd.print(F(" Atcive"));
       break;
     
-    case(9): //Iodio
+    default:
+      lcd.setCursor(14,1);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+    
+    case(12): //Iodio
       if (unitSet==0){
         lcd.setCursor(9,1);
         lcd.print(F("    OFF"));
@@ -496,42 +507,36 @@ void Menu_3_5(){
   lcd.print(F("     CREDIT     "));
 }     
 
-void viewCredits(byte X, byte Y, const char* Testo, int Pausa){
-  lcd.setCursor(X,Y);
-  lcd.print (Testo);
-  delay(Pausa);
-}
-
 void Credits(){
   lcd.clear();
   
   Intestazione();
   delay(1500);
   
-  viewCredits(0,0,"Idea  Originale:",750);
-  viewCredits(0,1,"Stephen Mathison",2000);
+  display_lcd(0,0,"Original   Idea:",750);
+  display_lcd(0,1,"Stephen Mathison",2000);
 
   lcd.clear();
 
-  viewCredits(2,0,"Modifica FW:",750);
-  viewCredits(2,1,"Mike  Wilson",1750);
-  viewCredits(2,1,"Massimo Nevi",1750);
+  display_lcd(2,0,"Modified FW:",750);
+  display_lcd(2,1,"Mike  Wilson",1750);
+  display_lcd(2,1,"Massimo Nevi",1750);
   
   lcd.clear();
   
-  viewCredits(2,0,"PCB & Tests:",750);
-  viewCredits(2,1,"  DanielXan ",999);
-  viewCredits(2,1,"SavioThechnic",999);
-  viewCredits(2,1,"   A. Tidei  ",999);
-  viewCredits(2,1," D. Arzarello",999);
-  viewCredits(2,1,"L. Di Michele",999);
+  display_lcd(2,0,"PCB & Tests:",750);
+  display_lcd(2,1,"  DanielXan ",999);
+  display_lcd(2,1,"SavioThechnic",999);
+  display_lcd(2,1,"   A. Tidei  ",999);
+  display_lcd(2,1," D. Arzarello",999);
+  display_lcd(2,1,"L. Di Michele",999);
   
   lcd.clear();  
   
-  viewCredits(1,0,"Translations:",750);
-  viewCredits(2,1," A. Moiseyev ",999);//Russo
-  viewCredits(2,1," A. Mondejar ",999);//Spagnolo
-  viewCredits(2,1," C.M. Macedo ",999);//Portoghese
+  display_lcd(1,0,"Translations:",750);
+  display_lcd(2,1," A. Moiseyev ",999);//Russo
+  display_lcd(2,1," A. Mondejar ",999);//Spagnolo
+  display_lcd(2,1," C.M. Macedo ",999);//Portoghese
   
   lcd.clear();
 }
@@ -597,8 +602,6 @@ void PausaPompa(float Temp, int Time){
   PrintTemp(Temp);
   
   CountDown(Time,8,1,1);
-
-//  Ciclo++;
 }
 
 void Iodine(float Temp, int Time){
@@ -610,14 +613,9 @@ void Iodine(float Temp, int Time){
   
   lcd.setCursor(1,1);
   lcd.print(F("IODINE"));
-  //if (Ciclo<50)lcd.print(F("IODINE"));
-  //else lcd.print(F(" TEST "));
-  
+
   lcd.setCursor(7,1);
   lcd.print(F(" OK  -- "));
-  
-  //Ciclo++;
-  //if (Ciclo>100)Ciclo=0;
 }
 
 void End(){
@@ -659,14 +657,17 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  Presentazione(0,0);
-  ArdBir1(4,0);
+  #if UseLubuntu == true
+    Presentazione(0,0);
+  #endif
+  
+  #if SerialMonitor == false
+    ArdBir1(4,0);
+  #endif
 }
-
 
 void PartenzaRitardata(){
   lcd.setCursor(0,0);
-  //lcd.print(F("   Start Now?   "));
   lcd.print(F("  Delay Start?  "));
   lcd.setCursor(0,1);
   LCDSpace(9);
