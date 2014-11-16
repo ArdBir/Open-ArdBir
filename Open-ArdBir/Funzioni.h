@@ -10,13 +10,15 @@ void r_set(byte& data, int addr){
   data=EEPROM.read(addr);
 
 #if SerialMonitor == true  
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data byte("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite   == true  
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data byte("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+   #endif
  #endif
 }
 
@@ -24,13 +26,15 @@ void read_set(byte& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
  #if SerialMonitor == true
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data byte("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite    == true
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data byte("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 
@@ -38,39 +42,45 @@ void read_set(float& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
  #if SerialMonitor == true
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data float("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite    == true
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data float("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 void read_set(double& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
 #if SerialMonitor == true  
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data double("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite   == true
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data double("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 void read_set(int& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
-#if SerialMonitor == true  
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data int("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+#if SerialMonitor == true
+  #if ReadWrite   == true
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data int("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 
@@ -78,13 +88,15 @@ void read_set(unsigned int& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
 #if SerialMonitor == true  
-  Serial.print (F("READ--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data u_int("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite   == true
+    Serial.print (F("READ--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data u_int("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 
@@ -94,26 +106,30 @@ void save_set (int addr, int data){
   EEPROM.write((addr+1),lowByte(data));
   
 #if SerialMonitor == true
-  Serial.print (F("WRITE--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));
-  Serial.print (F(" Data word("));
-  Serial.print (data); 
-  Serial.println (F(")"));
+  #if ReadWrite   == true
+    Serial.print (F("WRITE--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));
+    Serial.print (F(" Data word("));
+    Serial.print (data); 
+    Serial.println (F(")"));
+  #endif
 #endif
 }  
 void save_set (int addr, byte data){
   EEPROM.write(addr,data);
 
 #if SerialMonitor == true
-  Serial.print (F("WRITE--> "));
-  Serial.print (F("Addr("));
-  Serial.print (addr);
-  Serial.print (F(")"));  
-  Serial.print (F(" Data byte("));
-  Serial.print (data);
-  Serial.println (F(")"));
+  #if ReadWrite   == true
+    Serial.print (F("WRITE--> "));
+    Serial.print (F("Addr("));
+    Serial.print (addr);
+    Serial.print (F(")"));  
+    Serial.print (F(" Data byte("));
+    Serial.print (data);
+    Serial.println (F(")"));
+  #endif
 #endif
 }
 

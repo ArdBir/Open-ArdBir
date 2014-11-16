@@ -106,7 +106,8 @@ Copyright (C) 2012  Stephen Mathison
 
 /// FOR DEBUGGING ///
 #define SerialMonitor false
-#define UseLubuntu false
+#define ReadWrite     false
+#define UseLubuntu    false
 /// ------------- ///
 
 
@@ -526,7 +527,7 @@ void pump_rest (byte stage){
   byte TimePumpRest = EEPROM.read(20);
   byte TempPumpRest;
   
-  if (stage==0 && SkipPumpBeforeMash==1)return;
+  if (stage == 0 && SkipPumpBeforeMash == 1) return;
   
   setPumpBoil = EEPROM.read(22);
   
@@ -541,8 +542,8 @@ void pump_rest (byte stage){
     DeltaTemp= TimePumpRest*stageTemp/35;
   }
   
-  if (ScaleTemp==0)r_set(TempPumpRest,22);
-  else r_set(TempPumpRest,23);
+  if (ScaleTemp==0)r_set(TempPumpRest,23);
+  else r_set(TempPumpRest,24);
   
   if (Temp_Now >= TempPumpRest){
     if (SensorType==0){ 
@@ -578,14 +579,15 @@ void pump_rest (byte stage){
       }
     }else{//Durante le fasi 
       
-      if (stage==99)return; // Non effettua i controlli perchè siamo in MANUAL MODE
+      if (stage == 99){
+        return; // Non effettua i controlli perchè siamo in MANUAL MODE
+      }
       
       //Se non viene raggiunto il limite di tempo POMPA ON
       if ((pumpTime < TimePumpCycle)){ // starts pumps and heat
         pump_on();
         pumpRest = false; 
       }else{//Se non viene raggiunto il limite di tempo POMPA OFF
-        
         allOFF();
         
         pumpRest = true;
@@ -955,16 +957,15 @@ void manual_mode (){
 
       Boil(boil_output,Temp_Now,0);
       
-      if (mheat)PID_HEAT(false); //set heat in manual mode
-       
-      if(mpump)pump_rest(8); //Forced Boil Stage for Pump Control
-      
+      if (mheat) PID_HEAT(false); //set heat in manual mode
+      if(mpump)  pump_rest(8);    //Forced Boil Stage for Pump Control
+ 
     }else{
       if (ScaleTemp==0)Set(mset_temp,110,20,0.25,Timer,Verso);
       else Set(mset_temp,230,68,0.25, Timer, Verso);
   
       if (mheat)PID_HEAT(true); //set heat in auto mode
-      if(mpump)pump_rest(99);    //Forced normal Stage for jump Pump Control
+      if(mpump) pump_rest(99);  //Forced normal Stage for jump Pump Control
     }
 
     if(FlagSpentLeft){
@@ -1075,7 +1076,7 @@ void auto_mode (){
     
   Menu_2();
 
-  if(!(Resume)){  // if starting a new process prompt for water
+  if(!(resume)){  // if starting a new process prompt for water
     prompt_for_water();
     wait_for_confirm(b_Enter,2,2,2);
 
@@ -1108,7 +1109,7 @@ void auto_mode (){
       else read_set(stageTemp, StageAddr+2);
       stageTemp = stageTemp/16.0;
 
-      if (Resume){                 // on the start of resume gets saved time
+      if (resume){                 // on the start of resume gets saved time
         stageTime=EEPROM.read(84);
         resume = false;            // clears resume for next loop
       }else{
@@ -1154,7 +1155,7 @@ void auto_mode (){
 
     r_set(nmbrHops,70);
     
-    if (Resume){
+    if (resume){
       if(x!=9)stageTime = EEPROM.read(71);
       else stageTime= EEPROM.read(84);
     }else{
