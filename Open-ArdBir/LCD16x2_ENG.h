@@ -657,11 +657,11 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  #if UseLubuntu == true
+  #if StartSprite == true
     Presentazione(0,0);
   #endif
   
-  #if SerialMonitor == false
+  #if Sprite == true
     ArdBir1(4,0);
   #endif
 }

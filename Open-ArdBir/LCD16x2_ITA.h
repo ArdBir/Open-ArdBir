@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Uso ", "Kostante  P", "Kostante  I", "Kostante  D", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
+char *PIDName[]   ={"Uso ", "Costante kP", "Costante kI", "Costante kD", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
 char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Boil", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio"};
 
@@ -658,11 +658,11 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  #if UseLubuntu == true
+  #if StartSprite == true
     Presentazione(0,0);
   #endif
   
-  #if SerialMonitor == false
+  #if Sprite == true
     ArdBir1(4,0);
   #endif
 }

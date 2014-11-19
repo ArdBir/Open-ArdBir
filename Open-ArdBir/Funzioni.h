@@ -11,13 +11,10 @@ void r_set(byte& data, int addr){
 
 #if SerialMonitor == true  
   #if ReadWrite   == true  
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data byte("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" byte: "));
+    Serial.println (data); 
    #endif
  #endif
 }
@@ -27,13 +24,10 @@ void read_set(byte& data, int addr){
   
  #if SerialMonitor == true
   #if ReadWrite    == true
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data byte("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" byte: "));
+    Serial.println (data); 
   #endif
 #endif
 }
@@ -43,13 +37,10 @@ void read_set(float& data, int addr){
   
  #if SerialMonitor == true
   #if ReadWrite    == true
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data float("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" float: "));
+    Serial.println (data); 
   #endif
 #endif
 }
@@ -58,13 +49,10 @@ void read_set(double& data, int addr){
   
 #if SerialMonitor == true  
   #if ReadWrite   == true
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data double("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" double: "));
+    Serial.println (data);
   #endif
 #endif
 }
@@ -73,13 +61,10 @@ void read_set(int& data, int addr){
   
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data int("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" int: "));
+    Serial.println (data); 
   #endif
 #endif
 }
@@ -89,13 +74,10 @@ void read_set(unsigned int& data, int addr){
   
 #if SerialMonitor == true  
   #if ReadWrite   == true
-    Serial.print (F("READ--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("READ -> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data u_int("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" u_int: "));
+    Serial.println (data); 
   #endif
 #endif
 }
@@ -107,13 +89,10 @@ void save_set (int addr, int data){
   
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("WRITE--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("WRITE-> "));
     Serial.print (addr);
-    Serial.print (F(")"));
-    Serial.print (F(" Data word("));
-    Serial.print (data); 
-    Serial.println (F(")"));
+    Serial.print (F(" Data word: "));
+    Serial.println (data); 
   #endif
 #endif
 }  
@@ -122,13 +101,10 @@ void save_set (int addr, byte data){
 
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("WRITE--> "));
-    Serial.print (F("Addr("));
+    Serial.print (F("WRITE-> "));
     Serial.print (addr);
-    Serial.print (F(")"));  
-    Serial.print (F(" Data byte("));
-    Serial.print (data);
-    Serial.println (F(")"));
+    Serial.print (F(" byte: "));
+    Serial.println (data);
   #endif
 #endif
 }

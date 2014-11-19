@@ -32,7 +32,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.7.2b6"));
+  lcd.print(F("2.7.2b7"));
   lcd.write(7);
 }
 
@@ -725,11 +725,11 @@ void ledPumpStatus(boolean mpump){
 }
 
 void ArdBir(){
-  #if UseLubuntu == true
+  #if StartSprite == true
     Presentazione(2,1);
   #endif
   
-  #if SerialMonitor == false
+  #if Sprite == true
     ArdBir1(6,1);
   #endif
 }
