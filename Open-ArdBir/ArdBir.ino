@@ -1,4 +1,3 @@
-//
 // ==============================================
 // ATTENTION!!!!!
 // YOU MUST SET ONLY THIS SECTION
@@ -8,7 +7,7 @@
 // 1 Brauduino Original (Matho's PCB)
 // 2 Brauduino by DanielXan
 // 3 ArdBir by DanielXan
-#define PCBType 4
+#define PCBType 3
 
 // SET LCD and Language
 // LCD 16 or 20
@@ -19,7 +18,7 @@
 // 2 Italian
 // 3 Spanish
 // 4 Portuguese
-#define LCDLanguage 2
+#define LCDLanguage 1
 
 // ==============================================
 // END OF SETTING SECTION
@@ -107,11 +106,11 @@ Copyright (C) 2012  Stephen Mathison
 /// FOR DEBUGGING ///
 #define StartSprite   false
 #define Sprite        false
-#define Crediti       false
+#define Crediti       true
 
 #define SerialMonitor false
 #define ReadWrite     false
-#define UseLubuntu    false
+#define TestMemoria   false
 /// ------------- ///
 
 
@@ -212,13 +211,13 @@ float Temp_Now;
 
 
 byte x;
-byte ScaleTemp       = EEPROM.read(15);
-byte SensorType      = EEPROM.read(16);
-//byte setPumpBoil     = EEPROM.read(22);
-byte UseGAS          = EEPROM.read(11);
-//byte Isteresi        = EEPROM.read(12);
+byte ScaleTemp          = EEPROM.read(15);
+byte SensorType         = EEPROM.read(16);
+byte UseGAS             = EEPROM.read(11);
+//byte Isteresi           = EEPROM.read(12);
 
 //byte SkipPumpBeforeMash = EEPROM.read(21);
+//byte setPumpBoil        = EEPROM.read(22);
 //byte SkipAddMalt        = EEPROM.read(26);
 //byte SkipRemoveMalt     = EEPROM.read(27);
 //byte SkipIodineTest     = EEPROM.read(28);
@@ -260,14 +259,6 @@ byte RevPumpONOFF[8] = {B11111, B10001, B10101, B10001, B10111, B10111, B10111, 
 // ****************************************
 // ******** start of  the funtions ******** 
 // ****************************************
-
-/*
-int freeRam() {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
-*/
 
 void Gradi(){
   if (ScaleTemp==0){
@@ -1224,9 +1215,11 @@ void set_PID (){
   for(byte i = InizioCiclo; i < 8; i++){
     a = i*3;
     
-    if (i<5||i==6) read_set(pidSet,setAddr);
-    if (i==7)      r_set   (Isteresi,12);
-    else           r_set   (boil_output,setAddr);
+    if (i < 5 || i == 6) read_set(pidSet,setAddr);
+    else{
+      if (i == 7)        r_set   (Isteresi,12);
+      else               r_set   (boil_output,setAddr);
+    }
     
     if (i==7 && UseGAS==0)pidLoop=false;
     else pidLoop= true;
@@ -1248,6 +1241,7 @@ void set_PID (){
           Set(pidSet, p_PID[a], p_PID[a+1], p_PID[a+2], Timer, Verso);
         }
       }
+
       quit_mode(pidLoop);
       if (!pidLoop)i=8;
 
@@ -1262,7 +1256,6 @@ void set_PID (){
    }  
    if (i<5 || i==6)setAddr+=2;
    else setAddr+=1;
-   //a+=3;
  }Clear_2_3();
 }
 
@@ -1273,38 +1266,38 @@ void set_Unit (){
 
   boolean unitLoop = false;
 
-  byte Verso=0;
-  unsigned long Timer=0;
+  byte Verso = 0;
+  unsigned long Timer = 0;
   
   byte setAddr = 15;
 
-  for(byte i=0;i<13;i++){
-    a = i*3;
+  for(byte i = 0; i < 13; i++){
+    a = i * 3;
      
     // SALTA BLOCCHI POMPA SE SENSORE ESTERNO  
-    if((i==5 || i==6) && SensorType == 1)                 unitLoop = false;
-    else                                                  unitLoop = true;
+    if((i == 5 || i == 6) && SensorType == 1) unitLoop = false;
+    else                                      unitLoop = true;
     
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
-    if(i==12 && EEPROM.read(28) == 1)                     unitLoop = false;
-    else                                                  unitLoop = true;
+    if(i == 12 && EEPROM.read(28) == 1)       unitLoop = false;
+    else                                      unitLoop = true;
 
 
-    if(i!=2 && i!=7)      r_set(unitSet,setAddr);
+    if(i != 2 && i != 7)                      r_set(unitSet,setAddr);
     else{
-      if(i==2){
-        if (ScaleTemp==0) r_set(unitSet,17);
-        else              r_set(unitSet,18);
+      if(i == 2){
+        if (ScaleTemp == 0)                   r_set(unitSet,17);
+        else                                  r_set(unitSet,18);
       }else{
-        if (ScaleTemp==0) r_set(unitSet,23);
-        else              r_set(unitSet,24);
+        if (ScaleTemp == 0)                   r_set(unitSet,23);
+        else                                  r_set(unitSet,24);
       }
     }
     
     while (unitLoop){
       Menu_3_2_x(i);  
       
-      if (i==0){
+      if (i == 0){
         ScaleTemp=unitSet;
         Gradi();
       }
@@ -1313,14 +1306,14 @@ void set_Unit (){
   
       LeggiPulsante(Verso, Timer);
       
-      if(i!=2 && i!=7)      Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);           
+      if(i != 2 && i != 7)                    Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);           
       else{
-        if(i==2){
-          if(ScaleTemp==0)  Set(unitSet, 105,  90, 1, Timer, Verso);
-          else              Set(unitSet, 221, 194, 1, Timer, Verso);
+        if(i == 2){
+          if(ScaleTemp == 0)                  Set(unitSet, 105,  90, 1, Timer, Verso);
+          else                                Set(unitSet, 221, 194, 1, Timer, Verso);
         }else{
-          if(ScaleTemp==0)  Set(unitSet,105, 80, 1, Timer, Verso);
-          else              Set(unitSet,221, 176, 1, Timer, Verso);
+          if(ScaleTemp == 0)                  Set(unitSet,105, 80, 1, Timer, Verso);
+          else                                Set(unitSet,221, 176, 1, Timer, Verso);
         }
       }
       
@@ -1328,15 +1321,17 @@ void set_Unit (){
       if (!unitLoop)i=13;
 
       if(btn_Press(Button_enter,50)){
-        if(i!=2){
+        
+        if(i != 2 && i != 7){
+
           save_set(setAddr,lowByte(unitSet));
 
-          if (i==0){ 
-            ScaleTemp=unitSet;
+          if (i == 0){ 
+            ScaleTemp = unitSet;
             Gradi();
           }
 
-          if (i==1) SensorType = unitSet;    
+          if (i == 1) SensorType = unitSet;    
 
           if (i == 4 && SensorType == 1){ 
             //Il SENSORE E' ESTERNO
@@ -1355,20 +1350,9 @@ void set_Unit (){
 
             // Ciclo e setAddr vengono allineati al PID Pipe
             i = 8;
-            setAddr=25;
+            setAddr = 25;
           }
 
-          if(i==7){ //FERMO POMPA
-            
-            if (ScaleTemp==0){// °C
-              save_set(23,lowByte(unitSet));
-              save_set(24,lowByte((byte)((unitSet*1.8)+32)));      
-            }else{// °F
-              save_set(23,lowByte((byte)((unitSet-32)/1.8)));
-              save_set(24,lowByte(unitSet));  
-            }  
-            setAddr=24;
-          }
 
           if(i == 6){
             if(EEPROM.read(22) == 0){ // Controllo sul fermo Pompa
@@ -1378,23 +1362,23 @@ void set_Unit (){
 
               // Ciclo e setAddr vengono allineati al FermoPompa
               i = 7;
-              setAddr=24;
+              setAddr = 24;
             }
           }
 
         }else{
-          if (i == 2){
-            if (ScaleTemp == 0){
+          // i=7  FERMO POMPA  
+          if (ScaleTemp == 0){
               save_set(setAddr, lowByte(unitSet));
               save_set(setAddr+1, lowByte((byte)((unitSet * 1.8) + 32)));
-              boilStageTemp = unitSet;
             }else{
               save_set(setAddr, lowByte((byte)((unitSet-32)/1.8)));
               save_set(setAddr+1, lowByte(unitSet));
-              boilStageTemp = unitSet;
             }
-          }
-          setAddr = 18;
+            
+          if (i == 2) boilStageTemp = unitSet;
+          
+          setAddr+=1;
         }
         unitLoop = false;
       }    
@@ -1950,11 +1934,13 @@ void set_hops (){
 }
 
 
-/*
+
 void TestRam(){  
+#if TestMemoria == true
   Menu_4_1();
+#endif
 }
-*/
+
 
 void setup_mode (){
   boolean setupLoop = true;
@@ -2016,8 +2002,6 @@ void setup(){
   #endif
   
   // SETTING LCD*****
-  // Select your LCD
-
   #if LCDType == 16
     lcd.begin(16,2);
   #elif LCDType == 20
@@ -2048,9 +2032,7 @@ void setup(){
   }
   
 //  Sprite screen
-  #if Sprite == true
-    ArdBir();
-  #endif
+  ArdBir();
   
   Gradi();
   // write custom symbol to LCD
@@ -2099,13 +2081,15 @@ void loop(){
     setup_mode();
     mainMenu = 0;    
     break;
-/*
+
     case (4):
-    Menu_4();
-    TestRam();
-    mainMenu = 0;    
-    break;
-*/
+    #if TestMemoria == true
+      Menu_4();
+      TestRam();
+      mainMenu = 0;    
+      break;
+    #endif
+
 
   default: 
     DelayedMode=false;
@@ -2120,7 +2104,9 @@ void loop(){
     if (btn_Press(Button_dn,500))mainMenu = 1;
     if (btn_Press(Button_start,500))mainMenu = 2;
     if (btn_Press(Button_enter,500))mainMenu = 3;
-    //if (btn_Press(Button_up,2500))mainMenu = 4;
+    #if TestMemoria == true
+      if (btn_Press(Button_up,2500))mainMenu = 4;
+    #endif  
     break;    
   }
 }

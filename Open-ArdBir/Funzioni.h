@@ -1,3 +1,11 @@
+int freeRam() {
+  #if TestMemoria == true
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+  #endif
+}
+
 void Buzzer(byte NumBeep, int Period){
   for (byte i=0; i < NumBeep; i++){
     digitalWrite (Buzz, HIGH);
@@ -11,7 +19,7 @@ void r_set(byte& data, int addr){
 
 #if SerialMonitor == true  
   #if ReadWrite   == true  
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" byte: "));
     Serial.println (data); 
@@ -24,7 +32,7 @@ void read_set(byte& data, int addr){
   
  #if SerialMonitor == true
   #if ReadWrite    == true
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" byte: "));
     Serial.println (data); 
@@ -37,7 +45,7 @@ void read_set(float& data, int addr){
   
  #if SerialMonitor == true
   #if ReadWrite    == true
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" float: "));
     Serial.println (data); 
@@ -49,7 +57,7 @@ void read_set(double& data, int addr){
   
 #if SerialMonitor == true  
   #if ReadWrite   == true
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" double: "));
     Serial.println (data);
@@ -61,7 +69,7 @@ void read_set(int& data, int addr){
   
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" int: "));
     Serial.println (data); 
@@ -74,7 +82,7 @@ void read_set(unsigned int& data, int addr){
   
 #if SerialMonitor == true  
   #if ReadWrite   == true
-    Serial.print (F("READ -> "));
+    Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" u_int: "));
     Serial.println (data); 
@@ -89,9 +97,9 @@ void save_set (int addr, int data){
   
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("WRITE-> "));
+    Serial.print (F("W-> "));
     Serial.print (addr);
-    Serial.print (F(" Data word: "));
+    Serial.print (F(" Word: "));
     Serial.println (data); 
   #endif
 #endif
@@ -101,7 +109,7 @@ void save_set (int addr, byte data){
 
 #if SerialMonitor == true
   #if ReadWrite   == true
-    Serial.print (F("WRITE-> "));
+    Serial.print (F("W-> "));
     Serial.print (addr);
     Serial.print (F(" byte: "));
     Serial.println (data);

@@ -15,7 +15,7 @@ void scriviSprite(byte posX, byte posY){
 }  
 
 void Presentazione(byte posX, byte posY){   
-  /*
+  
   // Arduino Symbol
   byte Arduino1[8] = {B00000, B00001, B00011, B00111, B01111, B01100, B11011, B10111};
   byte Arduino2[8] = {B00000, B11111, B11111, B11111, B11111, B01110, B10101, B11011};
@@ -23,7 +23,7 @@ void Presentazione(byte posX, byte posY){
   byte Arduino4[8] = {B10111, B11011, B01100, B01111, B00111, B00011, B00001, B00000};
   byte Arduino5[8] = {B11011, B10101, B01110, B11111, B11111, B11111, B11111, B00000};
   byte Arduino6[8] = {B11101, B11011, B00110, B11110, B11100, B11000, B10000, B00000};
-  */
+  
   
   
   // AHB symbol
@@ -44,7 +44,7 @@ void Presentazione(byte posX, byte posY){
   byte AreaBirra6[8] = {B11111, B11111, B11111, B11111, B11111, B11111, B11110, B00000};
 
 
-  /*
+  
   lcd.createChar(1, Arduino1);
   lcd.createChar(2, Arduino2);
   lcd.createChar(3, Arduino3);
@@ -54,12 +54,15 @@ void Presentazione(byte posX, byte posY){
     
   scriviSprite(posX, posY);
 
+  display_lcd(posX+5,posY+0,"ARDUINO",0);
+  display_lcd(posX+5,posY+1,"Open Source",2000);
+  
   lcd.setCursor(posX+5,posY+0);
   lcd.print(F("ARDUINO"));
   lcd.setCursor(posX+5,posY+1);
   lcd.print(F("Open Source"));
   delay(2000);
-  */
+  
 
   
   lcd.createChar(1, AHB1);
@@ -74,11 +77,6 @@ void Presentazione(byte posX, byte posY){
   display_lcd(posX+5,posY+0,"AUSSIE",0);
   display_lcd(posX+5,posY+1,"Home Brewer",2000);
   
-//  lcd.setCursor(posX+5,posY+0);
-//  lcd.print(F("AUSSIE"));
-//  lcd.setCursor(posX+5,posY+1);
-//  lcd.print(F("Home Brewer"));
-//  delay(2000);
   
   
   
@@ -94,11 +92,6 @@ void Presentazione(byte posX, byte posY){
   display_lcd(posX+5,posY+0,"AREA BIRRA",0);
   display_lcd(posX+5,posY+1,"Forum",2000);
   
-//  lcd.setCursor(posX+5,posY+0);
-//  lcd.print(F("AREA BIRRA"));
-//  lcd.setCursor(posX+5,posY+1);
-//  lcd.print(F("Forum"));
-//  delay(2000);
 }
 
 

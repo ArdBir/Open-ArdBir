@@ -2,12 +2,9 @@ char *PIDName[]   ={"Uso ", "Costante kP", "Costante kI", "Costante kD", "Finest
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
 char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Boil", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio"};
 
-
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B00000, B10000, B11111, B10000, B00000, B11111, B00000, B00000};  // [7] ITA symbol
-
-//byte Ciclo=0;
 
 void LCDSpace (byte Num){
   for(byte i=0; i<Num; i++){
@@ -21,12 +18,9 @@ void LCDClear(byte Riga){
 }
 
 void PrintTemp(float Temp){
-  //LCDSpace(1);
   if (Temp<10.0)LCDSpace(1);
-  //if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
   if (Temp>=100.0)lcd.print(Temp,1);
   else lcd.print(Temp);
-  //Gradi();
   lcd.write((byte)0);
 }
 
@@ -70,9 +64,6 @@ void LCD_Default(float Temp){
   Version(7,1);
 }
 
-
-
-
 void Menu_1(){
   lcd.clear();  
   lcd.setCursor(0,0);
@@ -98,7 +89,6 @@ void Manuale(float Set, float Temp, float TempBoil){
 
 void Menu_2(){
   lcd.clear(); 
-
   lcd.setCursor(0,0);
   lcd.print(F("MODO  AUTOMATICO"));
 }
@@ -169,11 +159,8 @@ void HopAdd(byte HopAdd){
   LCDSpace(6); 
 }
 
-
-
 void Menu_3(){
   lcd.clear();
-
   lcd.setCursor(0,0);
   lcd.print(F(" CONFIGURAZIONE "));
   delay(750);
@@ -187,7 +174,6 @@ void Menu_3_1_x(byte i){
   lcd.setCursor(0,1);
   lcd.print(PIDName[i]);
 }  
-
 void PidSet(int pidSet, byte i){
   LCDSpace(1);
   
@@ -229,7 +215,6 @@ void Menu_3_2_x(byte i){
   lcd.setCursor(0,1);
   lcd.print(unitName[i]);
 }
-
 void UnitSet(byte unitSet, byte i){
   
   switch(i){
@@ -281,7 +266,6 @@ void UnitSet(byte unitSet, byte i){
       lcd.setCursor(12,1);
       if (unitSet<100)LCDSpace(1);
       lcd.print(unitSet);
-      //Gradi();
       lcd.write((byte)0);
       break;
       
@@ -290,7 +274,7 @@ void UnitSet(byte unitSet, byte i){
       if (unitSet==0)lcd.print(F("Passivo"));
       else lcd.print(F(" Attivo"));
       break;
-    
+
     default:
       lcd.setCursor(14,1);
       if (unitSet==0)lcd.print(F("NO"));
@@ -311,12 +295,10 @@ void Menu_3_3(){
   lcd.setCursor(0,0);
   lcd.print(F("SETT.AUTOMAZIONE"));
 }     
-
 void Menu_3_3_x(byte Stage){
   lcd.setCursor(0,1);
   lcd.print(stageName[Stage]);
 }
-
 void StageSet(float Temp){
   lcd.setCursor(10,1);
   PrintTemp(Temp);
@@ -362,8 +344,6 @@ void TimeHops(int Time){
   lcd.print(Time);   
   lcd.print(F("'"));
 }
-
-
 
 void Menu_3_4(){
   lcd.setCursor(0,0);
@@ -502,7 +482,6 @@ void MemoriaPiena(){
   delay(2500);
 }
 
-
 void Menu_3_5(){
   lcd.setCursor(0,0);
   lcd.print(F(" RICONOSCIMENTI "));
@@ -537,12 +516,11 @@ void Credits(){
   display_lcd(2,0,"Traduzioni:",750);
   display_lcd(2,1," A. Moiseyev ",999);//Russo
   display_lcd(2,1," A. Mondejar ",999);//Spagnolo
-  display_lcd(2,1," C.M. Macedo ",999);//Portoghese
+  display_lcd(2,1," C.M. Macedo ",999);//Portoghese 20x4
+  display_lcd(2,1,"F.A. Oliveira",999);//Portugues 16x2
   
   lcd.clear();
 }
-
-
 
 /*
 void Menu_4(){
@@ -614,7 +592,6 @@ void Iodine(float Temp, int Time){
   
   lcd.setCursor(1,1);
   lcd.print(F(" IODIO"));
-
   lcd.setCursor(7,1);
   lcd.print(F(" OK  -- "));
 }
