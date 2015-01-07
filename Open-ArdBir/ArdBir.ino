@@ -18,7 +18,7 @@
 // 2 Italian
 // 3 Spanish
 // 4 Portuguese
-#define LCDLanguage 1
+#define LCDLanguage 2
 
 // ==============================================
 // END OF SETTING SECTION
@@ -56,14 +56,25 @@ Copyright (C) 2012  Stephen Mathison
  - Added Alert before Mash In
  - Jump Step whit Button Press in Automatic Mode
  
+ Added more configuration on PID Menu
+ - Added Use Gas section
+ - Set Histeresy for Gas Use
+ - Set Calibration Temp
+ 
  - Added Second Menu Configuration
    - Set Scale Temp (°C-°F)
-   - Set Temp of Boil
-   - Set Set Time Pump Cycle and Time Rest
    - Set Location of Temp Sensor
+   - Set Temp of Boil (°C-°F)
+   - Set Set Time Pump Cycle and Time Rest
+   - Set Pump ON-OFF before Mash In
+   - Set Pump ON-OFF during Mash
+   - Set Pump ON-OFF at Mash Out
    - Set Pump ON-OFF at Boil 
-   - Set Temp Pump Stop
-   - Set Calibration Temp
+   - Set Temp Pump Stop (°C-°F)
+   - Set Skip Pause at Add Malt
+   - Set Skip Pause at Remove Malt
+   - Set Skip Pause at Iodine Test
+   - Set Time Max Iodine Test 
  
  - Reorganized Automation
    - Removed Number of Stages Setting
@@ -89,6 +100,99 @@ Copyright (C) 2012  Stephen Mathison
  
  compiled on Arduino V1.0.6
  
+EEPROM MAP
+  PID MENU
+      0 -   1 kP
+      2 -   3 kI
+      4 -   5 kD
+      6 -   7 WindowSize
+      8       Boil Heat %
+      9 -  10 Offset
+     11       Use Gas
+     12 -  13 Hysteresi 
+     14 -  15 [ space ]
+  
+  UNIT MENU  
+     16       Scale Temp
+     17       Sensor Type
+     18       Temp Boil °C
+     19       Temp Boil °F
+     20       Time Pump Cycle
+     21       Time Pump Rest
+     22       Pump PreMash
+     23       Pump on Mash
+     24       Pumo on MashOut
+     25       Pump on Boil
+     26       Temp Pump Rest °C
+     27       Temp Pump Rest °F
+     28       PID Pipe
+     29       Skip Add Malt
+     30       Skip Remove Malt
+     31       Skip Iodine Test
+     32       Iodine Time
+     33 -  34 [ space ]
+     
+  RUN
+    HTemp °C
+    LTemp °C
+    HTemp °F
+    LTemp °F
+    Time
+    35 -  39 MashIn
+    40 -  44 Fitasi
+    45 -  49 Glucanasi
+    50 -  54 Proteasi
+    55 -  59 B-Amilasi
+    60 -  64 A-Amilasi 1
+    65 -  69 A-Amilasi 2
+    70 -  74 Mash Out
+    
+    75       Numbers of Hops
+    76       Stage Time Boil  1
+    77       Stage Time Boil  2
+    78       Stage Time Boil  3
+    79       Stage Time Boil  4
+    80       Stage Time Boil  5
+    81       Stage Time Boil  6
+    82       Stage Time Boil  7
+    83       Stage Time Boil  8
+    84       Stage Time Boil  9
+    85       Stage Time Boil 10
+    
+    86       FLAG Automode Started
+
+  RESUME
+    87       HANDLE Stage
+    88       Hop Add
+    89       FLAG Iodine Test (not in use)
+    
+  RECIPE
+    90 -  99 Index 1-10
+   100 - 151 Recipe Data  1
+   
+   152 - 203 Recipe Data  2
+   204 - 255 Recipe Data  3
+   256 - 307 Recipe Data  4
+   308 - 359 Recipe Data  5
+   360 - 411 Recipe Data  6
+   412 - 463 Recipe Data  7
+   464 - 515 Recipe Data  8
+   516 - 567 Recipe Data  9
+   568 - 619 Recipe Data 10
+   
+   620 - 629 Recipe Name  1
+   630 - 639 Recipe Name  2
+   640 - 649 Recipe Name  3
+   650 - 659 Recipe Name  4
+   660 - 669 Recipe Name  5
+   670 - 679 Recipe Name  6
+   680 - 689 Recipe Name  7
+   690 - 699 Recipe Name  8
+   700 - 709 Recipe Name  9
+   710 - 719 Recipe Name 10
+   
+   
+   
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -101,6 +205,11 @@ Copyright (C) 2012  Stephen Mathison
  
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+
+
+
+
+
 
 
 /// FOR DEBUGGING ///
@@ -178,6 +287,8 @@ Copyright (C) 2012  Stephen Mathison
 #endif
 
 
+
+
 // global variables
 unsigned long TimeLeft;
 unsigned long TimeSpent;
@@ -211,16 +322,16 @@ float Temp_Now;
 
 
 byte x;
-byte ScaleTemp          = EEPROM.read(15);
-byte SensorType         = EEPROM.read(16);
+byte ScaleTemp          = EEPROM.read(16);
+byte SensorType         = EEPROM.read(17);
 byte UseGAS             = EEPROM.read(11);
 //byte Isteresi           = EEPROM.read(12);
 
-//byte SkipPumpBeforeMash = EEPROM.read(21);
-//byte setPumpBoil        = EEPROM.read(22);
-//byte SkipAddMalt        = EEPROM.read(26);
-//byte SkipRemoveMalt     = EEPROM.read(27);
-//byte SkipIodineTest     = EEPROM.read(28);
+//byte SkipPumpBeforeMash = EEPROM.read(22);
+//byte setPumpBoil        = EEPROM.read(25);
+//byte SkipAddMalt        = EEPROM.read(29);
+//byte SkipRemoveMalt     = EEPROM.read(30);
+//byte SkipIodineTest     = EEPROM.read(31);
 
 
 
@@ -243,31 +354,29 @@ float p_F[]    ={ 167.00,68.00,0.25,  131.00,77.00,0.25,  122.00,95.00,0.25,  14
 
 //int   p_PID[]  ={ 100, -100, 1,    400, -200, 1,    100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1 }; 
 int   p_PID[]  ={   1, 0, 1,   100, -100, 1,   400, -200, 1,   100, -100, 1,   7500, 1000, 250,   100, 0, 1,   50, -50, 1,   100, 10, 1 }; 
-byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   0, 0, 0,   15, 5, 1,   5, 0, 1,   1, 0, 1,   1, 0, 1,    0, 0, 0,    1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,    90, 0, 1 }; 
-//                   Scala °   Sensore      Boil     Ciclo Pmp  Pausa Pmp   PreMash    Pmp Boil     Fermo      PID Pipe    Sk.Add   Sk.Remove   Iodine      TimeIodio
+byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   0, 0, 0,   15, 5, 1,   5, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,  1, 0, 1,    0, 0, 0,    1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,    90, 0, 1 }; 
+//                   Scala °   Sensore      Boil     Ciclo Pmp  Pausa Pmp   PreMash    on Mash    MashOut   on Boil      Fermo      PID Pipe    Sk.Add   Sk.Remove   Iodine      TimeIodio
 
 
 //Specify the links and initial tuning parameters
 //PID myPID(&Input, &Output, &Setpoint, 95, 10, 0, DIRECT);
 PID myPID(&Input, &Output, &Setpoint, 95, 40, 0, DIRECT);
 
+
+byte degC[8]         = {B01000, B10100, B01000, B00111, B01000, B01000, B01000, B00111};  // [0] degree c sybmol 
+byte degF[8]         = {B01000, B10100, B01000, B00111, B00100, B00110, B00100, B00100};  // [0] degree f symbol
+
 byte SP_Symbol[8]    = {B11100, B10000, B11100, B00111, B11101, B00111, B00100, B00100};  // [2] SP Symbol
 byte PumpONOFF[8]    = {B00000, B01110, B01010, B01110, B01000, B01000, B01000, B00000};  // [3] Pump Symbol 
 byte RevPumpONOFF[8] = {B11111, B10001, B10101, B10001, B10111, B10111, B10111, B11111};  // [4] Reverse PUMP Symbol
-
 
 // ****************************************
 // ******** start of  the funtions ******** 
 // ****************************************
 
 void Gradi(){
-  if (ScaleTemp==0){
-    byte degC[8] = {B01000, B10100, B01000, B00111, B01000, B01000, B01000, B00111};  // [1] degree c sybmol 
-    lcd.createChar(0, degC);// Celsius  
-  }else{
-    byte degF[8] = {B01000, B10100, B01000, B00111, B00100, B00110, B00100, B00100};  // [1] degree f symbol
-    lcd.createChar(0, degF);// Faherenheit
-  }
+   if (ScaleTemp == 0) lcd.createChar(0, degC);// Celsius  
+   else                lcd.createChar(0, degF);// Faherenheit
 }
 
 void pauseStage(){
@@ -519,13 +628,21 @@ void pump_prime(){
 }
 
 void pump_rest (byte stage){
-  byte TimePumpCycle = EEPROM.read(19);
-  byte TimePumpRest  = EEPROM.read(20);
+  byte TimePumpCycle = EEPROM.read(20);
+  byte TimePumpRest  = EEPROM.read(21);
   byte TempPumpRest;
   
-  if (stage == 0 && EEPROM.read(21) == 1) return;
   
-  //setPumpBoil = EEPROM.read(22);
+  mpump = true;
+  if (stage == 0 && EEPROM.read(22) == 1 || stage  > 0 && stage <  7 && EEPROM.read(23) == 1 || stage == 7 && EEPROM.read(24) == 1){ // Indirizzi OK
+    pump_off(mpump);
+    return;
+  }
+  mpump = false;
+  
+  
+  
+  //setPumpBoil = EEPROM.read(25);
   
   //Condizioni per il ripristino a POMPA ON
   float DeltaTemp;//Stabilisce il Delta in base al sensore
@@ -568,7 +685,7 @@ void pump_rest (byte stage){
     if (stage==8){
       //Siamo in fase di BOIL
       //if (setPumpBoil==0){ //POMPA OFF
-      if (EEPROM.read(22) == 0){
+      if (EEPROM.read(25) == 0){
         pump_off(mpump); // Turn OFF the pump in BOIL stage
       }else{
         pump_on();
@@ -641,7 +758,7 @@ void Timing(byte stage, boolean Test, byte Type){
       if(stage==0)pumpTime = 0;
       else pumpTime++;
       stageTime--;
-      if(Type==0)EEPROM.write(84,lowByte(stageTime));// saves stage time incase of interuption
+      if(Type==0)EEPROM.write(87,lowByte(stageTime));// saves stage time incase of interuption
     }
   }
 }
@@ -661,7 +778,7 @@ void hop_add (){
       delay(2500);
       Buzzer(1,750);
       hopAdd++;
-      EEPROM.write(85,hopAdd);
+      EEPROM.write(88,hopAdd);
       blhpAddr++;
       r_set(hopTime,blhpAddr);
     }
@@ -691,7 +808,6 @@ void stage_loop (){
     pauseStage();
       
     LeggiPulsante(Verso, Timer);
-
     
     if (pumpRest){
       PausaPompa(Temp_Now, TimeLeft);
@@ -703,7 +819,7 @@ void stage_loop (){
       if (TimeLeft == 0) Buzzer(1, 1000); 
       
       if ((x-1)==7 && IodineTest==false ) {
-        if (EEPROM.read(28) == 0)Iodine_Test();
+        if (EEPROM.read(31) == 0)Iodine_Test();
       }
 
       if ((x-1)==8 && tempBoilReached && Temp_Now >= boilStageTemp) {  //if temp reached during boil
@@ -725,8 +841,8 @@ void stage_loop (){
         }
         
         if ((x-1)==8){
-          if (ScaleTemp==0)Set(stageTemp,110,EEPROM.read(17),0.25,Timer,Verso);
-          else Set(stageTemp,230,EEPROM.read(18),0.25,Timer,Verso);
+          if (ScaleTemp==0)Set(stageTemp,110,EEPROM.read(18),0.25,Timer,Verso);
+          else Set(stageTemp,230,EEPROM.read(19),0.25,Timer,Verso);
           NoBoil();
           tempBoilReached=false;
         }else{
@@ -789,7 +905,7 @@ void add_malt (){
 }
 
 void Iodine_Test (){
-  byte IodineTime=EEPROM.read(29);
+  byte IodineTime=EEPROM.read(32);
   byte TempoRimasto=stageTime;
   
   boolean Test = true;
@@ -836,7 +952,7 @@ void Iodine_Test (){
 void remove_malt (){
   boolean malt;
   x = 8;               // used add to stage count on the final stage for the resume 
-  EEPROM.write(83,lowByte(x)); // stores the stage number for the resume
+  EEPROM.write(86,lowByte(x)); // stores the stage number for the resume
   pump_off(mpump);
 
   //***** Reset della pompa al cambio step
@@ -846,12 +962,12 @@ void remove_malt (){
   RemoveMalt();
 
   // Pausa senza PID (gli enzimi ormai sono distrutti)
-  if (EEPROM.read(25)==1 && SensorType==0)wait_for_confirm(malt,1,2,1);
+  if (EEPROM.read(28) == 1 && SensorType == 0)wait_for_confirm(malt,1,2,1);
   else wait_for_confirm(malt,2,2,1);
   
-  if (malt==false){
-    stageTime = EEPROM.read(71);
-    EEPROM.write(84,lowByte(stageTime));
+  if (malt == false){
+    stageTime = EEPROM.read(74);
+    EEPROM.write(87,lowByte(stageTime));
     LCD_Default(Temp_Now);
     delay(50);
     mainMenu=0;
@@ -1056,12 +1172,12 @@ void auto_mode (){
   
 
 //  check_for_resume();
-  if(EEPROM.read(82)){ // FLAG Automode Started
+  if(EEPROM.read(85)){ // FLAG Automode Started
     Resume();
 
     wait_for_confirm(resume,2,2,2);
     if(resume==true){
-      StageAddr = (EEPROM.read(83)*5)+30;
+      StageAddr = (EEPROM.read(86)*5)+30;
       r_set(x,83);
       b_Enter = true;
     }
@@ -1077,7 +1193,7 @@ void auto_mode (){
 
     if(!(b_Enter))return;
     hopAdd =0; //reset hop count at teh start of the processes
-    EEPROM.write(85,hopAdd); 
+    EEPROM.write(88,hopAdd); 
     pumpTime =0;
     pumpRest =false;
     pump_prime();
@@ -1087,9 +1203,9 @@ void auto_mode (){
   if (DelayedMode)WaitStart();
   
   if (b_Enter){     // mash steps
-    EEPROM.write(82,1);// auto mode started
+    EEPROM.write(85,1);// auto mode started
     for (byte i = x; i < 8; i++){
-      EEPROM.write(83, lowByte(x)); // stores the stage number for the resume
+      EEPROM.write(86, lowByte(x)); // stores the stage number for the resume
       x++;                         // used to count the stages for the resume 
       tempReached = false;
 
@@ -1103,11 +1219,11 @@ void auto_mode (){
       stageTemp = stageTemp/16.0;
 
       if (resume){                 // on the start of resume gets saved time
-        stageTime=EEPROM.read(84);
+        stageTime=EEPROM.read(87);
         resume = false;            // clears resume for next loop
       }else{
         stageTime = EEPROM.read(StageAddr+4); // gets stage time
-        EEPROM.write(84,lowByte(stageTime));// saves the intial stage time
+        EEPROM.write(87,lowByte(stageTime));// saves the intial stage time
        
         if(x==7 && stageTime==0)IodineTest=true; 
       } 
@@ -1122,14 +1238,14 @@ void auto_mode (){
 //      INSERIMENTO PAUSA AGGIUNTIVA        
         Temperatura_Raggiunta();
                 
-        if (EEPROM.read(26) == 0) add_malt();
+        if (EEPROM.read(29) == 0) add_malt();
 
         if (!(b_Enter))break;
 
         Menu_2();
       }
       if(i==(7)&& b_Enter){   // at the end of the last step pauses to remove the malt pipe before the boil
-        if (EEPROM.read(27) == 0) remove_malt();
+        if (EEPROM.read(30) == 0) remove_malt();
         if (!(b_Enter))break;
 
         Menu_2();
@@ -1149,11 +1265,11 @@ void auto_mode (){
     r_set(nmbrHops,70);
     
     if (resume){
-      if(x!=9)stageTime = EEPROM.read(71);
-      else stageTime= EEPROM.read(84);
+      if(x!=9)stageTime = EEPROM.read(74);
+      else stageTime= EEPROM.read(87);
     }else{
-      stageTime = EEPROM.read(71);
-      EEPROM.write(84,lowByte(stageTime));
+      stageTime = EEPROM.read(74);
+      EEPROM.write(87,lowByte(stageTime));
     }
     r_set(hopAdd,85);
     blhpAddr = hopAdd+72;
@@ -1167,8 +1283,8 @@ void auto_mode (){
     if(b_Enter){    // finishes the brewing process
       End();
 
-      EEPROM.write(82,0); // sets auto start byte to 0 for resume
-      EEPROM.write(85,0); // sets hop count to 0
+      EEPROM.write(85,0); // sets auto start byte to 0 for resume
+      EEPROM.write(88,0); // sets hop count to 0
       
       mainMenu=0;
       b_Enter =false;
@@ -1269,9 +1385,10 @@ void set_Unit (){
   byte Verso = 0;
   unsigned long Timer = 0;
   
-  byte setAddr = 15;
+  byte setAddr = 16;
 
-  for(byte i = 0; i < 13; i++){
+  //for(byte i = 0; i < 13; i++){
+  for(byte i = 0; i < 15; i++){
     a = i * 3;
      
     // SALTA BLOCCHI POMPA SE SENSORE ESTERNO  
@@ -1279,7 +1396,7 @@ void set_Unit (){
     else                                      unitLoop = true;
     
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
-    if(i == 12 && EEPROM.read(28) == 1)       unitLoop = false;
+    if(i == 12 && EEPROM.read(31) == 1)       unitLoop = false;
     else                                      unitLoop = true;
 
 
@@ -1318,7 +1435,8 @@ void set_Unit (){
       }
       
       quit_mode(unitLoop);
-      if (!unitLoop)i=13;
+      //if (!unitLoop)i=13;
+      if (!unitLoop)i=15;
 
       if(btn_Press(Button_enter,50)){
         
@@ -1335,34 +1453,36 @@ void set_Unit (){
 
           if (i == 4 && SensorType == 1){ 
             //Il SENSORE E' ESTERNO
-            save_set(21,lowByte(1)); //La pompa PreMash deve essere OBBLIGATORIAMENTE ON
-            save_set(22,lowByte(1)); //La pompa BOIL    deve essere OBBLIGATORIAMENTE ON
+            save_set(22,lowByte(1)); //La pompa PreMash deve essere OBBLIGATORIAMENTE ON
+            save_set(23,lowByte(1)); //La pompa on Mash deve essere OBBLIGATORIAMENTE ON
+            save_set(24,lowByte(1)); //La pompa MashOut deve essere OBBLIGATORIAMENTE ON
+            save_set(25,lowByte(1)); //La pompa BOIL    deve essere OBBLIGATORIAMENTE ON
             //SkipPumpBeforeMash = 0;
             //setPumpBoil = 1;
 
             //Il Pump Rest viene settato a 0
             // °C = 105; //°F = 221
-            save_set(23, lowByte(110));
-            save_set(24, lowByte(230));
+            save_set(26, lowByte(110));
+            save_set(27, lowByte(230));
 
             // Il PID Pipe è ON
-            save_set(25,lowByte(1));
+            save_set(28,lowByte(1));
 
             // Ciclo e setAddr vengono allineati al PID Pipe
             i = 8;
-            setAddr = 25;
+            setAddr = 28;
           }
 
 
           if(i == 6){
-            if(EEPROM.read(22) == 0){ // Controllo sul fermo Pompa
+            if(EEPROM.read(25) == 0){ // Controllo sul fermo Pompa
               //°C = 80; //°F = 176
-              save_set(23, lowByte(80));
-              save_set(24, lowByte(176));
+              save_set(26, lowByte(80));
+              save_set(27, lowByte(176));
 
               // Ciclo e setAddr vengono allineati al FermoPompa
               i = 7;
-              setAddr = 24;
+              setAddr = 27;
             }
           }
 
@@ -1885,7 +2005,7 @@ void set_hops (){
     if(!hopLoop)return;
 
     if (btn_Press(Button_enter,50)){
-      save_set(70,nmbrHops);
+      save_set(73,nmbrHops);
       hopLoop = false;
     }
   }
@@ -2024,10 +2144,10 @@ void setup(){
   allOFF();
  
   if (ScaleTemp==0){
-    boilStageTemp = EEPROM.read(17);
+    boilStageTemp = EEPROM.read(18);
     mset_temp = 35;
   }else{
-    boilStageTemp = EEPROM.read(18);
+    boilStageTemp = EEPROM.read(19);
     mset_temp = 95;
   }
   
@@ -2036,7 +2156,7 @@ void setup(){
   
   Gradi();
   // write custom symbol to LCD
-  //lcd.createChar(0, degC);         // Celsius
+  //lcd.createChar(0, deg);         // Celsius
   //lcd.createChar(1, degF);         // Faherenheit
   lcd.createChar(2, SP_Symbol);      // Set Point
   lcd.createChar(3, PumpONOFF);      // Pump
