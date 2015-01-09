@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Costante kP", "Costante kI", "Costante kD", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
-char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Boil", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio"};
+char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio"};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -250,38 +250,44 @@ void UnitSet(byte unitSet, byte i){
       lcd.print(F("'"));
       break;
     
-    case(5):
+    default:
       lcd.setCursor(13,1);
       if (unitSet==0)lcd.print(F("OFF"));
       if (unitSet==1)lcd.print(F(" ON"));
       break;
       
-    case(6):
-      lcd.setCursor(13,1);
-      if (unitSet==0)lcd.print(F("OFF"));
-      if (unitSet==1)lcd.print(F(" ON"));
-      break;
-      
-    case(7):
+    case(9):
       lcd.setCursor(12,1);
       if (unitSet<100)LCDSpace(1);
       lcd.print(unitSet);
       lcd.write((byte)0);
       break;
       
-    case(8)://Pipe
+    case(10)://Pipe
       lcd.setCursor(9,1);
       if (unitSet==0)lcd.print(F("Passivo"));
       else lcd.print(F(" Attivo"));
       break;
 
-    default:
+    case(11):
       lcd.setCursor(14,1);
       if (unitSet==0)lcd.print(F("NO"));
       if (unitSet==1)lcd.print(F("SI"));
       break;
     
-    case(12): //Iodio
+    case(12):
+      lcd.setCursor(14,1);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+      
+    case(13):
+      lcd.setCursor(14,1);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+      
+    case(14): //Iodio
       if (unitSet==0){
         lcd.setCursor(9,1);
         lcd.print(F("    OFF"));

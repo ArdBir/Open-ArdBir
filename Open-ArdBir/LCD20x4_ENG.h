@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Use ", "Constant  kP", "Constant  kI", "Constant  kD", "Windowset ms", "Heat in Boil", "Calibration " , "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      "};
-char *unitName[]  ={"Set Degrees", "Sensor     ", "Temp Boil  ", "Pump Cycle ", "Pump Rest  ", "Pmp PreMash", "Pmp on Boil", "Pump Stop  ", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "IodineTime "};
+char *unitName[]  ={"Set Degrees", "Sensor     ", "Temp Boil  ", "Pump Cycle ", "Pump Rest  ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Pump Stop  ", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "IodineTime "};
 
 byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -280,8 +280,8 @@ void UnitSet(byte unitSet, byte i){
       break;
       
     case(1)://Sensore
-      if (unitSet==0)lcd.print(F("Inside "));
-      else lcd.print(F("Outside"));
+      if (unitSet==0)lcd.print(F("Interno"));
+      else lcd.print(F("Esterno"));
       break;
       
     case(2):// Temperatura di Ebollizione
@@ -302,35 +302,41 @@ void UnitSet(byte unitSet, byte i){
       lcd.print(F("'"));
       break;
     
-    case(5):
-      LCDSpace(4);
+ default:
+     LCDSpace(4);
       if (unitSet==0)lcd.print(F("OFF"));
       if (unitSet==1)lcd.print(F(" ON"));
       break;
-
-    case(6):
-      LCDSpace(4);
-      if (unitSet==0)lcd.print(F("OFF"));
-      if (unitSet==1)lcd.print(F(" ON"));
-      break;
-      
-    case(7):
+ 
+    case(9):
       LCDSpace(3);
       PrintTemp(9,9,unitSet,0);
       break;
       
-    case(8)://Pipe
-      if (unitSet==0)lcd.print(F("Passive"));
-      else lcd.print(F("Active "));
+    case(10)://Pipe
+      if (unitSet==0)lcd.print(F("Passivo"));
+      else lcd.print(F("Attivo "));
       break;
-
-    default:
-      LCDSpace(4);
-      if (unitSet==0)lcd.print(F("YES"));
-      if (unitSet==1)lcd.print(F(" NO"));
+    
+    case(11):
+      LCDSpace(5);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
       break;
-
-    case(12): //Iodio
+ 
+    case(12):
+      LCDSpace(5);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+ 
+    case(13):
+      LCDSpace(5);
+      if (unitSet==0)lcd.print(F("NO"));
+      if (unitSet==1)lcd.print(F("SI"));
+      break;
+ 
+    case(14): //Iodio
       if (unitSet==0){
         lcd.setCursor(12,2);
         lcd.print(F("    OFF"));
