@@ -11,7 +11,7 @@
 
 // SET LCD and Language
 // LCD 16 or 20
-#define LCDType 16
+#define LCDType 20
 
 // LANGUAGE
 // 1 English
@@ -552,7 +552,7 @@ boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display){
         lcd.clear();
       }
     }else{
-      if (Attesa==255){
+      if (Attesa == 255){
         Buzzer(2,25);
         Attesa=0;
       }
@@ -563,11 +563,11 @@ boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display){
 }
 
 void quit_mode (boolean& processLoop){
-  if ((digitalRead(Button_dn)==0) && (digitalRead(Button_up)==0)){
+  if ((digitalRead(Button_dn) == 0) && (digitalRead(Button_up) == 0)){
     delay(350);
-    if ((digitalRead(Button_dn)==0) && (digitalRead(Button_up)==0)){
+    if ((digitalRead(Button_dn) == 0) && (digitalRead(Button_up) == 0)){
       mheat = false;
-      mpump=false;
+      mpump = false;
       
       allOFF();
       
@@ -596,7 +596,7 @@ void heat_off(boolean mheat){
 void heat_control(){
   //turns heat on or off      
   if (btn_Press(Button_start,50)){
-    if (mheat==false){
+    if (mheat == false){
       mheat = true;
       w_StartTime = millis();
     }else{
@@ -619,9 +619,9 @@ void pump_off(boolean mpump){
 void pump_prime(){
   PumpPrime();
   
-  for(byte i=1;i<6;i++){
+  for(byte i = 1; i < 6; i++){
     pump_on();
-    delay(750+i*250);
+    delay(750 + i * 250);
     pump_off(mpump);
     delay(350);
   }Menu_2(); 
@@ -633,12 +633,12 @@ void pump_rest (byte stage){
   byte TempPumpRest;
   
   
-  mpump = true;
-  if (stage == 0 && EEPROM.read(22) == 1 || stage  > 0 && stage <  7 && EEPROM.read(23) == 1 || stage == 7 && EEPROM.read(24) == 1){ // Indirizzi OK
-    pump_off(mpump);
+  //mpump = true;
+  if (stage == 0 && EEPROM.read(22) == 0 || stage  > 0 && stage <  7 && EEPROM.read(23) == 0 || stage == 7 && EEPROM.read(24) == 0){ // Indirizzi OK
+    pump_off(true);
     return;
   }
-  mpump = false;
+  //mpump = false;
   
   //setPumpBoil = EEPROM.read(25);
   
@@ -1366,7 +1366,7 @@ void set_PID (){
         pidLoop = false;
       }
    }  
-   if (i<5 || i==6)setAddr+=2;
+   if (i<5 || i == 6)setAddr+=2;
    else setAddr+=1;
  }Clear_2_3();
 }
@@ -1388,22 +1388,22 @@ void set_Unit (){
     a = i * 3;
      
     // SALTA BLOCCHI POMPA SE SENSORE ESTERNO  
-    if((i == 5 || i == 6) && SensorType == 1) unitLoop = false;
+    if((i >= 5 || i <= 8) && SensorType == 1) unitLoop = false;
     else                                      unitLoop = true;
     
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
-    if(i == 12 && EEPROM.read(31) == 1)       unitLoop = false;
+    if(i == 14 && EEPROM.read(31) == 1)       unitLoop = false;
     else                                      unitLoop = true;
 
 
-    if(i != 2 && i != 7)                      r_set(unitSet,setAddr);
+    if(i != 2 && i != 9)                      r_set(unitSet,setAddr);
     else{
       if(i == 2){
-        if (ScaleTemp == 0)                   r_set(unitSet,17);
-        else                                  r_set(unitSet,18);
+        if (ScaleTemp == 0)                   r_set(unitSet,18);
+        else                                  r_set(unitSet,19);
       }else{
-        if (ScaleTemp == 0)                   r_set(unitSet,23);
-        else                                  r_set(unitSet,24);
+        if (ScaleTemp == 0)                   r_set(unitSet,26);
+        else                                  r_set(unitSet,27);
       }
     }
     
@@ -1419,7 +1419,7 @@ void set_Unit (){
   
       LeggiPulsante(Verso, Timer);
       
-      if(i != 2 && i != 7)                    Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);           
+      if(i != 2 && i != 9)                    Set(unitSet, p_Unit[a], p_Unit[a+1], p_Unit[a+2], Timer, Verso);           
       else{
         if(i == 2){
           if(ScaleTemp == 0)                  Set(unitSet, 105,  90, 1, Timer, Verso);
@@ -1432,11 +1432,11 @@ void set_Unit (){
       
       quit_mode(unitLoop);
       //if (!unitLoop)i=13;
-      if (!unitLoop)i=15;
+      if (!unitLoop)i = 15;
 
       if(btn_Press(Button_enter,50)){
         
-        if(i != 2 && i != 7){
+        if(i != 2 && i != 9){
 
           save_set(setAddr,lowByte(unitSet));
 
@@ -1470,14 +1470,14 @@ void set_Unit (){
           }
 
 
-          if(i == 6){
+          if(i == 8){
             if(EEPROM.read(25) == 0){ // Controllo sul fermo Pompa
               //°C = 80; //°F = 176
               save_set(26, lowByte(80));
               save_set(27, lowByte(176));
 
               // Ciclo e setAddr vengono allineati al FermoPompa
-              i = 7;
+              i = 9;
               setAddr = 27;
             }
           }
@@ -2209,8 +2209,8 @@ void loop(){
 
   default: 
     DelayedMode=false;
-    mheat=false;
-    mpump=false;  
+    mheat = false;
+    mpump = false;  
     
     allOFF();
     
