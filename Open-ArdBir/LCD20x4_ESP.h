@@ -35,7 +35,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.7.3b2"));
+  lcd.print(F("2.8.0b0"));
   lcd.write(7);
 }
 

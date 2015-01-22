@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Costante  kP", "Costante  kI", "Costante  kD", "Finestra  ms", "PWM Bollit.  ", "Calibrazione", "Isteresi    "};
-char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
-char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ciclo Pompa", "Pausa Pompa", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodio "};
+char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura ", "Whirlpool "};
+char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ciclo Pompa", "Pausa Pompa", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodio ", "Whirlpool  "};// "Tipo         ", "Trigger   "};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -35,7 +35,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.7.3b2"));
+  lcd.print(F("2.8.0b0"));
   lcd.write(7);
 }
 
@@ -203,7 +203,11 @@ void HopAdd(byte HopAdd){
   lcd.print(HopAdd+1);
 }
 
-
+void LCD_Whirpool(byte Attivo){
+  lcd.setCursor(1,2);
+  if (Attivo) lcd.print(F(" ESEGUO "));
+  else        lcd.print(F(" ATTESA "));
+}
 
 void Menu_3(){
   lcd.clear();
@@ -226,37 +230,40 @@ void Menu_3_1_x(byte i){
 }  
 
 void PidSet(int pidSet, byte i){
-  lcd.setCursor(13,2);
+  lcd.setCursor(13, 2);
+  if(i  > 0)          LCDSpace(1);
+  if(i  > 0 && i < 4) LCDSpace(1);
   
-  if(i>0)LCDSpace(1);
-  if(i>0 && i<5)LCDSpace(1);
-
-  if (i>0 && i<4||i==5){
-    if (pidSet<=-10 && pidSet>-100)LCDSpace(1);
-    if (pidSet<0 && pidSet>-10)LCDSpace(2);
-    if (pidSet<10 && pidSet>=0)LCDSpace(3);
-    if (pidSet>=10 && pidSet<100)LCDSpace(2);
-    if (pidSet>=100)LCDSpace(1);
+  if (i > 0 && i <= 5) {
+    if (i  < 4) pidSet = pidSet - 100;
+    if (i == 4) pidSet = pidSet * 250 + 1000;
+      
+    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
+    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
+    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
+    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
+    if (pidSet >=  100)                  LCDSpace(1);
   }
   
-  if(i>=6){
-    float OffSet=pidSet/10.0;
-    if (OffSet>=0 && OffSet<10)LCDSpace(1);
+  if(i >= 6){
+    float OffSet;
+    if(i == 6) (pidSet - 50.0) / 10.0;
+    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
   
-  if (i==0){
-    lcd.setCursor(9,2);
-    if (pidSet==0)lcd.print(F("Elettrico"));
-    else          lcd.print(F("      Gas"));
+  if (i == 0){
+    lcd.setCursor(10, 2);
+    if (pidSet == 0) lcd.print(F("Elettrico"));
+    else             lcd.print(F("      Gas"));
   }else lcd.print(pidSet);
 
-  if(i==5)lcd.print(F("%"));
+  if(i == 5) lcd.print(F("%"));
 }
 
 void Menu_3_2(){
-  lcd.setCursor(2,1);
+  lcd.setCursor(2, 1);
   lcd.print(F("Parametri Unita'"));
   
   LCDClear(2);
@@ -265,12 +272,13 @@ void Menu_3_2(){
 }
 
 void Menu_3_2_x(byte i){
-  display_lcd(1,2,unitName[i],0);
+  display_lcd(1,2,unitName[i], 0);
   LCD_QQxO();
 }
 
 void UnitSet(byte unitSet, byte i){
   lcd.setCursor(12,2);
+  
   switch(i){
    
     case(0):// Scala Temp
@@ -279,18 +287,18 @@ void UnitSet(byte unitSet, byte i){
       break;
       
     case(1)://Sensore
-      if (unitSet==0)lcd.print(F("Interno"));
-      else lcd.print(F("Esterno"));
+      if (unitSet == 0) lcd.print(F("INTERNO"));
+      else              lcd.print(F("ESTERNO"));
       break;
       
     case(2):// Temperatura di Ebollizione
       LCDSpace(3);
-      PrintTemp(9,9,unitSet,0);
+      PrintTemp(9, 9, unitSet, 0);
       break;
 
     case(3):// Durata Ciclo Pompa
       LCDSpace(4);
-      if (unitSet<10)LCDSpace(1);
+      if (unitSet < 10) LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
@@ -303,8 +311,8 @@ void UnitSet(byte unitSet, byte i){
     
  default:
      LCDSpace(4);
-      if (unitSet==0)lcd.print(F("OFF"));
-      if (unitSet==1)lcd.print(F(" ON"));
+      if (unitSet == 0) lcd.print(F("OFF"));
+      if (unitSet == 1) lcd.print(F(" ON"));
       break;
  
     case(9):
@@ -313,34 +321,37 @@ void UnitSet(byte unitSet, byte i){
       break;
       
     case(10)://Pipe
-      if (unitSet==0)lcd.print(F("Passivo"));
-      else lcd.print(F("Attivo "));
-      break;
-    
-    case(11):
-      LCDSpace(5);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
-      break;
- 
-    case(12):
-      LCDSpace(5);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
-      break;
- 
-    case(13):
-      LCDSpace(5);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
+      if (unitSet == 0) lcd.print(F("PASSIVO"));
+      else              lcd.print(F(" ATTIVO"));
       break;
  
     case(14): //Iodio
       if (unitSet==0){
         lcd.setCursor(12,2);
         lcd.print(F("    OFF"));
-      }else CountDown(unitSet*60,12,2,1);
+      }else CountDown(unitSet * 60, 12, 2, 1);
       break;
+    
+    case(11):
+    case(12):
+    case(13):
+    case(15): //Whirlpool
+      LCDSpace(5);
+      if (unitSet == 0) lcd.print(F("NO"));
+      if (unitSet == 1) lcd.print(F("SI"));
+      break;
+    
+    case(16): //Tipo Whirlpool
+      LCDSpace(1);
+      if (unitSet == 0) lcd.print(F("FREDDO"));
+      if (unitSet == 1) lcd.print(F(" CALDO"));
+      break;
+      
+    case(17): //Temp Trigger
+      LCDSpace(3);
+      PrintTemp(9, 9, unitSet, 0);
+      break;
+      
   }  
 }
 
