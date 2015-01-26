@@ -1,5 +1,7 @@
 Open ArdBir 2012-2014
 ===========
+Version 2.8.0b2
+
 Version 2.8.0b0
 
 Version 2.7.3b2

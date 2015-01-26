@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Costante kP", "Costante kI", "Costante kD", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
-char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura "};
-char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio", "Whirlpool ", "Tipo ", "Trigger "};};
+char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura ", "Raffreddo ", "Whirlpool "};
+char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa ", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio", };
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -96,7 +96,6 @@ void AddMalt(){
   lcd.setCursor(0,0);
   lcd.print(F(" Aggiungi Malto "));
   LCD_OkEsci();
-  Buzzer(1, 1000);
 }
 
 void Stage(byte Stage, float Set, float Temp){
@@ -123,7 +122,6 @@ void RemoveMalt(){
   lcd.setCursor(0,0);
   lcd.print(F(" Rimuovi  Malto "));
   LCD_OkEsci();
-  Buzzer(1, 1000);
 }
 
 void Temp_Wait(float Temp){
@@ -157,6 +155,20 @@ void HopAdd(byte HopAdd){
   lcd.print(HopAdd+1);
   lcd.setCursor(1,1);
   LCDSpace(6); 
+}
+
+void Raffreddamento() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F(" RAFFREDDAMENTO "));
+  LCD_Procedo();
+}
+
+void Whirlpool() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("   WHIRLPOOL    "));
+  LCD_Procedo();
 }
 
 void Menu_3(){
@@ -565,14 +577,12 @@ void prompt_for_water (){
   lcd.setCursor(0,0);
   lcd.print(F("Acqua  Aggiunta?"));
   LCD_OkEsci();
-  Buzzer(1,750);
 }
 
 void Resume(){
   lcd.setCursor(0,0);
   lcd.print(F("Riprendi  Cotta?"));
   LCD_OkEsci();
-  Buzzer(1,750);
 }
 
 void CntDwn(int Time){
