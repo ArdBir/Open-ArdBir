@@ -34,7 +34,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.0b2"));
+  lcd.print(F("2.8.0b3"));
   lcd.write(7);
 }
 
@@ -206,19 +206,15 @@ void HopAdd(byte HopAdd) {
 
 void Raffreddamento() {
   lcd.clear();
-  lcd.setCursor(2, 1);
-  lcd.print(F("Inizio Procedura"));
-  lcd.setCursor(1, 2);
-  lcd.print(F("di  RAFFREDDAMENTO"));
+  lcd.setCursor(3, 1);
+  lcd.print(F("RAFFREDDAMENTO"));
   LCD_Procedo();
 }
 
 void Whirlpool() {
   lcd.clear();
   lcd.setCursor(2, 1);
-  lcd.print(F("Inizio Procedura"));
-  lcd.setCursor(4, 2);
-  lcd.print(F("di WHIRLPOOL"));
+  lcd.print(F("Inizio WHIRLPOOL"));
   LCD_Procedo();
 }
 
@@ -304,8 +300,10 @@ void UnitSet(byte unitSet, byte i) {
       else              lcd.print(F("ESTERNO"));
       break;
       
-    case(2):
-    case(3):// Temperatura di Ebollizione
+    case( 2):
+    case( 3): // Temperatura di Ebollizione
+    case(10):
+    case(11): //Temperatura Fermo Pompa
       LCDSpace(3);
       PrintTemp(9, 9, unitSet, 0);
       break;
@@ -329,12 +327,13 @@ void UnitSet(byte unitSet, byte i) {
       if (unitSet == 1) lcd.print(F(" ON"));
       break;
  
+ /*
     case(10):
     case(11):
       LCDSpace(3);
       PrintTemp(9, 9, unitSet, 0);
       break;
-      
+ */     
     case(12)://Pipe
       if (unitSet == 0) lcd.print(F("PASSIVO"));
       else              lcd.print(F(" ATTIVO"));

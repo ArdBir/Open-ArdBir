@@ -212,7 +212,7 @@ EEPROM MAP
 
 /// FOR DEBUGGING ///
 #define StartSprite   false
-#define Sprite        false
+#define Sprite        true
 #define Crediti       true
 
 #define SerialMonitor false
@@ -1928,7 +1928,7 @@ void RecipeMenu() {
   
   while (recipeLoop) {
     switch (recipeMenu) { 
-    
+      
       case(0):
         Menu_3_4_1();
         if (btn_Press(Button_start, 50)) recipeLoop = false;
@@ -2052,7 +2052,7 @@ void setup_mode () {
 
   while (setupLoop) {
     switch (setupMenu) { 
-
+      
       case(0):
       Menu_3_1();
       if (btn_Press(Button_start, 50)) setupLoop = false;

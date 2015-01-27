@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Constante P", "Constante I", "Constante D", "Finestra ms", "PWM        ", "Calibracion ", "Histeresis "};
-char *stageName[] ={"Mash In   ", "Fitasa    ", "Glucanasa ", "Proteasa  ", "bAmilasa  ", "aAmilasa1 ", "aAmilasa2 ", "Mash Out  ", "Ebullicion"};
-char *unitName[]  ={"Escala     ", "Sensor     ", "Ebullicion  ", "Ciclo Bomba", "Pausa Bomba   ","Bmb PreMash",  "Bmb on Mash", "Bmb MashOut", "Bmb en Ebul", "Bomba Parada", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TiempoYodo"};
+char *stageName[] ={"Mash In   ", "Fitasa    ", "Glucanasa ", "Proteasa  ", "bAmilasa  ", "aAmilasa1 ", "aAmilasa2 ", "Mash Out  ", "Ebullicion", "Cooling   ", "Whirlpool "};
+char *unitName[]  ={"Escala     ", "Sensor     ", "Ebullicion  ", "Ebullicion  ", "Ciclo Bomba", "Pausa Bomba   ","Bmb PreMash",  "Bmb on Mash", "Bmb MashOut", "Bmb en Ebul", "Bomba Parada", "Bomba Parada", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TiempoYodo"};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -96,7 +96,6 @@ void AddMalt(){
   lcd.setCursor(0,0);
   lcd.print(F(" Agregar  Malta "));
   LCD_OkEsci();
-  Buzzer(1, 1000);
 }
 
 void Stage(byte Stage, float Set, float Temp){
@@ -123,7 +122,6 @@ void RemoveMalt(){
   lcd.setCursor(0,0);
   lcd.print(F(" Eliminar Malta "));
   LCD_OkEsci();
-  Buzzer(1, 1000);
 }
 
 void Temp_Wait(float Temp){
@@ -159,7 +157,19 @@ void HopAdd(byte HopAdd){
   LCDSpace(6); 
 }
 
-void Menu_3(){
+void Raffreddamento() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F(" START  COOLING "));
+  LCD_Procedo();
+}
+
+void Whirlpool() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("START  WHIRLPOOL"));
+  LCD_Procedo();
+}void Menu_3(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(F(" CONFIGURACION  "));
@@ -230,21 +240,24 @@ void UnitSet(byte unitSet, byte i){
       else lcd.print(F("Esterno"));
       break;
       
-    case(2): // Temperatura di Ebollizione
+    case( 2):
+    case( 3): // Temperatura di Ebollizione
+    case(10):
+    case(11): //Temperatura Fermo Pompa
       lcd.setCursor(12,1);
       if (unitSet<100)LCDSpace(1);
       lcd.print(unitSet);
       lcd.write((byte)0);
       break;
     
-    case(3):// Durata Ciclo Pompa
+    case(4):// Durata Ciclo Pompa
       lcd.setCursor(13,1);
       if (unitSet<10)LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
     
-    case(4)://Durata Pausa Pompa
+    case(5)://Durata Pausa Pompa
       lcd.setCursor(14,1);
       lcd.print(unitSet);
       lcd.print(F("'"));
@@ -256,38 +269,21 @@ void UnitSet(byte unitSet, byte i){
       if (unitSet==1)lcd.print(F(" ON"));
       break;
       
-    case(9):
-      lcd.setCursor(12,1);
-      if (unitSet<100)LCDSpace(1);
-      lcd.print(unitSet);
-      lcd.write((byte)0);
-      break;
-      
-    case(10)://Pipe
+    case(12)://Pipe
       lcd.setCursor(9,1);
       if (unitSet==0)lcd.print(F("Passivo"));
       else lcd.print(F(" Attivo"));
       break;
 
-    case(11):
+    case(13):
+    case(14):
+    case(15):
       lcd.setCursor(14,1);
       if (unitSet==0)lcd.print(F("NO"));
       if (unitSet==1)lcd.print(F("SI"));
       break;
     
-    case(12):
-      lcd.setCursor(14,1);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
-      break;
-      
-    case(13):
-      lcd.setCursor(14,1);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
-      break;
-      
-    case(14): //Iodio
+    case(16): //Iodio
       if (unitSet==0){
         lcd.setCursor(9,1);
         lcd.print(F("    OFF"));
@@ -565,14 +561,12 @@ void prompt_for_water (){
   lcd.setCursor(0,0);
   lcd.print(F(" Agregar  Agua? "));
   LCD_OkEsci();
-  Buzzer(1,750);
 }
 
 void Resume(){
   lcd.setCursor(0,0);
   lcd.print(F("Iniciar Coccion?"));
   LCD_OkEsci();
-  Buzzer(1,750);
 }
 
 void CntDwn(int Time){
