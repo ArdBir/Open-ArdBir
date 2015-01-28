@@ -35,7 +35,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.0b3"));
+  lcd.print(F("2.8.0b4"));
   lcd.write(7);
 }
 
@@ -296,8 +296,8 @@ void UnitSet(byte unitSet, byte i){
       break;
       
     case(1)://Sensore
-      if (unitSet == 0) lcd.print(F("INTERNO"));
-      else              lcd.print(F("ESTERNO"));
+      if (unitSet == 0) lcd.print(F(" INSIDE"));
+      else              lcd.print(F("OUTSIDE"));
       break;
       
     case( 2):
@@ -335,8 +335,8 @@ void UnitSet(byte unitSet, byte i){
       break;
  */     
     case(12)://Pipe
-      if (unitSet == 0) lcd.print(F("PASSIVO"));
-      else              lcd.print(F(" ATTIVO"));
+      if (unitSet == 0) lcd.print(F("PASSIVE"));
+      else              lcd.print(F(" ACTIVE"));
       break;
  
     case(16): //Iodio
@@ -349,9 +349,9 @@ void UnitSet(byte unitSet, byte i){
     case(13):
     case(14):
     case(15):
-      LCDSpace(5);
-      if (unitSet == 0) lcd.print(F("NO"));
-      if (unitSet == 1) lcd.print(F("SI"));
+      LCDSpace(4);
+      if (unitSet == 0) lcd.print(F(" NO"));
+      if (unitSet == 1) lcd.print(F("YES"));
       break;   
   }  
 }

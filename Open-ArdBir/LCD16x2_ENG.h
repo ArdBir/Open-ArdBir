@@ -188,31 +188,35 @@ void Menu_3_1_x(byte i){
 void PidSet(int pidSet, byte i){
   LCDSpace(1);
   
-  if(i==5||i>=6)lcd.setCursor(11,1);
-  else lcd.setCursor(12,1);
+  if (i == 5 || i >= 6) lcd.setCursor(11, 1);
+  else                  lcd.setCursor(12,1);
  
-  if (i>0 && i<4||i==5){
-    if (pidSet<=-10 && pidSet>-100)LCDSpace(1);
-    if (pidSet<0 && pidSet>-10)LCDSpace(2);
-    if (pidSet<10 && pidSet>=0)LCDSpace(3);
-    if (pidSet>=10 && pidSet<100)LCDSpace(2);
-    if (pidSet>=100)LCDSpace(1);
+  if (i > 0 && i <= 5) {
+    if (i  < 4) pidSet = pidSet - 100;
+    if (i == 4) pidSet = pidSet * 250 + 1000;
+      
+    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
+    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
+    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
+    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
+    if (pidSet >=  100)                  LCDSpace(1);
   }
   
-  if(i>=6){
-    float OffSet=pidSet/10.0;
-    if (OffSet>=0 && OffSet<10)LCDSpace(1);
+  if(i >= 6){
+    float OffSet = pidSet;
+    if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
+    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
   
-  if (i==0){
-    lcd.setCursor(7,1);
-    if (pidSet==0)lcd.print(F(" Electric"));
-    else          lcd.print(F("      Gas"));
-  }else lcd.print(pidSet);
+  if (i == 0) {
+    lcd.setCursor(7, 1);
+    if (pidSet == 0) lcd.print(F(" Electric"));
+    else             lcd.print(F("      Gas"));
+  } else             lcd.print(pidSet);
 
-  if(i==5)lcd.print(F("%"));
+  if (i == 5) lcd.print(F("%"));
 
   
 }
@@ -237,8 +241,8 @@ void UnitSet(byte unitSet, byte i){
       
     case(1)://Sensore
       lcd.setCursor(9,1);
-      if (unitSet==0)lcd.print(F("Interno"));
-      else lcd.print(F("Esterno"));
+      if (unitSet == 0)lcd.print(F(" Inside"));
+      else             lcd.print(F("Outside"));
       break;
       
     case( 2):
@@ -272,16 +276,16 @@ void UnitSet(byte unitSet, byte i){
       
     case(12)://Pipe
       lcd.setCursor(9,1);
-      if (unitSet==0)lcd.print(F("Passivo"));
-      else lcd.print(F(" Attivo"));
+      if (unitSet==0)lcd.print(F("Passive"));
+      else lcd.print(F(" Active"));
       break;
 
     case(13):
     case(14):
     case(15):
-      lcd.setCursor(14,1);
-      if (unitSet==0)lcd.print(F("NO"));
-      if (unitSet==1)lcd.print(F("SI"));
+      lcd.setCursor(13,1);
+      if (unitSet==0)lcd.print(F(" NO"));
+      if (unitSet==1)lcd.print(F("YES"));
       break;
     
     case(16): //Iodio
