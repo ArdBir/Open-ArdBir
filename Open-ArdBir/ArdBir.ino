@@ -1160,10 +1160,9 @@ void auto_mode () {
   StageAddr = 32;
   
   if (UseGAS == 0) load_pid_settings();
-  
 
 //  check_for_resume();
-  if (EEPROM.read(86)) { // FLAG Automode Started
+  if (EEPROM.read(84)) { // FLAG Automode Started
     Resume();
 
     wait_for_confirm(resume, 2, 2, 2);
@@ -1184,7 +1183,7 @@ void auto_mode () {
 
     if (!(b_Enter)) return;
     hopAdd = 0; //reset hop count at teh start of the processes
-    EEPROM.write(89, hopAdd); 
+    EEPROM.write(87, hopAdd); 
     pumpTime = 0;
     pumpRest = false;
     pump_prime();
@@ -1215,7 +1214,7 @@ void auto_mode () {
       } else {
         stageTime = EEPROM.read(StageAddr + 4); // gets stage time
         EEPROM.write(86, stageTime);   // saves the intial stage time
-       
+        
         if (x == 7 && stageTime == 0) IodineTest = true; 
       } 
       TimeLeft = stageTime * 60;
@@ -1666,8 +1665,9 @@ void set_Stages () {
           }
         }
       }
-      else { //Se si tratta del Mash In setta il tempo a 1 (fittizio)
-        save_set(StageAddr + 4, 1);
+      else { //Se si tratta del Mash In setta il tempo a 5 (fittizio)
+        EEPROM.write(StageAddr + 4, 5);
+        
         TempTimeLoop = false;
       }
     } 
