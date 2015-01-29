@@ -482,9 +482,9 @@ void PID_HEAT (boolean autoMode) {
   unsigned long now = millis();
   
 // PWM  
-  if (now - w_StartTime > (WindowSize * 250 + 1000)) w_StartTime += (WindowSize * 250 + 1000); //time to shift the Relay Window
+  if (now - w_StartTime > (unsigned int)(WindowSize * 250 + 1000)) w_StartTime += (unsigned int)(WindowSize * 250 + 1000); //time to shift the Relay Window
   
-  if ((Output*((WindowSize * 250 + 1000) / 100)) > now - w_StartTime) heat_on();
+  if ((Output * ((unsigned int)(WindowSize * 250 + 1000) / 100)) > now - w_StartTime) heat_on();
   else heat_off(mheat);
 }
 
