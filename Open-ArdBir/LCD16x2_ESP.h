@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso ", "Constante P", "Constante I", "Constante D", "Finestra ms", "PWM        ", "Calibracion ", "Histeresis "};
 char *stageName[] ={"Mash In   ", "Fitasa    ", "Glucanasa ", "Proteasa  ", "bAmilasa  ", "aAmilasa1 ", "aAmilasa2 ", "Mash Out  ", "Ebullicion", "Cooling   ", "Whirlpool "};
-char *unitName[]  ={"Escala     ", "Sensor     ", "Ebullicion  ", "Ebullicion  ", "Ciclo Bomba", "Pausa Bomba   ","Bmb PreMash",  "Bmb on Mash", "Bmb MashOut", "Bmb en Ebul", "Bomba Parada", "Bomba Parada", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TiempoYodo"};
+char *unitName[]  ={"Escala     ", "Sensor     ", "Ebullicion  ", "Ebullicion  ", "Ciclo Bomba", "Pausa Bomba   ","Bmb PreMash",  "Bmb on Mash", "Bmb MashOut", "Bmb en Ebul", "Bomba Parada", "Bomba Parada", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TiempoYodo", "Whirlpool" };
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -31,7 +31,7 @@ void Clear_2_3(){
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
-  lcd.print(F("2.8.0 "));
+  lcd.print(F("2.8.1 "));
   lcd.write(7);
 }
 
@@ -164,7 +164,7 @@ void Raffreddamento() {
   LCD_Procedo();
 }
 
-void Whirlpool() {
+void LCDWhirlpool() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(F("START  WHIRLPOOL"));
@@ -292,6 +292,13 @@ void UnitSet(byte unitSet, byte i){
         lcd.setCursor(9,1);
         lcd.print(F("    OFF"));
       }else CountDown(unitSet*60,9,1,1);
+      break;
+       break;
+      
+    case(17):
+      if (unitSet == 0) lcd.print(F("    OFF"));
+      if (unitSet == 1) lcd.print(F("   COLD"));
+      if (unitSet == 2) lcd.print(F("    HOT"));
       break;
   }  
 }

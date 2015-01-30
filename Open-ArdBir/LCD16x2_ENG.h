@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "Windowset  ", "Use in Boil", "Calibration", "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
-char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pmp PreMash",  "Pmp on Mash", "Pmp MashOut", "Pump on Boil ", "Pump Stop at ", "Pump Stop at ", "PID Pipe ", "Skip Add      ", "Skip Remove ", "Skip Iodine ", "Iodine  "};
+char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pmp PreMash",  "Pmp on Mash", "Pmp MashOut", "Pump on Boil ", "Pump Stop at ", "Pump Stop at ", "PID Pipe ", "Skip Add      ", "Skip Remove ", "Skip Iodine ", "Iodine  ", "Whirlpool"};
 
 byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -31,7 +31,7 @@ void Clear_2_3(){
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
-  lcd.print(F("2.8.0 "));
+  lcd.print(F("2.8.1 "));
   lcd.write(7);
 }
 
@@ -164,7 +164,7 @@ void Raffreddamento() {
   LCD_Procedo();
 }
 
-void Whirlpool() {
+void LCDWhirlpool() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(F("START  WHIRLPOOL"));
@@ -293,6 +293,12 @@ void UnitSet(byte unitSet, byte i){
         lcd.setCursor(9,1);
         lcd.print(F("    OFF"));
       }else CountDown(unitSet*60,9,1,1);
+      break;
+      
+    case(17):
+      if (unitSet == 0) lcd.print(F("    OFF"));
+      if (unitSet == 1) lcd.print(F("   COLD"));
+      if (unitSet == 2) lcd.print(F("    HOT"));
       break;
   }  
 }

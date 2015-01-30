@@ -1,6 +1,6 @@
 char *PIDName[]   ={"Uso", "Constante kP", "Constante kI", "Constante kD", "Janela  ms  ", "PWM Ebu     ", "Calibragem  " , "Histerese   "};
 char *stageName[] ={"Mash In   ", "Fitase    ", "Glucanase ", "Protease  ", "bAmilase  ", "aAmilase  ", "aAmilase2 ", "Mash Out  ", "Ebulicao  ", "Cooling   ", "Whirlpool "};
-char *unitName[]  ={"Escala     ", "Sensor     ", "Ebulicao   ", "Ebulicao   ", "Ciclo Bomba", "Pausa Bomba", "Pmp PreMash",  "Bmb em Mash", "Bmb MashOut", "Bomb em Ebu", "Bomb Parada", "Bomb Parada", "PID Pipe  " , "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodo "};
+char *unitName[]  ={"Escala     ", "Sensor     ", "Ebulicao   ", "Ebulicao   ", "Ciclo Bomba", "Pausa Bomba", "Pmp PreMash",  "Bmb em Mash", "Bmb MashOut", "Bomb em Ebu", "Bomb Parada", "Bomb Parada", "PID Pipe  " , "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodo ", "Whirlpool "};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
@@ -35,7 +35,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.0b6"));
+  lcd.print(F("2.8.1b0"));
   lcd.write(7);
 }
 
@@ -213,7 +213,7 @@ void Raffreddamento() {
   LCD_Procedo();
 }
 
-void Whirlpool() {
+void LCDWhirlpool() {
   lcd.clear();
   lcd.setCursor(2, 1);
   lcd.print(F("START  WHIRLPOOL"));
@@ -336,13 +336,6 @@ void UnitSet(byte unitSet, byte i){
       if (unitSet == 0) lcd.print(F("PASSIVA"));
       else              lcd.print(F("  ATIVO"));
       break;
- 
-    case(16): //Iodio
-      if (unitSet == 0) {
-        lcd.setCursor(12, 2);
-        lcd.print(F("    OFF"));
-      } else CountDown(unitSet * 60, 12, 2, 1);
-      break;
     
     case(13):
     case(14):
@@ -350,6 +343,19 @@ void UnitSet(byte unitSet, byte i){
       LCDSpace(5);
       if (unitSet == 0) lcd.print(F("NO"));
       if (unitSet == 1) lcd.print(F("SI"));
+      break; 
+      
+    case(16): //Iodio
+      if (unitSet == 0) {
+        lcd.setCursor(12, 2);
+        lcd.print(F("    OFF"));
+      } else CountDown(unitSet * 60, 12, 2, 1);
+      break;
+    
+    case(17):
+      if (unitSet == 0) lcd.print(F("    OFF"));
+      if (unitSet == 1) lcd.print(F("   COLD"));
+      if (unitSet == 2) lcd.print(F("    HOT"));
       break;   
   }  
 }
@@ -592,23 +598,19 @@ void Credits(){
   Intestazione();
   delay(1500);
   
-  display_lcd(2,2,"Ideia Original:",750);
-  display_lcd(2,3,"Stephen Mathison",2000);
-
-  Clear_2_3();
-
-  display_lcd(4,2,"Modificacao: FW",750);
-  display_lcd(4,3,"Mike  Wilson",1750);
-  display_lcd(4,3,"Massimo Nevi",1750);
+  display_lcd(7,2,"Code :",750);
+  display_lcd(5,3,"S.Mathison",2000);
+  display_lcd(5,3," M.Wilson ",1750);
+  display_lcd(6,3," M.Nevi ",1750);
   
   Clear_2_3();
   
-  display_lcd(4,2,"PCB & Tests:",750);
-  display_lcd(3,3,"  DanielXan ",999);
-  display_lcd(3,3,"SavioThechnic",999);
-  display_lcd(3,3,"   A. Tidei  ",999);
-  display_lcd(3,3," D. Arzarello",999);
-  display_lcd(3,3,"L. Di Michele",999);
+  display_lcd(3, 2, "PCB  &  Tests:", 750);
+  display_lcd(3, 3, "  Daniel Xan  ", 999);
+  display_lcd(3, 3, "Savio Thechnic", 999);
+  display_lcd(3, 3, "   A. Tidei   ", 999);
+  display_lcd(4, 3, "D. Arzarello", 999);
+  display_lcd(4, 3, "L. DiMichele", 999);
   
   Clear_2_3();    
   

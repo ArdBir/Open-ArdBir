@@ -27,6 +27,19 @@ void r_set(byte& data, int addr){
  #endif
 }
 
+void s_set (int addr, byte data){
+  EEPROM.write(addr,data);
+
+#if SerialMonitor == true
+  #if ReadWrite   == true
+    Serial.print (F("W-> "));
+    Serial.print (addr);
+    Serial.print (F(" byte: "));
+    Serial.println (data);
+  #endif
+#endif
+}
+/*
 void read_set(byte& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
@@ -39,6 +52,7 @@ void read_set(byte& data, int addr){
   #endif
 #endif
 }
+*/
 
 void read_set(float& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
@@ -52,6 +66,7 @@ void read_set(float& data, int addr){
   #endif
 #endif
 }
+
 void read_set(double& data, int addr){
   data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
@@ -104,18 +119,6 @@ void save_set (int addr, int data){
   #endif
 #endif
 }  
-void save_set (int addr, byte data){
-  EEPROM.write(addr,data);
-
-#if SerialMonitor == true
-  #if ReadWrite   == true
-    Serial.print (F("W-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (data);
-  #endif
-#endif
-}
 
 void CountDown(unsigned long Tempo, byte posX, byte posY, byte numH){
   //numH = 1 Ore a 1 cifra
