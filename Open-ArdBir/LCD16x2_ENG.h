@@ -178,7 +178,7 @@ void LCDWhirlpool() {
 }
 void Menu_3_1(){
   lcd.setCursor(0,0);
-  lcd.print(F("P.I.D.PARAMETERS"));
+  //lcd.print(F("P.I.D.PARAMETERS"));
   lcd.print(F("   PID -- PWM   "));
 }     
 void Menu_3_1_x(byte i){
@@ -217,8 +217,6 @@ void PidSet(int pidSet, byte i){
   } else             lcd.print(pidSet);
 
   if (i == 5) lcd.print(F("%"));
-
-  
 }
 
 void Menu_3_2(){

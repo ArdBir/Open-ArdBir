@@ -11,14 +11,14 @@
 
 // SET LCD and Language
 // LCD 16 or 20
-#define LCDType 16
+#define LCDType 20
 
 // LANGUAGE
 // 1 English
 // 2 Italian
 // 3 Spanish
 // 4 Portuguese
-#define LCDLanguage 2
+#define LCDLanguage 1
 
 // ==============================================
 // END OF SETTING SECTION

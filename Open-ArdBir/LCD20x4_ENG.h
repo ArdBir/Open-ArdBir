@@ -35,7 +35,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.1b0"));
+  lcd.print(F("2.8.1b1"));
   lcd.write(7);
 }
 
@@ -243,33 +243,36 @@ void Menu_3_1_x(byte i){
 }  
 
 void PidSet(int pidSet, byte i){
-  lcd.setCursor(13,2);
+  lcd.setCursor(13, 2);
+  if (i > 0)          LCDSpace(1);
+  if (i > 0 && i < 4) LCDSpace(1);
   
-  if(i>0)LCDSpace(1);
-  if(i>0 && i<5)LCDSpace(1);
-
-  if (i>0 && i<4||i==5){
-    if (pidSet<=-10 && pidSet>-100)LCDSpace(1);
-    if (pidSet<0 && pidSet>-10)LCDSpace(2);
-    if (pidSet<10 && pidSet>=0)LCDSpace(3);
-    if (pidSet>=10 && pidSet<100)LCDSpace(2);
-    if (pidSet>=100)LCDSpace(1);
+  if (i > 0 && i <= 5) {
+    if (i  < 4) pidSet = pidSet - 100;
+    if (i == 4) pidSet = pidSet * 250 + 1000;
+      
+    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
+    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
+    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
+    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
+    if (pidSet >=  100)                  LCDSpace(1);
   }
   
-  if(i>=6){
-    float OffSet=pidSet/10.0;
-    if (OffSet>=0 && OffSet<10)LCDSpace(1);
+  if(i >= 6){
+    float OffSet = pidSet;
+    if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
+    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
   
-  if (i==0){
-    lcd.setCursor(9,2);
-    if (pidSet==0)lcd.print(F(" Electric"));
-    else          lcd.print(F("      Gas"));
+  if (i == 0) {
+    lcd.setCursor(10, 2);
+    if (pidSet == 0) lcd.print(F(" Electric"));
+    else             lcd.print(F("      Gas"));
   }else lcd.print(pidSet);
 
-  if(i==5)lcd.print(F("%"));
+  if (i == 5) lcd.print(F("%"));
 }
 
 void Menu_3_2(){

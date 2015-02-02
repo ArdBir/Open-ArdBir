@@ -218,8 +218,6 @@ void PidSet(int pidSet, byte i){
   } else             lcd.print(pidSet);
 
   if (i == 5) lcd.print(F("%"));
-
-  
 }
 
 void Menu_3_2(){
