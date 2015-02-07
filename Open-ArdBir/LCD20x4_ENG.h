@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Use ", "Constant  kP", "Constant  kI", "Constant  kD", "Windowset ms", "Heat in Boil", "Calibration " , "Hysteresi  "};
+char *PIDName[]   ={"Use ", "Constant  kP", "Constant  kI", "Constant  kD", "WindowSet ms", "Heat in Boil", "Calibration " , "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
 char *unitName[]  ={"Set Degrees", "Sensor     ", "Temp Boil  ", "Temp Boil  ", "Pump Cycle ", "Pump Rest  ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Pump Stop  ", "Pump Stop  ", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "IodineTime " , "Whirlpool "};
 
@@ -6,13 +6,13 @@ byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, 
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B11111, B00010, B01000, B11111, B00000, B10001, B10101, B11111};  // [7] EN symbol
 
-
+/*
 void LCDSpace (byte Num){
   for(byte i=0; i<Num; i++){
     lcd.print(F(" "));
   }
 }
-
+*/
 void LCDClear(byte Riga){
   lcd.setCursor(0,Riga);
   LCDSpace(20);
@@ -20,9 +20,10 @@ void LCDClear(byte Riga){
 
 void PrintTemp(byte PosX, byte PosY, float Temp, byte dec){
   if (PosY<4) lcd.setCursor(PosX,PosY);
-
-  if (Temp<10.0)LCDSpace(2);
-  if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
+  
+  FormatNumeri(Temp, -1);
+  //if (Temp<10.0)LCDSpace(2);
+  //if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
   
   lcd.print(Temp, dec);
   lcd.write((byte)0);
@@ -35,7 +36,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.1b1"));
+  lcd.print(F("2.8.1b2"));
   lcd.write(7);
 }
 
@@ -136,7 +137,6 @@ void AddMalt(){
   lcd.print(F("    Add Malt    "));
   
   LCD_Procedo();
-  Buzzer(1, 1000);
 }
 
 void Stage(byte Stage, float Set, float Temp){
@@ -171,7 +171,6 @@ void RemoveMalt(){
   lcd.setCursor(3,2);
   lcd.print(F(" Remove  Malt    "));
   LCD_Procedo();
-  Buzzer(1,1500);
 }
 
 void Temp_Wait(float Temp){
@@ -190,8 +189,9 @@ void Boil(float Heat, float Temp, byte Tipo){
   
   lcd.setCursor(1,2);
   lcd.print(F("PWM="));    //Display output%
-  if (Heat<100 && Heat>=10)LCDSpace(1); 
-  if (Heat<10)LCDSpace(2); 
+  FormatNumeri(Heat, -1);
+  //if (Heat<100 && Heat>=10)LCDSpace(1); 
+  //if (Heat<10)LCDSpace(2); 
   lcd.print(Heat,0);       //Display output%
   lcd.print(F("% ")); 
 } 
@@ -250,18 +250,22 @@ void PidSet(int pidSet, byte i){
   if (i > 0 && i <= 5) {
     if (i  < 4) pidSet = pidSet - 100;
     if (i == 4) pidSet = pidSet * 250 + 1000;
-      
+    
+    FormatNumeri(pidSet, 0);
+    /*  
     if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
     if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
     if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
     if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
     if (pidSet >=  100)                  LCDSpace(1);
+    */
   }
   
   if(i >= 6){
     float OffSet = pidSet;
     if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
-    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+    FormatNumeri(OffSet, -2);
+    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
@@ -313,7 +317,8 @@ void UnitSet(byte unitSet, byte i){
 
     case(4):// Durata Ciclo Pompa
       LCDSpace(4);
-      if (unitSet < 10) LCDSpace(1);
+      FormatNumeri(unitSet, -2);
+      //if (unitSet < 10) LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
@@ -384,9 +389,10 @@ void StageSet(float Temp){
 
 void TimeSet(int Time){
   lcd.setCursor(12,2);
-  if (Time<10)LCDSpace(5);
-  if (Time>=10 && Time<100)LCDSpace(4);
-  if (Time>=100)LCDSpace(3);
+  FormatNumeri(Time, 2);
+  //if (Time<10)LCDSpace(5);
+  //if (Time>=10 && Time<100)LCDSpace(4);
+  //if (Time>=100)LCDSpace(3);
   lcd.print(Time);   
   lcd.print(F("'"));
   LCD_QQxO();
@@ -413,7 +419,8 @@ void Menu_3_3_9(){
 void Menu_3_3_10(byte SetHop){
   lcd.setCursor(1,2);
   lcd.print(F("Hops nmbr("));
-  if (SetHop<10)LCDSpace(1);
+  FormatNumeri(SetHop, -2);
+  //if (SetHop<10)LCDSpace(1);
   lcd.print(SetHop);
   lcd.print(F(")  "));
   LCD_QQxO();
@@ -421,8 +428,9 @@ void Menu_3_3_10(byte SetHop){
 
 void TimeHops(int Time){
   lcd.setCursor(15,2);
-  if (Time<10)LCDSpace(2);
-  if (Time>=10 && Time<100)LCDSpace(1);
+  FormatNumeri(Time, -1);
+  //if (Time<10)LCDSpace(2);
+  //if (Time>=10 && Time<100)LCDSpace(1);
   lcd.print(Time);   
   lcd.print(F("'"));
 }

@@ -1,3 +1,21 @@
+void LCDSpace (byte Num){
+  for(byte i=0; i<Num; i++){
+    lcd.print(F(" "));
+  }
+}
+
+void FormatNumeri(int Numero, byte Offset) {
+  byte Spazi = 0;
+  if (Numero <  -100)                  Spazi = 0;
+  if (Numero <=  -10 && Numero > -100) Spazi = 1;
+  if (Numero <     0 && Numero >  -10) Spazi = 2;
+  if (Numero <    10 && Numero >=   0) Spazi = 3;
+  if (Numero <   100 && Numero >=  10) Spazi = 2;
+  if (Numero >=  100)                  Spazi = 1;
+  if (Numero >= 100 )                  Spazi = 0;
+  LCDSpace(Spazi + Offset);
+}
+
 int freeRam() {
   #if TestMemoria == true
     extern int __heap_start, *__brkval;

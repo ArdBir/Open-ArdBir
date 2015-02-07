@@ -18,7 +18,8 @@
 // 2 Italian
 // 3 Spanish
 // 4 Portuguese
-#define LCDLanguage 1
+// 5 Russian (only 20 x 4)
+#define LCDLanguage 2
 
 // ==============================================
 // END OF SETTING SECTION
@@ -96,10 +97,11 @@ Copyright (C) 2012  Stephen Mathison
 
  - LCD 16x2 wiew
  - LCD 20x4 wiew
- - Italian Language
- - English Language
- - Spanish Language
- - Portuguese Language
+ - Italian Language     (Both)
+ - English Language     (Both)
+ - Spanish Language     (Both)
+ - Portuguese Language  (Both)
+ - Russian Language     (20x4)
 
  compiled on Arduino V1.0.6
 
@@ -215,10 +217,12 @@ EEPROM MAP
 
 /// FOR DEBUGGING ///
 #define StartSprite   false
-#define Sprite        false
+#define Sprite        true
 #define Crediti       true
 
 #define SerialMonitor false
+#define SerialPID     false
+
 #define ReadWrite     false
 #define TestMemoria   false
 /// ------------- ///
@@ -264,6 +268,7 @@ EEPROM MAP
         #include "LCD16x2_ESP.h"
     #elif LCDLanguage == 4 
         #include "LCD16x2_POR.h"
+    #elif LCDLanguage == 5 
     #endif
 #elif LCDType == 20
     #if LCDLanguage == 1
@@ -274,6 +279,8 @@ EEPROM MAP
         #include "LCD20x4_ESP.h"
     #elif LCDLanguage == 4 
         #include "LCD20x4_POR.h"
+    #elif LCDLanguage == 5 
+        #include "LCD20x4_RUS.h"
     #endif
 #endif
 
@@ -451,8 +458,38 @@ void PID_HEAT (boolean autoMode) {
   Delta    = Setpoint - (Input + IsteresiProporzionale);
   Rapporto = Delta / DeltaPID;
   
-  if (autoMode){
+  unsigned long now = millis();
+  
+  #if SerialPID == true
+    byte Ore, Minuti, Secondi;
+    unsigned int Millesimi;
+    Ore       = (byte) ((now/1000)/3600);
+    Minuti    = (byte)(((now/1000)%3600)/60);
+    Secondi   = (byte) ((now/1000)%60);
+    Millesimi = (unsigned int)    now%1000;
+  
+    Serial.print(F("Tempo: "));
+    if (Ore < 10)     Serial.print("0"); Serial.print(Ore);
+    Serial.print(":");    
+  
+    if( Minuti < 10)  Serial.print("0"); Serial.print(Minuti);
+    Serial.print(F(":"));    
+  
+    if (Secondi < 10) Serial.print("0"); Serial.print(Secondi);
+    Serial.print(F("."));
+  
+    if (Millesimi <   10) Serial.print("0");
+    if (Millesimi <  100) Serial.print("0");
+    Serial.print(Millesimi);
     
+    Serial.print(F("     Temperatura: "));
+    if(Temp_Now <  10 && Temp_Now >= 0) Serial.print(F("  "));
+    if(Temp_Now < 100 && Temp_Now >=10) Serial.print(F(" "));
+    Serial.print(Temp_Now);
+
+  #endif
+  
+  if (autoMode){
     if (Rapporto < 1.00){
       //IL VALORE VA MODULATO 
       if (UseGAS == 1) {
@@ -463,19 +500,31 @@ void PID_HEAT (boolean autoMode) {
       } else {
         //SEZIONE ELETTRICA
         myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
+        
+        #if SerialPID == true
+          Serial.print(F("   --> P.I.D. "));
+        #endif
       }
       
     //IL VALORE E' DIRETTO
-    } else Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
+    } else {
+      Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
+      #if SerialPID == true
+        Serial.print(F("   --> DIRECT "));
+      #endif
+    }
   }
-  
-  
+ 
+  #if SerialPID == true
+    Serial.print(F("     Output: "));
+    if(Output <  10 && Output >= 0) Serial.print(F("  "));
+    if(Output < 100 && Output >=10) Serial.print(F(" "));
+    Serial.println(Output);
+  #endif
   
   //FASE DI BOIL RAGGIUNTA
   // Il valore di Output viene riassegnato
   if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output;
-  
-  unsigned long now = millis();
   
 // PWM  
   if (now - w_StartTime > (unsigned int)(WindowSize * 250 + 1000)) w_StartTime += (unsigned int)(WindowSize * 250 + 1000); //time to shift the Relay Window
@@ -2153,6 +2202,10 @@ void setup() {
     Serial.begin(9600);
   #endif
   
+  #if SerialPID == true
+    Serial.begin(9600);
+  #endif
+  
   // SETTING LCD*****
   #if   LCDType == 16
     lcd.begin(16,2);
@@ -2160,6 +2213,10 @@ void setup() {
     lcd.begin(20,4);
   #endif
 
+  #if SerialPID == true  
+    Serial.println();
+    Serial.println(F("CONTROLLO SPERIMENTALE ATTIVITA' P.I.D."));
+  #endif
   
   pinMode (Button_up,    INPUT_PULLUP);
   pinMode (Button_dn,    INPUT_PULLUP);

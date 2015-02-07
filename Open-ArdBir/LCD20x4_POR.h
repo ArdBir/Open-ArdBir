@@ -1,18 +1,18 @@
 char *PIDName[]   ={"Uso", "Constante kP", "Constante kI", "Constante kD", "Janela  ms  ", "PWM Ebu     ", "Calibragem  " , "Histerese   "};
 char *stageName[] ={"Mash In   ", "Fitase    ", "Glucanase ", "Protease  ", "bAmilase  ", "aAmilase  ", "aAmilase2 ", "Mash Out  ", "Ebulicao  ", "Cooling   ", "Whirlpool "};
-char *unitName[]  ={"Escala     ", "Sensor     ", "Ebulicao   ", "Ebulicao   ", "Ciclo Bomba", "Pausa Bomba", "Pmp PreMash",  "Bmb em Mash", "Bmb MashOut", "Bomb em Ebu", "Bomb Parada", "Bomb Parada", "PID Pipe  " , "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodo ", "Whirlpool "};
+char *unitName[]  ={"Escala     ", "Sensor     ", "Ebulicao   ", "Ebulicao   ", "Ciclo Bomba", "Pausa Bomba", "Bmb PreMash",  "Bmb em Mash", "Bmb MashOut", "Bmb em Ebu ", "Bmb Parada ", "Bmb Parada ", "PID Pipe   " , "Pula Ad.Mlt   ", "Pula Remova", "Pula Iodo  ", "Tempo Iodo ", "Whirlpool "};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B00000, B10000, B11111, B10000, B00000, B11100, B10100, B11111};  // [7] POR symbol
 
-
+/*
 void LCDSpace (byte Num){
   for(byte i=0; i<Num; i++){
     lcd.print(F(" "));
   }
 }
-
+*/
 void LCDClear(byte Riga){
   lcd.setCursor(0,Riga);
   LCDSpace(20);
@@ -20,9 +20,10 @@ void LCDClear(byte Riga){
 
 void PrintTemp(byte PosX, byte PosY, float Temp, byte dec){
   if (PosY<4) lcd.setCursor(PosX,PosY);
-
-  if (Temp<10.0)LCDSpace(2);
-  if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
+  
+  FormatNumeri(Temp, -1);
+  //if (Temp<10.0)LCDSpace(2);
+  //if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
   
   lcd.print(Temp, dec);
   lcd.write((byte)0);
@@ -35,7 +36,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.1b1"));
+  lcd.print(F("2.8.1b2"));
   lcd.write(7);
 }
 
@@ -47,9 +48,8 @@ void Intestazione(){
 
 void LCD_Procedo(){
   lcd.setCursor(1,3);
-  lcd.print(F("Prosseguir-> Ok Sair"));
+  lcd.print(F("Confirme-> Ok Sair"));
 }
-
 
 void LCD_Default(float Temp){
   Intestazione();
@@ -60,7 +60,7 @@ void LCD_Default(float Temp){
   LCDClear(2);
   
   lcd.setCursor(1,3);
-  lcd.print(F("---  MAN AUTO SETUP"));
+  lcd.print(F("--- MAN AUTO SETUP"));
 }
 
 void CntDwn(int Time){
@@ -129,7 +129,7 @@ void Menu_2(){
   lcd.clear();  
 
   lcd.setCursor(0,0);
-  lcd.print(F("MODO' AUTOMATICO"));
+  lcd.print(F(" MODO' AUTOMATICO"));
 }
 void AddMalt(){
   lcd.setCursor(2,2);
@@ -188,8 +188,9 @@ void Boil(float Heat, float Temp, byte Tipo){
   
   lcd.setCursor(1,2);
   lcd.print(F("PWM="));    //Display output%
-  if (Heat<100 && Heat>=10)LCDSpace(1); 
-  if (Heat<10)LCDSpace(2); 
+  FormatNumeri(Heat, -1);
+  //if (Heat<100 && Heat>=10)LCDSpace(1); 
+  //if (Heat<10)LCDSpace(2); 
   lcd.print(Heat,0);       //Display output%
   lcd.print(F("% ")); 
 } 
@@ -209,27 +210,27 @@ void HopAdd(byte HopAdd){
 void Raffreddamento() {
   lcd.clear();
   lcd.setCursor(3, 1);
-  lcd.print(F("START  COOLING"));
+  lcd.print(F("Inicio COOLING"));
   LCD_Procedo();
 }
 
 void LCDWhirlpool() {
   lcd.clear();
   lcd.setCursor(2, 1);
-  lcd.print(F("START  WHIRLPOOL"));
+  lcd.print(F("Inicio WHIRLPOOL"));
   LCD_Procedo();
 }
 
 void Menu_3(){
   lcd.clear();
 
-  lcd.setCursor(0,0);
+  lcd.setCursor(1,0);
   lcd.print(F("MENU  CONFIGURACAO"));
 }
 void Menu_3_1(){
-  lcd.setCursor(2,1);
-  //lcd.print(F(" Parametros P.I.D."));
-  lcd.print(F("   PID -- PWM   "));
+  lcd.setCursor(0,1);
+  lcd.print(F("  Parametros P.I.D. "));
+  //lcd.print(F("   PID -- PWM   "));
 
   LCDClear(2);
 
@@ -240,7 +241,7 @@ void Menu_3_1_x(byte i){
   LCD_QQxO();
 }  
 
-void PidSet(int pidSet, byte i){
+void PidSet(int pidSet, byte i) {
   lcd.setCursor(13, 2);
   if (i > 0)          LCDSpace(1);
   if (i > 0 && i < 4) LCDSpace(1);
@@ -248,34 +249,38 @@ void PidSet(int pidSet, byte i){
   if (i > 0 && i <= 5) {
     if (i  < 4) pidSet = pidSet - 100;
     if (i == 4) pidSet = pidSet * 250 + 1000;
-      
+    
+    FormatNumeri(pidSet, 0);
+    /*  
     if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
     if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
     if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
     if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
     if (pidSet >=  100)                  LCDSpace(1);
+    */
   }
   
   if(i >= 6){
     float OffSet = pidSet;
     if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
-    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+    FormatNumeri(OffSet, -2);
+    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
   
-  if (i == 0) {
-    lcd.setCursor(10, 2);
-    if (pidSet == 0) lcd.print(F(" Eletrico"));
-    else             lcd.print(F("      Gas"));
+  if (i == 0){
+    lcd.setCursor(9, 2);
+    if (pidSet == 0)lcd.print(F(" Eletrico"));
+    else            lcd.print(F("      Gas"));
   }else lcd.print(pidSet);
 
-  if (i == 5) lcd.print(F("%"));
+  if(i == 5)lcd.print(F("%"));
 }
 
 void Menu_3_2(){
-  lcd.setCursor(2,1);
-  lcd.print(F("Parametros Unidade"));
+  lcd.setCursor(0, 1);
+  lcd.print(F(" Parametros Unidade "));
   
   LCDClear(2);
   
@@ -311,7 +316,8 @@ void UnitSet(byte unitSet, byte i){
 
     case(4):// Durata Ciclo Pompa
       LCDSpace(4);
-      if (unitSet < 10) LCDSpace(1);
+      FormatNumeri(unitSet, -2);
+      //if (unitSet < 10) LCDSpace(1);
       lcd.print(unitSet);
       lcd.print(F("'"));
       break;
@@ -344,8 +350,12 @@ void UnitSet(byte unitSet, byte i){
     case(14):
     case(15):
       LCDSpace(5);
-      if (unitSet == 0) lcd.print(F("NO"));
-      if (unitSet == 1) lcd.print(F("SI"));
+      lcd.setCursor(16, 2);
+      
+      if (unitSet == 0) 
+           lcd.print(F("NAO"));
+      if (unitSet == 1) 
+           lcd.print(F("SIM"));
       break; 
       
     case(16): //Iodio
@@ -365,8 +375,8 @@ void UnitSet(byte unitSet, byte i){
 
 
 void Menu_3_3(){
-  lcd.setCursor(2,1);
-  lcd.print(F("Set  Automatizacao"));
+  lcd.setCursor(0,1);
+  lcd.print(F(" Set  Automatizacao "));
   LCD_SGEO();
 }     
 void Menu_3_3_x(byte Stage){
@@ -382,9 +392,10 @@ void StageSet(float Temp){
 
 void TimeSet(int Time){
   lcd.setCursor(12,2);
-  if (Time<10)LCDSpace(5);
-  if (Time>=10 && Time<100)LCDSpace(4);
-  if (Time>=100)LCDSpace(3);
+  FormatNumeri(Time, 2);
+  //if (Time<10)LCDSpace(5);
+  //if (Time>=10 && Time<100)LCDSpace(4);
+  //if (Time>=100)LCDSpace(3);
   lcd.print(Time);   
   lcd.print(F("'"));
   LCD_QQxO();
@@ -411,7 +422,8 @@ void Menu_3_3_9(){
 void Menu_3_3_10(byte SetHop){
   lcd.setCursor(1,2);
   lcd.print(F("Lupulo  ("));
-  if (SetHop<10)LCDSpace(1);
+  FormatNumeri(SetHop, -2);
+  //if (SetHop<10)LCDSpace(1);
   lcd.print(SetHop);
   lcd.print(F(")  "));
   LCD_QQxO();
@@ -419,8 +431,9 @@ void Menu_3_3_10(byte SetHop){
 
 void TimeHops(int Time){
   lcd.setCursor(15,2);
-  if (Time<10)LCDSpace(2);
-  if (Time>=10 && Time<100)LCDSpace(1);
+  FormatNumeri(Time, -1);
+  //if (Time<10)LCDSpace(2);
+  //if (Time>=10 && Time<100)LCDSpace(1);
   lcd.print(Time);   
   lcd.print(F("'"));
 }
@@ -428,8 +441,8 @@ void TimeHops(int Time){
 
 
 void Menu_3_4(){
-  lcd.setCursor(1,1);
-  lcd.print(F("Gestor de Receitas"));
+  lcd.setCursor(0, 1);
+  lcd.print(F(" Gestor de Receitas "));
   
   LCDClear(2);
 
@@ -452,7 +465,7 @@ void Menu_3_4_3(){
 }
 void Menu_3_4_4(){
   lcd.setCursor(2,2);
-  lcd.print(F(" Inicializacao  "));
+  lcd.print(F(" Inicializacao    "));
   LCD_SxEO();
 }
 
@@ -522,7 +535,7 @@ void SalvaRicetta(){
   Buzzer(5,35);
 
   lcd.setCursor(1,3);
-  lcd.print(F("   Salvando...   "));
+  lcd.print(F("   Salvando...    "));
   delay(1500);
 
   lcd.setCursor(1,3);
@@ -546,17 +559,17 @@ void Cancellazione(byte Ricetta){
   Buzzer(2,35);
 
   lcd.setCursor(1,3);
-  lcd.print(F("Cancelando...     "));
+  lcd.print(F("   Apagando...    "));
   delay(1500);
   
   lcd.setCursor(1,3);
-  lcd.print(F("Receita  Cancelada"));
+  lcd.print(F("Receita  Apagada  "));
   delay(1500);
 }
 
 void Inizializzazione(){
   lcd.setCursor(2,2);
-  lcd.print(F(" Iniciar "));
+  lcd.print(F("   Iniciar     "));
   
   LCD_Procedo();
 }
@@ -564,7 +577,7 @@ void Inizializza(){
   LCDClear(2);
   
   lcd.setCursor(1,3);
-  lcd.print(F("  Iniciar EEPROM  "));
+  lcd.print(F("  Iniciar EEPROM   "));
   delay(1500);
   
   Buzzer(3,75);
@@ -590,8 +603,8 @@ void MemoriaPiena(){
 
 
 void Menu_3_5(){
-  lcd.setCursor(2,1);
-  lcd.print(F("    Creditos    "));
+  lcd.setCursor(0, 1);
+  lcd.print(F("      Creditos      "));
   LCD_SxEO();
 }     
 
@@ -622,7 +635,7 @@ void Credits(){
   display_lcd(4,3,"A. Mondejar",999);//Spagnolo
   display_lcd(4,3,"C.M. Macedo",999);//Portoghese 20x4
   display_lcd(3,3,"F.A. Oliveira",999);//Portugues 16x2
-  
+  display_lcd(3,3,"Guto Santaella",999);//Portuguese 20x4 (new)
   Clear_2_3(); 
 }
 
@@ -669,7 +682,7 @@ void Pause_Stage(float Temp, int Time){
 
 void prompt_for_water (){
   lcd.setCursor(2,1);
-  lcd.print(F("Adicionar  agua?"));
+  lcd.print(F("Adicionou  agua?"));
   LCD_Procedo();
 }
 
@@ -758,13 +771,13 @@ void PartenzaRitardata(){
   Clear_2_3();
   lcd.setCursor(2,2);
   lcd.print(F("Atrasar  Inicio?"));
-  lcd.setCursor(14,3);
-  lcd.print(F("Nao Sim")); 
+  lcd.setCursor(12,3);
+  lcd.print(F("Nao  Sim")); 
 }
 
 void ImpostaTempo(unsigned long Time){
   lcd.setCursor(2,1);
-  lcd.print(F("Configurar Delay"));
+  lcd.print(F("Configurar atraso"));
  
   CountDown(Time*60,6,2,2);
   
@@ -773,7 +786,7 @@ void ImpostaTempo(unsigned long Time){
 
 void StartDelay(unsigned long Tempo){
   lcd.setCursor(2,1);
-  lcd.print(F("Comecando  em"));
+  lcd.print(F("   Inicio em...   "));
   CountDown(Tempo,6,2,2);
 }
 
@@ -783,5 +796,5 @@ void TemperaturaRaggiunta(){
   lcd.print(F("Temp. Atingida"));
 
   lcd.setCursor(1,3);
-  lcd.print(F("Prosseguir-> Ok  ---"));
+  lcd.print(F("Confirme-> Ok  ---"));
 }

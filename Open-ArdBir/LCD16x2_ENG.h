@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "Windowset  ", "Use in Boil", "Calibration", "Hysteresi  "};
+char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "WindowSet  ", "Use in Boil", "Calibration", "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
 char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pmp PreMash",  "Pmp on Mash", "Pmp MashOut", "Pump on Boil ", "Pump Stop at ", "Pump Stop at ", "PID Pipe ", "Skip Add      ", "Skip Remove ", "Skip Iodine ", "Iodine  ", "Whirlpool"};
 
@@ -6,12 +6,13 @@ byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, 
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B11111, B00010, B01000, B11111, B00000, B10001, B10101, B11111};  // [7] EN symbol
 
+/*
 void LCDSpace (byte Num){
   for(byte i=0; i<Num; i++){
     lcd.print(F(" "));
   }
 }
-
+*/
 void LCDClear(byte Riga){
   lcd.setCursor(0,Riga);
   LCDSpace(20);
