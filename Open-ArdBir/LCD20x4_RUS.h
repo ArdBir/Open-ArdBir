@@ -40,7 +40,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.1b2"));
+  lcd.print(F("2.8.2b0"));
   lcd.write(7);
 }
 
@@ -642,6 +642,7 @@ void Credits(){
   display_lcd(4,3,"A. Mondejar",999);//Spagnolo
   display_lcd(4,3,"C.M. Macedo",999);//Portoghese 20x4
   display_lcd(3,3,"F.A. Oliveira",999);//Portugues 16x2
+  //display_lcd(3,3,"G.  Santaella",999);//Portuguese 20x4 (new)
   
   Clear_2_3(); 
 }

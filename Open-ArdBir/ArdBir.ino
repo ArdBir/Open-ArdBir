@@ -63,6 +63,7 @@ Copyright (C) 2012  Stephen Mathison
  - Added Use Gas section
  - Set Histeresy for Gas Use
  - Set Calibration Temp
+ - Modified PID on BOIL
  
  - Added Second Menu Configuration
    - Set Scale Temp (°C-°F)
@@ -88,7 +89,9 @@ Copyright (C) 2012  Stephen Mathison
    - Auto Mash Design
    - Correct Time Reset of Pump
    - Added Iodine Test (Active Pause)
-
+   - Added WHIRLPOOL control
+   - Added COOLING control
+   
  - Stage Managing
    - Load Stage Set
    - Save Stage Set
@@ -216,7 +219,7 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   false
+#define StartSprite   true
 #define Sprite        true
 #define Crediti       true
 
@@ -451,7 +454,11 @@ void PID_HEAT (boolean autoMode) {
     IsteresiProporzionale = DeltaPID / Input;
     WindowSize = 156;
   } else {  
-    DeltaPID = 5.00;
+    if (ScaleTemp == 0)       DeltaPID = 5.00;
+    else                      DeltaPID = 9.00;
+    
+    if (Input >= boilStageTemp - DeltaPID) DeltaPID = 0;
+    
     IsteresiProporzionale = 0.0;
   }  
   
@@ -482,10 +489,18 @@ void PID_HEAT (boolean autoMode) {
     if (Millesimi <  100) Serial.print("0");
     Serial.print(Millesimi);
     
-    Serial.print(F("     Temperatura: "));
+    Serial.print(F("   Temperatura: "));
     if(Temp_Now <  10 && Temp_Now >= 0) Serial.print(F("  "));
     if(Temp_Now < 100 && Temp_Now >=10) Serial.print(F(" "));
     Serial.print(Temp_Now);
+    
+    Serial.print(F("   Set Point: "));
+    if(stageTemp <  10 && stageTemp >= 0) Serial.print(F("  "));
+    if(stageTemp < 100 && stageTemp >=10) Serial.print(F(" "));
+    Serial.print(stageTemp);
+    
+    Serial.print(F("   DeltaPID: "));
+    Serial.print(DeltaPID);
 
   #endif
   
@@ -500,28 +515,14 @@ void PID_HEAT (boolean autoMode) {
       } else {
         //SEZIONE ELETTRICA
         myPID.Compute();   // was 6, getting close, start feeding the PID -mdw
-        
-        #if SerialPID == true
-          Serial.print(F("   --> P.I.D. "));
-        #endif
       }
       
     //IL VALORE E' DIRETTO
     } else {
       Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
-      #if SerialPID == true
-        Serial.print(F("   --> DIRECT "));
-      #endif
     }
   }
  
-  #if SerialPID == true
-    Serial.print(F("     Output: "));
-    if(Output <  10 && Output >= 0) Serial.print(F("  "));
-    if(Output < 100 && Output >=10) Serial.print(F(" "));
-    Serial.println(Output);
-  #endif
-  
   //FASE DI BOIL RAGGIUNTA
   // Il valore di Output viene riassegnato
   if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output;
@@ -529,8 +530,27 @@ void PID_HEAT (boolean autoMode) {
 // PWM  
   if (now - w_StartTime > (unsigned int)(WindowSize * 250 + 1000)) w_StartTime += (unsigned int)(WindowSize * 250 + 1000); //time to shift the Relay Window
   
-  if ((Output * ((unsigned int)(WindowSize * 250 + 1000) / 100)) > now - w_StartTime) heat_on();
+  if ((Output * ((unsigned int)(WindowSize * 250 + 1000) / 100)) > now - w_StartTime) {
+    //***********
+    mheat = true;
+    //***********
+    heat_on();
+  }
   else heat_off(mheat);
+  
+  #if SerialPID == true
+    Serial.print(F("   Output: "));
+    if(Output <  10 && Output >= 0) Serial.print(F("  "));
+    if(Output < 100 && Output >=10) Serial.print(F(" "));
+    Serial.print(Output);
+    
+    Serial.print(F(" | Stato Pompa: "));
+    Serial.print(mpump);
+    
+    Serial.print(F("   Tempo: "));
+    if(pumpTime <  10 && pumpTime >= 0) Serial.print(F("  "));
+    Serial.println(pumpTime);
+  #endif
 }
 
 void load_pid_settings () {
@@ -569,7 +589,7 @@ boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display) {
   while (wtBtn) {                             // wait for comfirmation 
     Temperature();
     Input = Temp_Now;
-
+     
     if (Display == 1) Temp_Wait(Temp_Now);
 
     if (Stato == 1) {                         // Pausa ATTIVA
@@ -715,12 +735,18 @@ void pump_rest (byte stage) {
       //Determina il Delta in cui tenere spento
       if (tempReached){
         if (Temp_Now < (boilStageTemp - (DeltaTemp * 2))) {
+          // ************
+          mpump = true;
+          // ************
           pump_on();
           pumpRest = false;
         } else { 
           pump_off(mpump);
         }
       } else {
+        // ************
+        mpump = true;
+        // ************
         pump_on();
         pumpRest = false;
       }
@@ -731,6 +757,9 @@ void pump_rest (byte stage) {
       if (PumpOnBoil == 0) {
         pump_off(mpump); // Turn OFF the pump in BOIL stage
       } else {
+        // ************
+        mpump = true;
+        // ************
         pump_on();
         pumpRest = false;
       }
@@ -742,6 +771,9 @@ void pump_rest (byte stage) {
       
       //Se non viene raggiunto il limite di tempo POMPA ON
       if ((pumpTime < TimePumpCycle)) { // starts pumps and heat
+        // ************
+        mpump = true;
+        // ************
         pump_on();
         pumpRest = false; 
       } else {//Se viene raggiunto il limite di tempo POMPA OFF
@@ -847,7 +879,7 @@ void stage_loop () {
     Setpoint = stageTemp;
 
     Input = Temp_Now;
-
+    
     pauseStage();
       
     LeggiPulsante(Verso, Timer);
@@ -1079,7 +1111,7 @@ void manual_mode () {
     Setpoint = mset_temp;
 
     Input = Temp_Now;
-
+    
     if (tempReached == false) {
       if (Input >= Setpoint) tempReached = true;
     } else {
@@ -1130,7 +1162,7 @@ void manual_mode () {
       Manuale(mset_temp, Temp_Now, boilStageTemp);
     }
     
-    if (Setpoint >= boilStageTemp && Input >= Setpoint) { 
+    if (Setpoint >= boilStageTemp && Temp_Now >= Setpoint) { 
       Set(boil_output, 100, 0, 1, Timer, Verso);
 
       Boil(boil_output, Temp_Now, 0);
@@ -1139,6 +1171,9 @@ void manual_mode () {
       if (mpump) pump_rest(8);    //Forced Boil Stage for Pump Control
       
     } else {
+      
+      NoBoil();
+      
       if (ScaleTemp == 0) Set(mset_temp, 110, 20, 0.25, Timer, Verso);
       else                Set(mset_temp, 230, 68, 0.25, Timer, Verso);
 
@@ -2301,9 +2336,9 @@ void loop() {
 
 
   default: 
-    DelayedMode=false;
-    mheat = false;
-    mpump = false;  
+    DelayedMode = false;
+    mheat =       false;
+    mpump =       false;  
     
     allOFF();
     

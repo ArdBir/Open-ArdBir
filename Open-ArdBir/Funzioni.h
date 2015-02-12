@@ -1,5 +1,14 @@
+void Buzzer(byte NumBeep, int Period){
+  for (byte i = 0; i < NumBeep; i++){
+    digitalWrite (Buzz, HIGH);
+    delay (Period);
+    digitalWrite(Buzz, LOW);
+    delay(100);
+  }
+}
+
 void LCDSpace (byte Num){
-  for(byte i=0; i<Num; i++){
+  for(byte i = 0; i < Num; i++){
     lcd.print(F(" "));
   }
 }
@@ -12,7 +21,6 @@ void FormatNumeri(int Numero, byte Offset) {
   if (Numero <    10 && Numero >=   0) Spazi = 3;
   if (Numero <   100 && Numero >=  10) Spazi = 2;
   if (Numero >=  100)                  Spazi = 1;
-  if (Numero >= 100 )                  Spazi = 0;
   LCDSpace(Spazi + Offset);
 }
 
@@ -24,16 +32,9 @@ int freeRam() {
   #endif
 }
 
-void Buzzer(byte NumBeep, int Period){
-  for (byte i=0; i < NumBeep; i++){
-    digitalWrite (Buzz, HIGH);
-    delay (Period);
-    digitalWrite(Buzz, LOW);
-    delay(100);
-  }
-}
+
 void r_set(byte& data, int addr){
-  data=EEPROM.read(addr);
+  data = EEPROM.read(addr);
 
 #if SerialMonitor == true  
   #if ReadWrite   == true  

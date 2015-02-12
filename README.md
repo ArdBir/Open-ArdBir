@@ -1,5 +1,7 @@
 Open ArdBir 2012-2014
 ===========
+Version 2.8.2b0
+
 Version 2.8.1b2
 - Added Russian Language
 
