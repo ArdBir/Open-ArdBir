@@ -219,12 +219,13 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   true
-#define Sprite        true
+#define StartSprite   false
+#define Sprite        false
 #define Crediti       true
 
 #define SerialMonitor false
 #define SerialPID     false
+#define PID_FE        true
 
 #define ReadWrite     false
 #define TestMemoria   false
@@ -352,8 +353,8 @@ byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   105, 90, 1,   221, 194, 1,   15, 5, 1,
 
 
 //Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &Setpoint, 95, 40, 0, DIRECT);
-
+PID myPID(&Input, &Output, &Setpoint, 100, 40, 0, DIRECT);
+unsigned long serialTime; //this will help us know when to talk with processing
 
 byte degC[8]         = {B01000, B10100, B01000, B00111, B01000, B01000, B01000, B00111};  // [0] degree c sybmol 
 byte degF[8]         = {B01000, B10100, B01000, B00111, B00100, B00110, B00100, B00100};  // [0] degree f symbol
@@ -538,6 +539,14 @@ void PID_HEAT (boolean autoMode) {
   }
   else heat_off(mheat);
   
+  #if PID_FE == true
+    if(millis()>serialTime)  {
+      SerialReceive();
+      SerialSend();
+      serialTime+=500;
+    }
+  #endif
+  
   #if SerialPID == true
     Serial.print(F("   Output: "));
     if(Output <  10 && Output >= 0) Serial.print(F("  "));
@@ -562,7 +571,7 @@ void load_pid_settings () {
   r_set(eepromKi, 2);
   r_set(eepromKd, 3);
   
-  myPID.SetTunings(eepromKp - 100, (eepromKi - 100) / 400, eepromKd - 100); // send the PID settings to the PID
+  myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 500.00), eepromKd - 100); // send the PID settings to the PID
   
   r_set(WindowSize, 4);
     
@@ -2233,13 +2242,14 @@ void setup_mode () {
 
 void setup() {
   // Start up the library
-  #if SerialMonitor == true
+  #if   SerialMonitor == true
+    Serial.begin(9600);
+  #elif SerialPID     == true
+    Serial.begin(9600);
+  #elif PID_FE        == true
     Serial.begin(9600);
   #endif
   
-  #if SerialPID == true
-    Serial.begin(9600);
-  #endif
   
   // SETTING LCD*****
   #if   LCDType == 16
@@ -2354,4 +2364,110 @@ void loop() {
     break;    
   }
 }
+
+
+
+
+/********************************************
+ * Serial Communication functions / helpers
+ ********************************************/
+
+
+union {                // This Data structure lets
+  byte asBytes[24];    // us take the byte array
+  float asFloat[6];    // sent from processing and
+}                      // easily convert it to a
+foo;                   // float array
+
+
+
+// getting float values from processing into the arduino
+// was no small task.  the way this program does it is
+// as follows:
+//  * a float takes up 4 bytes.  in processing, convert
+//    the array of floats we want to send, into an array
+//    of bytes.
+//  * send the bytes to the arduino
+//  * use a data structure known as a union to convert
+//    the array of bytes back into an array of floats
+
+//  the bytes coming from the arduino follow the following
+//  format:
+//  0: 0=Manual, 1=Auto, else = ? error ?
+//  1: 0=Direct, 1=Reverse, else = ? error ?
+//  2-5: float setpoint
+//  6-9: float input
+//  10-13: float output  
+//  14-17: float P_Param
+//  18-21: float I_Param
+//  22-245: float D_Param
+void SerialReceive()
+{
+
+  // read the bytes sent from Processing
+  int index=0;
+  byte Auto_Man = -1;
+  byte Direct_Reverse = -1;
+  while(Serial.available()&&index<26)
+  {
+    if(index==0) Auto_Man = Serial.read();
+    else if(index==1) Direct_Reverse = Serial.read();
+    else foo.asBytes[index-2] = Serial.read();
+    index++;
+  } 
+  
+  // if the information we got was in the correct format, 
+  // read it into the system
+  if(index==26  && (Auto_Man==0 || Auto_Man==1)&& (Direct_Reverse==0 || Direct_Reverse==1))
+  {
+    Setpoint=double(foo.asFloat[0]);
+    //Input=double(foo.asFloat[1]);       // * the user has the ability to send the 
+                                          //   value of "Input"  in most cases (as 
+                                          //   in this one) this is not needed.
+    if(Auto_Man==0)                       // * only change the output if we are in 
+    {                                     //   manual mode.  otherwise we'll get an
+      Output=double(foo.asFloat[2]);      //   output blip, then the controller will 
+    }                                     //   overwrite.
+    
+    double p, i, d;                       // * read in and set the controller tunings
+    p = double(foo.asFloat[3]);           //
+    i = double(foo.asFloat[4]);           //
+    d = double(foo.asFloat[5]);           //
+    myPID.SetTunings(p, i, d);            //
+    
+    if(Auto_Man==0) myPID.SetMode(MANUAL);// * set the controller mode
+    else myPID.SetMode(AUTOMATIC);             //
+    
+    if(Direct_Reverse==0) myPID.SetControllerDirection(DIRECT);// * set the controller Direction
+    else myPID.SetControllerDirection(REVERSE);          //
+  }
+  Serial.flush();                         // * clear any random data from the serial buffer
+}
+
+// unlike our tiny microprocessor, the processing ap
+// has no problem converting strings into floats, so
+// we can just send strings.  much easier than getting
+// floats from processing to here no?
+void SerialSend()
+{
+  Serial.print("PID ");
+  Serial.print(Setpoint);   
+  Serial.print(" ");
+  Serial.print(Input);   
+  Serial.print(" ");
+  Serial.print(Output);   
+  Serial.print(" ");
+  Serial.print(myPID.GetKp());   
+  Serial.print(" ");
+  Serial.print(myPID.GetKi() * 400);   
+  Serial.print(" ");
+  Serial.print(myPID.GetKd());   
+  Serial.print(" ");
+  if(myPID.GetMode()==AUTOMATIC) Serial.print("Automatic");
+  else Serial.print("Manual");  
+  Serial.print(" ");
+  if(myPID.GetDirection()==DIRECT) Serial.println("Direct");
+  else Serial.println("Reverse");
+}
+
 
