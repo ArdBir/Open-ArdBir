@@ -35,7 +35,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b1"));
+  lcd.print(F("2.8.2b3"));
   lcd.write(7);
 }
 
@@ -247,7 +247,7 @@ void PidSet(int pidSet, byte i) {
   
   if (i > 0 && i <= 5) {
     if (i  < 4) pidSet = pidSet - 100;
-    if (i == 4) pidSet = pidSet * 250 + 1000;
+    if (i == 4) pidSet = pidSet * 250;
     
     FormatNumeri(pidSet, 0);
     /*  

@@ -195,7 +195,7 @@ void PidSet(int pidSet, byte i){
  
   if (i > 0 && i <= 5) {
     if (i  < 4) pidSet = pidSet - 100;
-    if (i == 4) pidSet = pidSet * 250 + 1000;
+    if (i == 4) pidSet = pidSet * 250;
       
     if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
     if (pidSet <     0 && pidSet >  -10) LCDSpace(2);

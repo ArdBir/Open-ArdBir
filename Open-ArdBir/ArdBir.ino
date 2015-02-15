@@ -346,7 +346,7 @@ byte Verso              ;
 float p_C[]    ={  75.00, 20.00, 0.25,   55.00, 25.00, 0.25,   50.00, 35.00, 0.25,   60.00,  45.00, 0.25,   70.00,  50.00, 0.25,   76.00,  60.00, 0.25,  76.00,  60.00, 0.25,  80.00,  75.00, 0.25 }; 
 float p_F[]    ={ 167.00, 68.00, 0.25,  131.00, 77.00, 0.25,  122.00, 95.00, 0.25,  140.00, 113.00, 0.25,  158.00, 122.00, 0.25,  168.75, 140.00, 0.25, 176.00, 167.00, 0.25, 176.00, 167.00, 0.25 }; 
 
-byte  p_PID[]  ={   1, 0, 1,   200, 0, 1,   255, 0, 1,   200, 0, 1,   26, 0, 1,   100, 0, 1,   100, 0, 1,   100, 0, 1 }; 
+byte  p_PID[]  ={   1, 0, 1,   200, 0, 1,   255, 0, 1,   200, 0, 1,   30, 9, 1,   100, 0, 1,   100, 0, 1,   100, 0, 1 }; 
 //                  Use Gas       kP           kI           kD        Win Size    %PWM Boil    Calibration   Hysteresi 
 byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   105, 90, 1,   221, 194, 1,   15, 5, 1,   5, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   105, 80, 1,   221, 176, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   90, 0, 1,   2, 0, 1};
 //                   Scala °   Sensore      Boil °C       Boil °F      Ciclo Pmp  Pausa Pmp   PreMash    on Mash    MashOut    on Boil     Fermo °C       Fermo °F     PID Pipe    Sk.Add   Sk.Remove   Iodine     TimeIodio   Whirlpool
@@ -455,8 +455,8 @@ void PID_HEAT (boolean autoMode) {
     IsteresiProporzionale = DeltaPID / Input;
     WindowSize = 156;
   } else {  
-    if (ScaleTemp == 0)       DeltaPID = 5.00;
-    else                      DeltaPID = 9.00;
+    if (ScaleTemp == 0)       DeltaPID = 3.50;
+    else                      DeltaPID = 6.30;
     
     if (Input >= boilStageTemp - DeltaPID) DeltaPID = 0;
     
@@ -510,7 +510,7 @@ void PID_HEAT (boolean autoMode) {
       //IL VALORE VA MODULATO 
       if (UseGAS == 1) {
         //SEZIONE GAS
-        Output = Arrotonda025(Rapporto) * 100;
+        Output = Arrotonda025(Rapporto) * 255;
         if (Rapporto < 0.25) Output = 15.00;
         if (Rapporto < 0.10) Output =  0.00;
       } else {
@@ -520,7 +520,7 @@ void PID_HEAT (boolean autoMode) {
       
     //IL VALORE E' DIRETTO
     } else {
-      Output = 100;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
+      Output = 255;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
     }
   }
  
@@ -529,9 +529,9 @@ void PID_HEAT (boolean autoMode) {
   if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output;
   
 // PWM  
-  if (now - w_StartTime > (unsigned int)(WindowSize * 250 + 1000)) w_StartTime += (unsigned int)(WindowSize * 250 + 1000); //time to shift the Relay Window
+  if (now - w_StartTime > (unsigned int)(WindowSize * 250)) w_StartTime += (unsigned int)(WindowSize * 250); //time to shift the Relay Window
   
-  if ((Output * ((unsigned int)(WindowSize * 250 + 1000) / 100)) > now - w_StartTime) {
+  if ((Output * ((unsigned int)(WindowSize * 250) / 255)) > now - w_StartTime) {
     //***********
     mheat = true;
     //***********
@@ -571,12 +571,12 @@ void load_pid_settings () {
   r_set(eepromKi, 2);
   r_set(eepromKd, 3);
   
-  myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 500.00), eepromKd - 100); // send the PID settings to the PID
+  myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 250.00), eepromKd - 100); // send the PID settings to the PID
   
   r_set(WindowSize, 4);
     
-  myPID.SetOutputLimits(0.0, 100.0);
-  myPID.SetSampleTime(3500);
+  //myPID.SetOutputLimits(0.0, 255.0);
+  myPID.SetSampleTime(2000);
 }  
 
 boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display) { 
@@ -2374,7 +2374,7 @@ void loop() {
 
 
 union {                // This Data structure lets
-  byte asBytes[24];    // us take the byte array
+  byte asBytes[25];    // us take the byte array
   float asFloat[6];    // sent from processing and
 }                      // easily convert it to a
 foo;                   // float array
@@ -2457,9 +2457,13 @@ void SerialSend()
   Serial.print(" ");
   Serial.print(Output);   
   Serial.print(" ");
+  Serial.print(mpump);
+  Serial.print(" ");
+  Serial.print(pumpTime);
+  Serial.print(" ");
   Serial.print(myPID.GetKp());   
   Serial.print(" ");
-  Serial.print(myPID.GetKi() * 400);   
+  Serial.print(myPID.GetKi());   
   Serial.print(" ");
   Serial.print(myPID.GetKd());   
   Serial.print(" ");

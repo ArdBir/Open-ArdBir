@@ -1,6 +1,7 @@
 Open ArdBir 2012-2014
 ===========
-Version 2.8.2b1
+Version 2.8.2b3
+Added Processing Front-End
 
 Source, PCB, Manual (English, Italian, Russian): http://goo.gl/SCM4Yo
 
