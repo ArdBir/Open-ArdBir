@@ -687,3 +687,12 @@ void TemperaturaRaggiunta(){
   lcd.setCursor(9,1);
   lcd.print(F("Ok -- "));
 }
+
+void ImpostaWhirlpool(unsigned long Time) {
+  lcd.setCursor(0, 1);
+  lcd.print(F("Timing Whirlpool"));
+ 
+  CountDown(Time * 60, 6, 2, 2);
+  
+  LCD_SGEO();
+}

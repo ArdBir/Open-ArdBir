@@ -220,12 +220,12 @@ EEPROM MAP
 
 /// FOR DEBUGGING ///
 #define StartSprite   false
-#define Sprite        false
+#define Sprite        true
 #define Crediti       true
 
 #define SerialMonitor false
 #define SerialPID     false
-#define PID_FE        true
+#define PID_FE        false
 
 #define ReadWrite     false
 #define TestMemoria   false
@@ -964,7 +964,8 @@ void stage_loop () {
       if ((x - 1) == 8 && tempBoilReached == false) tempBoilReached = true;
       if (tempReached == false) {
         tempReached = true; 
-      
+        Buzzer (3,250);
+        
         //***** Aggiunta per salto tenuta Mash In
         if ((x - 1) == 0) stageTime = 0;
         //*****
@@ -1122,7 +1123,9 @@ void manual_mode () {
     Input = Temp_Now;
     
     if (tempReached == false) {
-      if (Input >= Setpoint) tempReached = true;
+      if (Input >= Setpoint) {
+        tempReached = true;
+      }
     } else {
       if ((Input + DeltaSetPoint) < Setpoint && Verso == 1) {
         tempReached   = false;
@@ -1138,10 +1141,11 @@ void manual_mode () {
     
     if (tempReached) {
       if (reachedBeep == false) {
-        Buzzer(4, 125);
+         Buzzer(3, 250);
         reachedBeep = true;
       }
     } 
+    
     
     Timing(8, tempReached, 1);
 
@@ -1318,6 +1322,8 @@ void auto_mode () {
     pump_prime();
     x = 0;
   }
+
+x=9;
  
   if (DelayedMode) WaitStart();
  
@@ -1406,6 +1412,7 @@ void auto_mode () {
     stage_loop();
 
     if (b_Enter) {    // finishes the brewing process
+      mheat = false;
       
       if (EEPROM.read(27) == 2) Whirlpool(); // Whirlpool a Caldo
       else                      Cooling();
@@ -1457,7 +1464,7 @@ void Cooling() {
 void Whirlpool () {  
   //stageTime =  3;
   TimeSpent =  0;
-  TimeLeft  = 3 * 60;
+  TimeLeft  = 0;
   
   boolean f_Whirlpool = false;
   byte b_Whirlpool;
@@ -1476,32 +1483,52 @@ void Whirlpool () {
   //Attende risposta per whirlpool
   LCDWhirlpool();
   wait_for_confirm(f_Whirlpool, 2, 2, 2);
+  if (f_Whirlpool){
+    boolean Procedo = true;
+    byte TempoWhirlpool;
+    
+    //TimeLeft = 0;
   
-  Menu_2();
+    while (Procedo) {
+      ImpostaWhirlpool(TempoWhirlpool);
+      LeggiPulsante(Verso, Timer);
+    
+      Set((TempoWhirlpool), 10, 1, 1, Timer, Verso);
+    
+      if (btn_Press(Button_enter, 50)) Procedo = false;
+    
+      if (btn_Press(Button_start, 50)) {
+        Procedo     = false;
+        f_Whirlpool = false;
+      }
+    }  
+    TimeLeft = TempoWhirlpool * 60;
+    Menu_2();
   
-  boolean Mulinello = false;
+    boolean Mulinello = false;
   
-  while (f_Whirlpool) {
-    Temperature();
-    Stage(10, stageTemp, Temp_Now);
+    while (f_Whirlpool) {
+      Temperature();
+      Stage(10, stageTemp, Temp_Now);
 
-    if (b_Whirlpool == 2) {
-      if (Temp_Now <=  stageTemp) break;
-      else Mulinello = true;
-    } else {
-      if (Temp_Now <=  stageTemp) Mulinello = true;
+      if (b_Whirlpool == 2) {
+        if (Temp_Now <=  stageTemp) break;
+        else Mulinello = true;
+      } else {
+        if (Temp_Now <=  stageTemp) Mulinello = true;
+      }
+    
+      if (Mulinello) {
+        pump_on();
+        Timing (0, true, 1);
+      } 
+    
+      if (TimeLeft <= 0) break;  
+      CntDwn(TimeLeft);
+
+      quit_mode(f_Whirlpool);
+      if (!(f_Whirlpool))   break;
     }
-    
-    if (Mulinello) {
-      pump_on();
-      Timing (0, true, 1);
-    } 
-    
-    if (TimeLeft <= 0) break;  
-    CntDwn(TimeLeft);
-
-    quit_mode(f_Whirlpool);
-    if (!(f_Whirlpool))   break;
   }
   
   if (b_Whirlpool == 2) Cooling();

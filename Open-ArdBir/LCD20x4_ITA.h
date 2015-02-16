@@ -35,7 +35,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b3"));
+  lcd.print(F("2.8.2b4"));
   lcd.write(7);
 }
 
@@ -155,7 +155,7 @@ void Stage(byte Stage, float Set, float Temp) {
   if (Stage < 9)    lcd.print(F("SU* *GIU Pausa STP"));
   else {
     if (Stage == 9) lcd.print(F("SU* *GIU  ---  Pmp"));
-    else            lcd.print(F("SU* *GIU  ---  ---"));
+    else            lcd.print(F("--* *--   ---  ---"));
   }
 }
 
@@ -797,4 +797,13 @@ void TemperaturaRaggiunta() {
 
   lcd.setCursor(1, 3);
   lcd.print(F("Procedo->  Ok  ---"));
+}
+
+void ImpostaWhirlpool(unsigned long Time) {
+  lcd.setCursor(2, 1);
+  lcd.print(F("Durata Whirlpool"));
+ 
+  CountDown(Time * 60, 6, 2, 2);
+  
+  LCD_SGEO();
 }
