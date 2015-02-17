@@ -981,10 +981,14 @@ void stage_loop () {
     }
     quit_mode (b_Enter);
     
+    // *********************************
+    // Aggiunta controllo pompa on boil
+    // if ((x - 1) == 8) pump_control();
+    // *********************************
+    
     if (btn_Press(Button_enter, 2500)) {
-      boolean flag_SaltoStep;
-      
-      if ((x - 1) != 0) {
+      if ((x - 1) > 0) {
+        boolean flag_SaltoStep;
         Buzzer(3, 50);
         SaltoStep();
         wait_for_confirm(flag_SaltoStep, 1, 2, 1);
@@ -1323,7 +1327,6 @@ void auto_mode () {
     x = 0;
   }
 
-x=9;
  
   if (DelayedMode) WaitStart();
  
@@ -1583,7 +1586,7 @@ void set_Unit () {
     else                                         unitLoop = true;
     
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
-    if (i == 25 && EEPROM.read(i - 1) == 1)      unitLoop = false;
+    if (i == 26 && EEPROM.read(i - 1) == 1)      unitLoop = false;
     else                                         unitLoop = true;
     
     if (i != 12 && i != 20)                      r_set(unitSet, i);
