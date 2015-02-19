@@ -18,7 +18,8 @@
 // 2 Italian
 // 3 Spanish
 // 4 Portuguese
-// 5 Russian (only 20 x 4)
+// 5 Russian    (only 20 x 4)
+// 6 Norwegian  (only 20 x 4)
 #define LCDLanguage 2
 
 // ==============================================
@@ -285,6 +286,8 @@ EEPROM MAP
         #include "LCD20x4_POR.h"
     #elif LCDLanguage == 5 
         #include "LCD20x4_RUS.h"
+    #elif LCDLanguage == 6 
+        #include "LCD20x4_NOR.h"
     #endif
 #endif
 
@@ -1477,7 +1480,7 @@ void Whirlpool () {
     if (ScaleTemp == 0 ) stageTemp =  85;
     else                 stageTemp = 185;
   } else {
-    if (ScaleTemp == 0 ) stageTemp =  35;
+    if (ScaleTemp == 0 ) stageTemp =  30;
     else                 stageTemp =  95;
   }
   

@@ -13,14 +13,15 @@ void LCDSpace (byte Num){
   }
 }
 
-void FormatNumeri(int Numero, byte Offset) {
+void FormatNumeri(float Numero, int Offset) {
   byte Spazi = 0;
-  if (Numero <  -100)                  Spazi = 0;
-  if (Numero <=  -10 && Numero > -100) Spazi = 1;
-  if (Numero <     0 && Numero >  -10) Spazi = 2;
-  if (Numero <    10 && Numero >=   0) Spazi = 3;
-  if (Numero <   100 && Numero >=  10) Spazi = 2;
-  if (Numero >=  100)                  Spazi = 1;
+  if (Numero <  -100.0)                    Spazi = 0;
+  if (Numero <=  -10.0 && Numero > -100.0) Spazi = 1;
+  if (Numero <     0.0 && Numero >  -10.0) Spazi = 2;
+  if (Numero <    10.0 && Numero >=   0.0) Spazi = 3;
+  if (Numero <   100.0 && Numero >=  10.0) Spazi = 2;
+  if (Numero >=  100.0)                    Spazi = 1;
+  
   LCDSpace(Spazi + Offset);
 }
 
