@@ -532,6 +532,7 @@ void Credits(){
   display_lcd(2,1," C.M. Macedo ",999);//Portoghese 20x4
   display_lcd(2,1,"F.A. Oliveira",999);//Portugues 16x2
   display_lcd(2,1,"G.  Santaella",999);//Portuguese 20x4 (new)
+  display_lcd(2,1,"  E. Eduard  ",999);//Norvegese  20x4 (new)
   
   lcd.clear();
 }
