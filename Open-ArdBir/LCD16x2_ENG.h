@@ -693,6 +693,4 @@ void ImpostaWhirlpool(unsigned long Time) {
   lcd.print(F("Timing Whirlpool"));
  
   CountDown(Time * 60, 6, 2, 2);
-  
-  LCD_SGEO();
 }
