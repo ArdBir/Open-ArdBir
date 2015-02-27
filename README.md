@@ -1,6 +1,6 @@
 Open ArdBir 2012-2014
 ===========
-Version 2.8.2b8
+Version 2.8.2b9
 
 Source, PCB, Manual (English, Italian, Russian): http://goo.gl/SCM4Yo
 

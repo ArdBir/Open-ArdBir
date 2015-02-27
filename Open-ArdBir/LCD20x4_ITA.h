@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Uso ", "Costante  kP", "Costante  kI", "Costante  kD", "Finestra  ms", "PWM Bollit.  ", "Calibrazione", "Isteresi    "};
+char *PIDName[]   ={"Uso ", "Costante  kP", "Costante  kI", "Costante  kD", "SampleTime  ", "Finestra  ms", "PWM Bollit.  ", "Calibrazione", "Isteresi    "};
 char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura ", "Raffreddo ", "Whirlpool "};
 char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ebollizione", "Ciclo Pompa", "Pausa Pompa", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa", "Fermo Pompa", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "TempoIodio ", "Whirlpool  "};
 
@@ -36,7 +36,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b8"));
+  lcd.print(F("2.8.2b9"));
   lcd.write(7);
 }
 
@@ -245,25 +245,18 @@ void PidSet(int pidSet, byte i) {
   if (i > 0)          LCDSpace(1);
   if (i > 0 && i < 4) LCDSpace(1);
   
-  if (i > 0 && i <= 5) {
-    if (i  < 4) pidSet = pidSet - 100;
-    if (i == 4) pidSet = pidSet * 250;
+  if (i > 0 && i <= 6) {
+    if (i  < 4)           pidSet = pidSet - 100;
+    if (i == 4 || i == 5) pidSet = pidSet * 250;
     
     FormatNumeri(pidSet, 0);
-    /*  
-    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
-    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
-    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
-    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
-    if (pidSet >=  100)                  LCDSpace(1);
-    */
   }
   
-  if(i >= 6){
+  if(i >= 7){
     float OffSet = pidSet;
-    if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
+    if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
     FormatNumeri(OffSet, -2);
-    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+
     lcd.print(OffSet);
     return;
   }
@@ -274,7 +267,7 @@ void PidSet(int pidSet, byte i) {
     else             lcd.print(F("      Gas"));
   }else lcd.print(pidSet);
 
-  if (i == 5) lcd.print(F("%"));
+  if (i == 6) lcd.print(F("%"));
 }
 
 void Menu_3_2() {

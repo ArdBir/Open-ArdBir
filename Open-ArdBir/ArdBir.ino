@@ -349,8 +349,11 @@ byte Verso              ;
 float p_C[]    ={  75.00, 20.00, 0.25,   55.00, 25.00, 0.25,   50.00, 35.00, 0.25,   60.00,  45.00, 0.25,   70.00,  50.00, 0.25,   76.00,  60.00, 0.25,  76.00,  60.00, 0.25,  80.00,  75.00, 0.25 }; 
 float p_F[]    ={ 167.00, 68.00, 0.25,  131.00, 77.00, 0.25,  122.00, 95.00, 0.25,  140.00, 113.00, 0.25,  158.00, 122.00, 0.25,  168.75, 140.00, 0.25, 176.00, 167.00, 0.25, 176.00, 167.00, 0.25 }; 
 
-byte  p_PID[]  ={   1, 0, 1,   200, 0, 1,   255, 0, 1,   200, 0, 1,   30, 9, 1,   100, 0, 1,   100, 0, 1,   100, 0, 1 }; 
+//byte  p_PID[]  ={   1, 0, 1,   200, 0, 1,   255, 0, 1,   200, 0, 1,   30, 9, 1,   100, 0, 1,   100, 0, 1,   100, 0, 1 }; 
 //                  Use Gas       kP           kI           kD        Win Size    %PWM Boil    Calibration   Hysteresi 
+byte  p_PID[]  ={   1, 0, 1,   200, 0, 1,   255, 0, 1,   200, 0, 1,   14, 6, 1,   30, 0, 1,   100, 0, 1,   100, 0, 1,   100, 0, 1 }; 
+//                  Use Gas       kP           kI           kD       SampleTIme   Win Size    %PWM Boil    Calibration   Hysteresi 
+
 byte  p_Unit[] ={   1, 0, 1,   1, 0, 1,   105, 90, 1,   221, 194, 1,   15, 5, 1,   5, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   105, 80, 1,   221, 176, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   90, 0, 1,   2, 0, 1};
 //                   Scala °   Sensore      Boil °C       Boil °F      Ciclo Pmp  Pausa Pmp   PreMash    on Mash    MashOut    on Boil     Fermo °C       Fermo °F     PID Pipe    Sk.Add   Sk.Remove   Iodine     TimeIodio   Whirlpool
 
@@ -434,7 +437,7 @@ void Temperature() { // reads the DS18B20 temerature probe
     if (ScaleTemp == 1) Temp_Now = Temp_Now * 1.8 + 32.0;
     
     byte Correzione;
-    r_set(Correzione, 6);
+    r_set(Correzione, 7);
     Temp_Now = Temp_Now + ((float)((Correzione - 50) / 10.0));
     
     //Temp_Now = Temp_Now + ((EEPROM.read(6) - 50) / 10.0);
@@ -453,7 +456,7 @@ void PID_HEAT (boolean autoMode) {
   float Rapporto, Delta, IsteresiProporzionale;
   
   if (UseGAS == 1) {
-    DeltaPID = EEPROM.read(7) / 10;
+    DeltaPID = EEPROM.read(8) / 10;
     
     IsteresiProporzionale = DeltaPID / Input;
     WindowSize = 156;
@@ -569,6 +572,7 @@ void load_pid_settings () {
   byte eepromKp;
   byte eepromKi;
   byte eepromKd;  
+  byte SampleTime;
   
   r_set(eepromKp, 1);
   r_set(eepromKi, 2);
@@ -576,10 +580,12 @@ void load_pid_settings () {
   
   myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 250.00), eepromKd - 100); // send the PID settings to the PID
   
-  r_set(WindowSize, 4);
+  r_set(SampleTime, 4);
+  r_set(WindowSize, 5);
     
   //myPID.SetOutputLimits(0.0, 255.0);
-  myPID.SetSampleTime(2000);
+  
+  myPID.SetSampleTime(SampleTime * 250);
 }  
 
 boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display) { 
@@ -1106,7 +1112,7 @@ void manual_mode () {
   
   if (UseGAS == 0)    load_pid_settings();
 
-  r_set(boil_output, 5);
+  r_set(boil_output, 6);
   
   prompt_for_water();
   wait_for_confirm(manualLoop, 2, 2, 2);
@@ -1543,16 +1549,16 @@ void Whirlpool () {
 void set_PID () {
   boolean pidLoop = true;
   byte    pidSet;
-  
+  byte    Min;
   pidLoop = false;
   
   //Indirizzo di memorizzazione corrisponde al ciclo
   
-  for(byte i = 0; i < 8; i++) {
+  for(byte i = 0; i < 9; i++) {
  
     r_set(pidSet, i);
     
-    if (i == 7 && UseGAS == 0) pidLoop = false;
+    if (i == 8 && UseGAS == 0) pidLoop = false;
     else                       pidLoop = true;
 
     while (pidLoop) {
@@ -1561,16 +1567,21 @@ void set_PID () {
       LeggiPulsante(Verso, Timer);
       
       PidSet(pidSet, i);
-      Set(pidSet, p_PID[i * 3], p_PID[i * 3 + 1], p_PID[i * 3 + 2], Timer, Verso); 
+      if (i == 5) {
+        r_set(Min, i - 1);
+        Set(pidSet, p_PID[i * 3], Min + 2, p_PID[i * 3 + 2], Timer, Verso); 
+      } else {
+        Set(pidSet, p_PID[i * 3], p_PID[i * 3 + 1], p_PID[i * 3 + 2], Timer, Verso); 
+      }
       
       quit_mode(pidLoop);
-      if (!pidLoop)i = 8;
+      if (!pidLoop)i = 9;
 
       if (btn_Press(Button_enter, 50)) {     
         s_set(i, pidSet);
         if (i == 0 ) {
           UseGAS = pidSet;
-          if (UseGAS == 1) i = 4;  // Va alla Calibrazione
+          if (UseGAS == 1) i = 5;  // Va alla Calibrazione
         }
         pidLoop = false;
       }

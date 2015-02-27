@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "WindowSet  ", "Use in Boil", "Calibration", "Hysteresi  "};
+char *PIDName[]   ={"Use ", "Constant kP", "Constant kI", "Constant kD", "SampleTime ", "WindowSet  ", "Use in Boil", "Calibration", "Hysteresi  "};
 char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
 char *unitName[]  ={"Set Degrees  ", "Sensor   ", "Set Boil    ", "Set Boil    ", "Pump Cycle   ", "Time PumpRest ", "Pmp PreMash",  "Pmp on Mash", "Pmp MashOut", "Pump on Boil ", "Pump Stop at ", "Pump Stop at ", "PID Pipe ", "Skip Add      ", "Skip Remove ", "Skip Iodine ", "Iodine  ", "Whirlpool"};
 
@@ -187,25 +187,27 @@ void Menu_3_1_x(byte i){
   lcd.print(PIDName[i]);
 }  
 void PidSet(int pidSet, byte i){
-  LCDSpace(1);
-  
-  if (i == 5 || i >= 6) lcd.setCursor(11, 1);
-  else                  lcd.setCursor(12,1);
+  lcd.setCursor(10, 1);
+  if (i > 0)          LCDSpace(1);
+  if (i > 0 && i < 4) LCDSpace(1);
  
-  if (i > 0 && i <= 5) {
-    if (i  < 4) pidSet = pidSet - 100;
-    if (i == 4) pidSet = pidSet * 250;
-      
+  if (i > 0 && i <= 6) {
+    if (i  < 4)           pidSet = pidSet - 100;
+    if (i == 4 || i == 5) pidSet = pidSet * 250;
+    
+    FormatNumeri(pidSet, 0);  
+    /*
     if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
     if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
     if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
     if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
     if (pidSet >=  100)                  LCDSpace(1);
+    */
   }
   
-  if(i >= 6){
+  if(i >= 7){
     float OffSet = pidSet;
-    if (i == 6) OffSet = (OffSet - 50.0) / 10.0;
+    if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
     if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
@@ -217,7 +219,7 @@ void PidSet(int pidSet, byte i){
     else             lcd.print(F("      Gas"));
   } else             lcd.print(pidSet);
 
-  if (i == 5) lcd.print(F("%"));
+  if (i == 6) lcd.print(F("%"));
 }
 
 void Menu_3_2(){
@@ -690,7 +692,7 @@ void TemperaturaRaggiunta(){
 
 void ImpostaWhirlpool(unsigned long Time) {
   lcd.setCursor(0, 1);
-  lcd.print(F("Timing Whirlpool"));
+  lcd.print(F("Timing "));
  
-  CountDown(Time * 60, 6, 2, 2);
+  CountDown(Time * 60, 7, 2, 2);
 }
