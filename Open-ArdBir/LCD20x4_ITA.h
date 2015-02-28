@@ -6,13 +6,7 @@ byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, 
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B00000, B10000, B11111, B10000, B00000, B11111, B00000, B00000};  // [7] ITA symbol
 
-/*
-void LCDSpace (byte Num) {
-  for(byte i = 0; i < Num; i++) {
-    lcd.print(F(" "));
-  }
-}
-*/
+
 void LCDClear(byte Riga) {
   lcd.setCursor(0, Riga);
   LCDSpace(20);
@@ -36,7 +30,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b9"));
+  lcd.print(F("2.8.2b10"));
   lcd.write(7);
 }
 
@@ -255,8 +249,8 @@ void PidSet(int pidSet, byte i) {
   if(i >= 7){
     float OffSet = pidSet;
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-    FormatNumeri(OffSet, -2);
 
+    FormatNumeri(OffSet, -2);
     lcd.print(OffSet);
     return;
   }

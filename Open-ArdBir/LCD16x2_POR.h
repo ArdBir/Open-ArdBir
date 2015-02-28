@@ -6,13 +6,7 @@ byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, 
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B00000, B10111, B10101, B11101, B00000, B10001, B10101, B11111};  // [7] ESP symbol
 
-/*
-void LCDSpace (byte Num){
-  for(byte i=0; i<Num; i++){
-    lcd.print(F(" "));
-  }
-}
-*/
+
 void LCDClear(byte Riga){
   lcd.setCursor(0,Riga);
   LCDSpace(20);
@@ -188,7 +182,7 @@ void Menu_3_1_x(byte i){
   lcd.print(PIDName[i]);
 }  
 void PidSet(int pidSet, byte i){
-  lcd.setCursor(10, 1);
+  lcd.setCursor(11, 1);
   if (i > 0)          LCDSpace(1);
   if (i > 0 && i < 4) LCDSpace(1);
  
@@ -196,7 +190,7 @@ void PidSet(int pidSet, byte i){
     if (i  < 4)           pidSet = pidSet - 100;
     if (i == 4 || i == 5) pidSet = pidSet * 250;
     
-    FormatNumeri(pidSet, 0);
+    FormatNumeri(pidSet, -1);
     /*  
     if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
     if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
@@ -209,7 +203,9 @@ void PidSet(int pidSet, byte i){
   if(i >= 7){
     float OffSet = pidSet;
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-    if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+    
+    FormatNumeri(OffSet, -3);
+    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
     lcd.print(OffSet);
     return;
   }
@@ -539,28 +535,30 @@ void Credits(){
   lcd.clear();
 }
 
-/*
 void Menu_4(){
-  lcd.clear();
-  lcd.setCursor(4,0);
-  lcd.print(F("TEST RAM"));
+  #if TestMemoria == true
+    lcd.clear();
+    lcd.setCursor(4,0);
+    lcd.print(F("TEST RAM"));
+  #endif
 }
 void Menu_4_1(){
-  lcd.clear();
-  lcd.setCursor(1,0);
-  lcd.print(F("Memoria Libera"));
-  lcd.setCursor(4,1);
-  //if (freeRam()<1000&&freeRam()>=100)LCDSpace(1);
-  if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
-  if (freeRam()<10)LCDSpace(2);
-  lcd.print(freeRam());
-  LCDSpace(1);
-  lcd.print(F("byte"));
+  #if TestMemoria == true
+    lcd.clear();
+    lcd.setCursor(1,0);
+    lcd.print(F("Memoria Libera"));
+    lcd.setCursor(4,1);
   
-  delay(3500);
-  lcd.clear();
+    if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
+    if (freeRam()<10)LCDSpace(2);
+    lcd.print(freeRam());
+    LCDSpace(1);
+    lcd.print(F("byte"));
+  
+    delay(3500);
+    lcd.clear();
+  #endif
 }
-*/
 
 void Pause_Stage(float Temp, int Time){
   lcd.setCursor(0,0);

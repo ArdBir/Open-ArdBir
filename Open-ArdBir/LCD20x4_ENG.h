@@ -6,13 +6,7 @@ byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, 
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B11111, B00010, B01000, B11111, B00000, B10001, B10101, B11111};  // [7] EN symbol
 
-/*
-void LCDSpace (byte Num){
-  for(byte i=0; i<Num; i++){
-    lcd.print(F(" "));
-  }
-}
-*/
+
 void LCDClear(byte Riga){
   lcd.setCursor(0,Riga);
   LCDSpace(20);
@@ -36,7 +30,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b9"));
+  lcd.print(F("2.8.2b10"));
   lcd.write(7);
 }
 
@@ -55,7 +49,6 @@ void LCD_Procedo(){
 void LCD_Default(float Temp){
   Intestazione();
 
-  //lcd.setCursor(6,1);
   PrintTemp(6,1,Temp,2);
 
   LCDClear(2);
@@ -256,8 +249,8 @@ void PidSet(int pidSet, byte i){
   if(i >= 7){
     float OffSet = pidSet;
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-    FormatNumeri(OffSet, -2);
 
+    FormatNumeri(OffSet, -2);
     lcd.print(OffSet);
     return;
   }
@@ -627,29 +620,30 @@ void Credits(){
 }
 
 
-
-/*
 void Menu_4(){
-  lcd.clear();
-  lcd.setCursor(3,0);
-  lcd.print(F("TEST DELLA RAM"));
+  #if TestMemoria == true
+    lcd.clear();
+    lcd.setCursor(3,0);
+    lcd.print(F("TEST DELLA RAM"));
+  #endif
 }
 void Menu_4_1(){
-  lcd.setCursor(3,1);
-  lcd.print(F("Memoria Libera"));
-  lcd.setCursor(6,2);
+  #if TestMemoria == true
+    lcd.setCursor(3,1);
+    lcd.print(F("Memoria Libera"));
+    lcd.setCursor(6,2);
 
-  if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
-  if (freeRam()<10)LCDSpace(2);
-  lcd.print(freeRam());
-  LCDSpace(2);
-  lcd.print(F("byte"));
+    if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
+    if (freeRam()<10)LCDSpace(2);
+    lcd.print(freeRam());
+    LCDSpace(2);
+    lcd.print(F("byte"));
   
-  LCDClear(3);
-  delay(3500);
-  lcd.clear();
+    LCDClear(3);
+    delay(3500);
+    lcd.clear();
+  #endif
 }
-*/
 
 
 void Pause_Stage(float Temp, int Time){

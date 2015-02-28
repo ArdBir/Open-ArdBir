@@ -106,8 +106,9 @@ Copyright (C) 2012  Stephen Mathison
  - Spanish Language     (Both)
  - Portuguese Language  (Both)
  - Russian Language     (20x4)
-
- compiled on Arduino V1.0.6
+ - Norwegian Language   (20x4)
+ 
+ compiled on Arduino V1.6
 
 EEPROM MAP
   PID MENU
@@ -115,11 +116,12 @@ EEPROM MAP
       1       kP
       2       kI
       3       kD
-      4       WindowSize
-      5       Boil Heat %
-      6       Offset
-      7       Hysteresi 
-      8 -   9 [ SPACE ]
+      4       SampleTime
+      5       WindowSize
+      6       Boil Heat %
+      7       Offset
+      8       Hysteresi 
+      9       [ SPACE ]
 
   UNIT MENU  
      10       Scale Temp
@@ -220,7 +222,7 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   false
+#define StartSprite   true
 #define Sprite        true
 #define Crediti       true
 
@@ -459,12 +461,12 @@ void PID_HEAT (boolean autoMode) {
     DeltaPID = EEPROM.read(8) / 10;
     
     IsteresiProporzionale = DeltaPID / Input;
-    WindowSize = 156;
+    WindowSize = 160;
   } else {  
     if (ScaleTemp == 0)       DeltaPID = 3.50;
     else                      DeltaPID = 6.30;
     
-    if (Input >= boilStageTemp - DeltaPID) DeltaPID = 0;
+    if (Input >= boilStageTemp - DeltaPID) DeltaPID = 1;
     
     IsteresiProporzionale = 0.0;
   }  
@@ -516,7 +518,7 @@ void PID_HEAT (boolean autoMode) {
       //IL VALORE VA MODULATO 
       if (UseGAS == 1) {
         //SEZIONE GAS
-        Output = Arrotonda025(Rapporto) * 255;
+        Output = Arrotonda025(Rapporto) * 100;
         if (Rapporto < 0.25) Output = 15.00;
         if (Rapporto < 0.10) Output =  0.00;
       } else {

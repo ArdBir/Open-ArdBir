@@ -41,6 +41,6 @@ void ArdBir1 (byte posX, byte posY){
     lcd.write(6);
   }
   display_lcd(posX+2,posY+1,"rd",0);
-  display_lcd(posX+6,posY+1,"ir",4000);
+  display_lcd(posX+6,posY+1,"ir",4500);
 }
 
