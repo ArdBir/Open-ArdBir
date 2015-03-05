@@ -1,4 +1,4 @@
-char *PIDName[]   ={"Varmekilde ", "Konstant    kP", "Konstant    kI", "Konstant    kD", "SampleTime  ", "PID Syklus  ms", "PWM% under Kok", "Temp sens korr" , "Hysterese     "};
+char *PIDName[]   ={"Varmekilde ", "Konstant    kP", "Konstant    kI", "Konstant    kD", "PID maaling ms", "PID vindu   ms", "PWM% under Kok", "Temp sens korr" , "Hysterese     "};
 char *stageName[] ={"Meske Inn   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Meske Ut  ", "Koking   ", "Kjoling ", "Whirlpool "};
 char *unitName[]  ={"Temp skala  ", "Sensor mont ", "Koke Temp   ", "Koke Temp   ", "Pumpe syklus", "Pumpe stopp ", "Pmp Meskeinn", "Pmp Mesking ", "Pmp Meske ut", "Pumpe Koking", "Pumpe Stopp ", "Pumpe Stopp ", "PID Funksjon", "Skip malt in", "Skip malt ut", "Skip Iodine ", "Iodine Tid  " , "Whirlpool   "};
 

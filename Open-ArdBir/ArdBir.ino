@@ -321,16 +321,16 @@ boolean IodineTest   = false;
 boolean DelayedMode  = false;
 
 
-float mset_temp;
+//float mset_temp;
 float stageTemp;
 float boilStageTemp;
 float Temp_Now;
 
 
 byte x;
-byte ScaleTemp       ;
-byte SensorType      ;
-byte UseGAS          ;
+byte ScaleTemp       = EEPROM.read(11);;
+byte SensorType      = EEPROM.read(10);;
+byte UseGAS          = EEPROM.read( 0);
 
 byte stageTime;
 byte hopTime;
@@ -461,6 +461,7 @@ void PID_HEAT (boolean autoMode) {
     DeltaPID = EEPROM.read(8) / 10;
     
     IsteresiProporzionale = DeltaPID / Input;
+    myPID.SetSampleTime(8000);
     WindowSize = 160;
   } else {  
     if (ScaleTemp == 0)       DeltaPID = 3.50;
@@ -504,9 +505,9 @@ void PID_HEAT (boolean autoMode) {
     Serial.print(Temp_Now);
     
     Serial.print(F("   Set Point: "));
-    if(stageTemp <  10 && stageTemp >= 0) Serial.print(F("  "));
-    if(stageTemp < 100 && stageTemp >=10) Serial.print(F(" "));
-    Serial.print(stageTemp);
+    if(Setpoint <  10 && Setpoint >= 0) Serial.print(F("  "));
+    if(Setpoint < 100 && Setpoint >=10) Serial.print(F(" "));
+    Serial.print(Setpoint);
     
     Serial.print(F("   DeltaPID: "));
     Serial.print(DeltaPID);
@@ -518,8 +519,8 @@ void PID_HEAT (boolean autoMode) {
       //IL VALORE VA MODULATO 
       if (UseGAS == 1) {
         //SEZIONE GAS
-        Output = Arrotonda025(Rapporto) * 100;
-        if (Rapporto < 0.25) Output = 15.00;
+        Output = Arrotonda025(Rapporto) * 255;
+        if (Rapporto < 0.20) Output = 40.00;
         if (Rapporto < 0.10) Output =  0.00;
       } else {
         //SEZIONE ELETTRICA
@@ -529,23 +530,30 @@ void PID_HEAT (boolean autoMode) {
     //IL VALORE E' DIRETTO
     } else {
       Output = 255;      // was 5, ignore PID and go full speed -mdw  // set the output to full on
-    }
+    }  
   }
- 
+
+
   //FASE DI BOIL RAGGIUNTA
   // Il valore di Output viene riassegnato
   if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output;
   
 // PWM  
-  if (now - w_StartTime > (unsigned int)(WindowSize * 250)) w_StartTime += (unsigned int)(WindowSize * 250); //time to shift the Relay Window
+  //if (now - w_StartTime > (unsigned int)(WindowSize * 250)) w_StartTime += (unsigned int)(WindowSize * 250); //time to shift the Relay Window
   
-  if ((Output * ((unsigned int)(WindowSize * 250) / 255)) > now - w_StartTime) {
+  if (now - w_StartTime > (unsigned int) WindowSize * 250) w_StartTime += 40000; //time to shift the Relay Window
+  
+  if ((Output / 255) * ((unsigned int)WindowSize * 250) > now - w_StartTime) {
+  
+  //if ((Output * ((unsigned int)(WindowSize * 250) / 255)) > now - w_StartTime) {
     //***********
     mheat = true;
     //***********
     heat_on();
   }
-  else heat_off(mheat);
+  else {
+    heat_off(mheat);
+  }
   
   #if PID_FE == true
     if(millis()>serialTime)  {
@@ -925,7 +933,7 @@ void stage_loop () {
         Set(boil_output, 100, 0, 1, Timer, Verso);
         
         Boil(boil_output, Temp_Now, 1);
-        PID_HEAT(false); //set heat in manual mode
+        PID_HEAT(false); //set heat in Boil PWM
 
       } else { 
         
@@ -1106,7 +1114,12 @@ void remove_malt () {
 
 
 void manual_mode () {
-  boolean manualLoop     = false;
+  float mset_temp;
+   
+  if (ScaleTemp == 0)  mset_temp = 35.0;
+  else                 mset_temp = 95.0;
+  
+  boolean manualLoop    = false;
   boolean reachedBeep   = false;
   
   boolean FlagSpentLeft = false;
@@ -1134,7 +1147,6 @@ void manual_mode () {
   while (manualLoop) {            // manual loop
     Temperature();
     Setpoint = mset_temp;
-
     Input = Temp_Now;
     
     if (tempReached == false) {
@@ -1195,7 +1207,7 @@ void manual_mode () {
 
       Boil(boil_output, Temp_Now, 0);
 
-      if (mheat) PID_HEAT(false); //set heat in manual mode
+      if (mheat) PID_HEAT(false); //set heat in PWM Boil
       if (mpump) pump_rest(8);    //Forced Boil Stage for Pump Control
       
     } else {
@@ -1419,7 +1431,7 @@ void auto_mode () {
     r_set(hopAdd, 87);
     blhpAddr = hopAdd + 74;
     r_set(hopTime, blhpAddr);
-    r_set(boil_output, 5);
+    r_set(boil_output, 6);
     TimeLeft = stageTime * 60;
     
     x = 9;
@@ -2230,10 +2242,6 @@ void TestRam() {
 
 
 void setup_mode () {
-  r_set(ScaleTemp,  10);
-  r_set(SensorType, 11);
-  r_set(UseGAS,      0);
-  
   boolean setupLoop = true;
   byte setupMenu    = 0;
 
@@ -2307,6 +2315,12 @@ void setup() {
   #if SerialPID == true  
     Serial.println();
     Serial.println(F("CONTROLLO SPERIMENTALE ATTIVITA' P.I.D."));
+    Serial.print (F("ScaleTemp: "));
+    Serial.println  (ScaleTemp);
+    Serial.print (F("SensorType: "));
+    Serial.println  (SensorType);
+    Serial.print (F("UseGAS: "));
+    Serial.println  (UseGAS);
   #endif
   
   pinMode (Button_up,    INPUT_PULLUP);
@@ -2325,10 +2339,10 @@ void setup() {
  
   if (ScaleTemp == 0) {
     boilStageTemp = EEPROM.read(12);
-    mset_temp = 35;
+    //mset_temp = 35;
   } else {
     boilStageTemp = EEPROM.read(13);
-    mset_temp = 95;
+    //mset_temp = 95;
   }
   
 //  Sprite screen
@@ -2521,4 +2535,5 @@ void loop() {
     else Serial.println("Reverse");
   }
 #endif
+
 

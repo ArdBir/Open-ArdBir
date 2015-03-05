@@ -206,6 +206,7 @@ void PidSet(int pidSet, byte i) {
   if(i >= 7){
     float OffSet = pidSet;
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
+    if (i == 8) OffSet =  OffSet / 10.0;
     
     FormatNumeri(OffSet, -3);
     //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
@@ -698,3 +699,4 @@ void ImpostaWhirlpool(unsigned long Time) {
  
   CountDown(Time * 60, 7, 2, 2);
 }
+

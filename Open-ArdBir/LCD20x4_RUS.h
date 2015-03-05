@@ -34,7 +34,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.2b10"));
+  lcd.print(F("2.8.211"));
   lcd.write(7);
 }
 
@@ -258,7 +258,8 @@ void PidSet(int pidSet, byte i){
   if(i >= 7){
     float OffSet = pidSet;
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-
+    if (i == 8) OffSet =  OffSet / 10.0;
+    
     FormatNumeri(OffSet, -2);
     lcd.print(OffSet);
     return;
@@ -804,3 +805,4 @@ void ImpostaWhirlpool(unsigned long Time) {
   
   LCD_SGEO();
 }
+

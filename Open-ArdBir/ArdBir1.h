@@ -44,3 +44,4 @@ void ArdBir1 (byte posX, byte posY){
   display_lcd(posX+6,posY+1,"ir",4500);
 }
 
+

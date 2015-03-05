@@ -337,3 +337,4 @@ void display_lcd (byte posX , byte posY ,const char* lable, int Pausa){
   delay(Pausa);
 }
 
+
