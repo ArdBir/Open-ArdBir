@@ -1,5 +1,5 @@
 char *PIDName[]   ={"Uso ", "Costante kP", "Costante kI", "Costante kD", "SampleTime ", "Finestra ms", "Uso in Boll", "Calibraz.  ", "Isteresi   "};
-char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "bAmilasi  ", "aAmilasi1 ", "aAmilasi2 ", "Mash Out  ", "Bollitura ", "Raffreddo ", "Whirlpool "};
+char *stageName[] ={"Mash In   ", "Fitasi    ", "Glucanasi ", "Proteasi  ", "\xE2""Amilasi  ", "\xE0""Amilasi1 ", "\xE0""Amilasi2 ", "Mash Out  ", "Bollitura ", "Raffreddo ", "Whirlpool "};
 char *unitName[]  ={"Scala Gradi  ", "Sensore  ", "Ebollizione ", "Ebollizione ", "Ciclo Pompa  ", "Pausa Pompa   ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Fermo Pompa ", "Fermo Pompa ", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TimeIodio", "Whirlpool"};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
@@ -183,24 +183,14 @@ void Menu_3_1_x(byte i){
 }  
 void PidSet(int pidSet, byte i) {
   lcd.setCursor(11, 1);
-  if (i > 0)          LCDSpace(1);
+  if (i > 0 && i < 7) LCDSpace(1);
   if (i > 0 && i < 4) LCDSpace(1);
-  
-  //if (i >= 6) lcd.setCursor(11, 1);
-  //else        lcd.setCursor(12,1);
- 
+
   if (i > 0 && i <= 6) {
     if (i  < 4)           pidSet = pidSet - 100;
     if (i == 4 || i == 5) pidSet = pidSet * 250;
     
     FormatNumeri(pidSet, -1);
-    /*  
-    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
-    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
-    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
-    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
-    if (pidSet >=  100)                  LCDSpace(1);
-    */
   }
   
   if(i >= 7){
@@ -208,8 +198,7 @@ void PidSet(int pidSet, byte i) {
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
     if (i == 8) OffSet =  OffSet / 10.0;
     
-    FormatNumeri(OffSet, -3);
-    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+    FormatNumeri(OffSet, -2);
     lcd.print(OffSet);
     return;
   }

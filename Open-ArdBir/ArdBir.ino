@@ -11,7 +11,7 @@
 
 // SET LCD and Language
 // LCD 16 or 20
-#define LCDType 20
+#define LCDType 16
 
 // LANGUAGE
 // 1 English
@@ -222,8 +222,8 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   true
-#define Sprite        true
+#define StartSprite   false
+#define Sprite        false
 #define Crediti       true
 
 #define SerialMonitor false

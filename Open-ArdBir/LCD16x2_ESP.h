@@ -181,7 +181,7 @@ void Menu_3_1_x(byte i){
 }  
 void PidSet(int pidSet, byte i){
   lcd.setCursor(11, 1);
-  if (i > 0)          LCDSpace(1);
+  if (i > 0 && i < 7) LCDSpace(1);
   if (i > 0 && i < 4) LCDSpace(1);
  
   if (i > 0 && i <= 6) {
@@ -189,13 +189,6 @@ void PidSet(int pidSet, byte i){
     if (i == 4 || i == 5) pidSet = pidSet * 250;
     
     FormatNumeri(pidSet, -1);
-    /*  
-    if (pidSet <=  -10 && pidSet > -100) LCDSpace(1);
-    if (pidSet <     0 && pidSet >  -10) LCDSpace(2);
-    if (pidSet <    10 && pidSet >=   0) LCDSpace(3);
-    if (pidSet >=   10 && pidSet <  100) LCDSpace(2);
-    if (pidSet >=  100)                  LCDSpace(1);
-    */
   }
   
   if(i >= 7){
@@ -203,8 +196,7 @@ void PidSet(int pidSet, byte i){
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
     if (i == 8) OffSet =  OffSet / 10.0;
     
-    FormatNumeri(OffSet, -3);
-    //if (OffSet >= 0 && OffSet < 10) LCDSpace(1);
+    FormatNumeri(OffSet, -2);
     lcd.print(OffSet);
     return;
   }
