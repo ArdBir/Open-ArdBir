@@ -11,7 +11,7 @@
 
 // SET LCD and Language
 // LCD 16 or 20
-#define LCDType 16
+#define LCDType 20
 
 // LANGUAGE
 // 1 English
@@ -222,8 +222,8 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   false
-#define Sprite        false
+#define StartSprite   true
+#define Sprite        true
 #define Crediti       true
 
 #define SerialMonitor false
@@ -541,7 +541,9 @@ void PID_HEAT (boolean autoMode) {
 // PWM  
   //if (now - w_StartTime > (unsigned int)(WindowSize * 250)) w_StartTime += (unsigned int)(WindowSize * 250); //time to shift the Relay Window
   
-  if (now - w_StartTime > (unsigned int) WindowSize * 250) w_StartTime += 40000; //time to shift the Relay Window
+  if (now - w_StartTime > (unsigned int) WindowSize * 250) {
+    w_StartTime += (unsigned int)WindowSize * 250; //time to shift the Relay Window
+  }
   
   if ((Output / 255) * ((unsigned int)WindowSize * 250) > now - w_StartTime) {
   
