@@ -30,7 +30,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.213"));
+  lcd.print(F("2.8.214"));
   lcd.write(7);
 }
 
@@ -147,10 +147,13 @@ void Stage(byte Stage, float Set, float Temp){
   lcd.write(2);
   
   lcd.setCursor(1, 3);
-  if (Stage ==  1)              lcd.print(F("SU* *BAJ Pausa ---"));
-  if (Stage  >  1 && Stage < 9) lcd.print(F("SU* *BAJ Pausa STP"));
-  if (Stage ==  9)              lcd.print(F("SU* *BAJ  ---  ---"));
-  if (Stage == 10)              lcd.print(F("--* *--   ---  ---"));
+  if (Stage ==  0)               lcd.print(F("SU* *BAJ Pausa ---"));
+  if (Stage  >  0 && Stage  < 8) lcd.print(F("SU* *BAJ Pausa STP"));
+  if (Stage ==  8)               lcd.print(F("SU* *BAJ  ---  ---"));
+  if (Stage ==  9)               lcd.print(F("SU* *BAJ  ---  Bmb"));
+  if (Stage == 10)               lcd.print(F("---* *--- ---  Bmb"));
+  if (Stage == 11)               lcd.print(F("---* *--- Time Bmb"));
+
 }
 
 void SaltoStep(){

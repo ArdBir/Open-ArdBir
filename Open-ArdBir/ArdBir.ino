@@ -222,7 +222,7 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   true
+#define StartSprite   false
 #define Sprite        true
 #define Crediti       true
 
@@ -1098,7 +1098,7 @@ void remove_malt () {
 
   // Pausa senza PID (gli enzimi ormai sono distrutti)
   byte noPID;
-  r_set(noPID, 24);
+  r_set(noPID, 22);
   //if (EEPROM.read(24) == 1 && SensorType == 0) wait_for_confirm(malt, 1, 2, 1);
   if (noPID == 1 && SensorType == 0) wait_for_confirm(malt, 1, 2, 1);
   else                               wait_for_confirm(malt, 2, 2, 1);
@@ -1170,7 +1170,7 @@ void manual_mode () {
     
     if (tempReached) {
       if (reachedBeep == false) {
-         Buzzer(3, 250);
+        Buzzer(3, 250);
         reachedBeep = true;
       }
     } 
@@ -1352,9 +1352,12 @@ void auto_mode () {
     x = 0;
   }
 
- 
   if (DelayedMode) WaitStart();
- 
+  
+// ************  
+// x=9; 
+// ************
+
   if (b_Enter) {                     // mash steps
     //EEPROM.write(84, 1);           // auto mode started
     s_set(84, 1);                    // auto mode started
@@ -1459,29 +1462,29 @@ void auto_mode () {
 }
 
 void Cooling() {
-  boolean b_Cooling = true;
+  boolean f_Cooling = false;
   
   allOFF();
 
   //Attende risposta per raffreddamento
   Raffreddamento();
-  wait_for_confirm(b_Cooling, 2, 2, 2);
+  wait_for_confirm(f_Cooling, 2, 2, 2);
   
   Menu_2();
-  while (b_Cooling) {
+  while (f_Cooling) {
     Temperature();
     
     pump_control();
 
     LeggiPulsante(Verso, Timer);
 
-    if (ScaleTemp == 0) Set(stageTemp, 35, 10, 0.25, Timer, Verso);
-    else                Set(stageTemp, 95, 40, 0.25, Timer, Verso);
+    if (ScaleTemp == 0) Set(stageTemp, 30, 10, 0.25, Timer, Verso);
+    else                Set(stageTemp, 86, 50, 0.25, Timer, Verso);
 
     Stage(9, stageTemp, Temp_Now);
 
-    quit_mode(b_Cooling);
-    if ((!(b_Cooling)) || (Temp_Now <= stageTemp)) break;
+    quit_mode(f_Cooling);
+    if ((!(f_Cooling)) || (Temp_Now <= stageTemp)) break;
   }
   //if (EEPROM.read(27) == 1) Whirlpool();
   byte b_Whirlpool;
@@ -1503,7 +1506,7 @@ void Whirlpool () {
     else                 stageTemp = 185;
   } else {
     if (ScaleTemp == 0 ) stageTemp =  30;
-    else                 stageTemp =  95;
+    else                 stageTemp =  86;
   }
   
   pump_off(true);
@@ -1530,27 +1533,64 @@ void Whirlpool () {
         f_Whirlpool = false;
       }
     }  
+    
     TimeLeft = TempoWhirlpool * 60;
     Menu_2();
   
+    byte AppoggioTempo;  
     boolean Mulinello = false;
-  
+    mpump = true; 
+    
     while (f_Whirlpool) {
       Temperature();
-      Stage(10, stageTemp, Temp_Now);
-
+      if (mpump) Stage(10, stageTemp, Temp_Now);
+      else       Stage(11, stageTemp, Temp_Now);
+      
       if (b_Whirlpool == 2) {
         if (Temp_Now <=  stageTemp) break;
         else Mulinello = true;
       } else {
-        if (Temp_Now <=  stageTemp) Mulinello = true;
+        if (Temp_Now <=  stageTemp && mpump) {
+          Mulinello = true;
+        }
       }
     
       if (Mulinello) {
         pump_on();
         Timing (0, true, 1);
       } 
+      
+      pump_control();
+      Mulinello = mpump;
+      
+      if (!mpump) {
+        if (btn_Press(Button_start, 50)) {
+          AppoggioTempo = TempoWhirlpool;
+          Procedo = true;
+          lcd.clear();
+        }
+        
+        while (Procedo) {
+          ImpostaWhirlpool(TempoWhirlpool);
+          LeggiPulsante(Verso, Timer);
     
+          Set((TempoWhirlpool), 10, 1, 1, Timer, Verso);
+    
+          if (btn_Press(Button_enter, 50)) {
+            Procedo     = false;
+            Menu_2();
+          }
+          
+          if (btn_Press(Button_start, 50)) {
+            Procedo     = false;
+            Menu_2();
+            TempoWhirlpool = AppoggioTempo;
+          }
+        }
+        TimeLeft = TempoWhirlpool * 60; 
+      }
+      
+      
       if (TimeLeft <= 0) break;  
       CntDwn(TimeLeft);
 
@@ -2169,7 +2209,8 @@ void set_hops () {
   r_set(nmbrHops, 72);
   
   byte TimeUp;
-
+  byte TimeDwn;
+  
   blhpAddr = 73;
 
   hopLoop = true;
@@ -2209,15 +2250,17 @@ void set_hops () {
       quit_mode(hopLoop);
       if (!hopLoop) return;
 
-      if (i == 0) TimeUp = 180;
-      else {
+      if (i == 0) {
+        TimeUp  = 180;
+        TimeDwn =  30;
+      } else {
        if (i == 1) r_set(TimeUp, blhpAddr - 1);
        else        TimeUp = EEPROM.read(blhpAddr - 1) - 1;
-      
+       TimeDwn =  0;
       }
 
       LeggiPulsante(Verso, Timer);
-      Set(hopSet, TimeUp, 0, 1, Timer, Verso);
+      Set(hopSet, TimeUp, TimeDwn, 1, Timer, Verso);
       
       if (btn_Press(Button_enter, 50)) {
         s_set(blhpAddr, hopSet);

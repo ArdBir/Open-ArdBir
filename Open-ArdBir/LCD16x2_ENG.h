@@ -95,7 +95,8 @@ void AddMalt(){
 
 void Stage(byte Stage, float Set, float Temp){
   lcd.setCursor(0,0);
-  lcd.print(stageName[Stage]);
+  if (Stage < 11) lcd.print(stageName[Stage]);
+  else            lcd.print(stageName[10]);
   
   lcd.setCursor(10,0);
   if (Set>=100)lcd.print(Set,1);
