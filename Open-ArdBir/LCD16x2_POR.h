@@ -1,5 +1,5 @@
 char *PIDName[]   ={"Uso ", "Constante kP", "Constante kI", "Constante kD", "SampleTime ", "Janela  ms  ", "PWM         ", "Calibragem  ", "Histerese  "};
-char *stageName[] ={"Mash In   ", "Fitase    ", "Glucanase ", "Protease  ", "bAmilase  ", "aAmilase  ", "aAmilase2 ", "Mash Out  ", "Ebulicao  ", "Cooling   ", "Whirlpool "};
+char *stageName[] ={"Mash In   ", "Fitase    ", "Glucanase ", "Protease  ", "\xE2""Amilase  ", "\xE0""Amilase  ", "\xE0""Amilase2 ", "Mash Out  ", "Ebulicao  ", "Cooling   ", "Whirlpool "};
 char *unitName[]  ={"Escala     ", "Sensor     ", "Ebulicao   ", "Ebulicao   ", "Ciclo Bomba", "Pausa Bomba", "Bmb PreMash", "Bmb em Mash", "Bmb MashOut", "Bomb em Ebu", "Bomb Parada", "Bomb Parada", "PID Pipe  " , "Skip Add      ", "Skip Remove ", "Skip Iodine ", "TempoIodo ", "Whirlpool"};
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
@@ -26,7 +26,7 @@ void Clear_2_3(){
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
   LCDSpace(1);
-  lcd.print(F("2.8.2 "));
+  lcd.print(F("2.8.3""\xE0""0"));
   lcd.write(7);
 }
 

@@ -30,7 +30,7 @@ void Clear_2_3() {
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.214"));
+  lcd.print(F("2.8.3""\xE0""0"));
   lcd.write(7);
 }
 
@@ -151,8 +151,8 @@ void Stage(byte Stage, float Set, float Temp) {
   if (Stage  >  0 && Stage  < 8) lcd.print(F("SU* *GIU Pausa STP"));
   if (Stage ==  8)               lcd.print(F("SU* *GIU  ---  ---"));
   if (Stage ==  9)               lcd.print(F("SU* *GIU  ---  Pmp"));
-  if (Stage == 10)               lcd.print(F("--* *--   ---  Pmp"));
-  if (Stage == 11)               lcd.print(F("--* *--  Tempo Pmp")); 
+  if (Stage == 10)               lcd.print(F("--* *---  ---  Pmp"));
+  if (Stage == 11)               lcd.print(F("--* *--- Tempo Pmp")); 
 }
 
 void SaltoStep() {

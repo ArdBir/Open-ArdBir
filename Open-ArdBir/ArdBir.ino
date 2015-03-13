@@ -222,7 +222,7 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   false
+#define StartSprite   true
 #define Sprite        true
 #define Crediti       true
 
@@ -499,17 +499,17 @@ void PID_HEAT (boolean autoMode) {
     if (Millesimi <  100) Serial.print("0");
     Serial.print(Millesimi);
     
-    Serial.print(F("   Temperatura: "));
+    Serial.print(F("  Temperatura: "));
     if(Temp_Now <  10 && Temp_Now >= 0) Serial.print(F("  "));
     if(Temp_Now < 100 && Temp_Now >=10) Serial.print(F(" "));
     Serial.print(Temp_Now);
     
-    Serial.print(F("   Set Point: "));
+    Serial.print(F("  Set Point: "));
     if(Setpoint <  10 && Setpoint >= 0) Serial.print(F("  "));
     if(Setpoint < 100 && Setpoint >=10) Serial.print(F(" "));
     Serial.print(Setpoint);
     
-    Serial.print(F("   DeltaPID: "));
+    Serial.print(F("  DeltaPID: "));
     Serial.print(DeltaPID);
 
   #endif
@@ -566,15 +566,20 @@ void PID_HEAT (boolean autoMode) {
   #endif
   
   #if SerialPID == true
-    Serial.print(F("   Output: "));
+    Serial.print(F("  Output: "));
     if(Output <  10 && Output >= 0) Serial.print(F("  "));
     if(Output < 100 && Output >=10) Serial.print(F(" "));
     Serial.print(Output);
     
-    Serial.print(F(" | Stato Pompa: "));
+    Serial.print (F("  Now: "));
+    Serial.print (now);
+    Serial.print (F("  w_StartTime: "));
+    Serial.print (w_StartTime);
+    
+    Serial.print(F("   | Stato Pompa: "));
     Serial.print(mpump);
     
-    Serial.print(F("   Tempo: "));
+    Serial.print(F("  Tempo: "));
     if(pumpTime <  10 && pumpTime >= 0) Serial.print(F("  "));
     Serial.println(pumpTime);
   #endif
@@ -600,7 +605,7 @@ void load_pid_settings () {
   myPID.SetSampleTime(SampleTime * 250);
 }  
 
-boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display) { 
+boolean wait_for_confirm (byte Stato, byte Tipo, byte Display) { 
   // Stato   == 1 Pause with    PID
   // Stato   == 2 Pause without PID
   
@@ -630,13 +635,15 @@ boolean wait_for_confirm (boolean& test, byte Stato, byte Tipo, byte Display) {
     }
         
     if (btn_Press(Button_start, 50)) {
-      test  = true;
+      return true;
+//      test  = true;
       wtBtn = false;
     }
     
     if (Tipo == 2) {
       if (btn_Press(Button_enter, 50)) {
-        test  = false;
+        return false;
+//        test  = false;
         wtBtn = false;
         lcd.clear();
       }
@@ -1009,11 +1016,11 @@ void stage_loop () {
     
     if (btn_Press(Button_enter, 2500)) {
       if ((x - 1) > 0) {
-        boolean flag_SaltoStep;
+        //boolean flag_SaltoStep;
         Buzzer(3, 50);
         SaltoStep();
-        wait_for_confirm(flag_SaltoStep, 1, 2, 1);
-        if (flag_SaltoStep) {
+        //wait_for_confirm(flag_SaltoStep, 1, 2, 1);
+        if (wait_for_confirm(1, 2, 1)) {
           Clear_2_3();
           return;
         }
@@ -1023,13 +1030,13 @@ void stage_loop () {
 }
 
 void add_malt () {
-  boolean malt;
+  //boolean malt;
   pump_off(mpump);
   
   AddMalt();
 
-  wait_for_confirm(malt, 1, 2, 1);
-  if (malt == false) {
+  //wait_for_confirm(malt, 1, 2, 1);
+  if (wait_for_confirm(1, 2, 1) == false) {
     LCD_Default(Temp_Now);
     delay(50);
     mainMenu = 0;
@@ -1100,8 +1107,8 @@ void remove_malt () {
   byte noPID;
   r_set(noPID, 22);
   //if (EEPROM.read(24) == 1 && SensorType == 0) wait_for_confirm(malt, 1, 2, 1);
-  if (noPID == 1 && SensorType == 0) wait_for_confirm(malt, 1, 2, 1);
-  else                               wait_for_confirm(malt, 2, 2, 1);
+  if (noPID == 1 && SensorType == 0) malt = wait_for_confirm(1, 2, 1);
+  else                               malt = wait_for_confirm(2, 2, 1);
   
   if (malt == false) {
     r_set(stageTime, 73);
@@ -1132,7 +1139,7 @@ void manual_mode () {
   r_set(boil_output, 6);
   
   prompt_for_water();
-  wait_for_confirm(manualLoop, 2, 2, 2);
+  manualLoop = wait_for_confirm(2, 2, 2);
 
   Menu_1();//Pulisce lo schermo
   
@@ -1260,7 +1267,7 @@ void WaitStart() {
   }
   
   LCD_Procedo();
-  wait_for_confirm(Procedo, 2, 2, 2);
+  Procedo = wait_for_confirm(2, 2, 2);
   
   Clear_2_3();
   
@@ -1304,7 +1311,7 @@ void Temperatura_Raggiunta() {
     if (pmpPreMash == 1) pump_on();
     else                 ledPumpStatus(true);
     
-    wait_for_confirm(TempRaggiunta, 1, 1, 1);
+    TempRaggiunta = wait_for_confirm(1, 1, 1);
   }
 }
 
@@ -1323,8 +1330,8 @@ void auto_mode () {
   
     Resume();
 
-    wait_for_confirm(resume, 2, 2, 2);
-    if (resume == true) {
+    //wait_for_confirm(resume, 2, 2, 2);
+    if (wait_for_confirm(2, 2, 2) == true) {
       r_set(StageAddr, 85);
       StageAddr = (StageAddr * 5) + 32;
       //StageAddr = (EEPROM.read(85) * 5) + 32;
@@ -1338,7 +1345,7 @@ void auto_mode () {
 
   if (!(resume)) {  // if starting a new process prompt for water
     prompt_for_water();
-    wait_for_confirm(b_Enter, 2, 2, 2);
+    b_Enter = wait_for_confirm(2, 2, 2);
 
     Menu_2();//pulisce lo schermo
 
@@ -1355,7 +1362,11 @@ void auto_mode () {
   if (DelayedMode) WaitStart();
   
 // ************  
-// x=9; 
+// x=9; //for TESTING WHIRLPOOL
+// ************
+
+// ************  
+//w_StartTime = millis();
 // ************
 
   if (b_Enter) {                     // mash steps
@@ -1468,7 +1479,7 @@ void Cooling() {
 
   //Attende risposta per raffreddamento
   Raffreddamento();
-  wait_for_confirm(f_Cooling, 2, 2, 2);
+  f_Cooling = wait_for_confirm(2, 2, 2);
   
   Menu_2();
   while (f_Cooling) {
@@ -1513,7 +1524,7 @@ void Whirlpool () {
   
   //Attende risposta per whirlpool
   LCDWhirlpool();
-  wait_for_confirm(f_Whirlpool, 2, 2, 2);
+  f_Whirlpool = wait_for_confirm(2, 2, 2);
   if (f_Whirlpool){
     boolean Procedo = true;
     byte TempoWhirlpool;
@@ -2003,7 +2014,7 @@ void loadRecipe() {
 
 
 void saveRecipe() {
-  boolean saverecipeLoop;
+  //boolean saverecipeLoop;
   byte numRicetta = 0;
    
   for (byte i = 90; i < 100; i++) {//Trova la prima ricetta libera
@@ -2065,9 +2076,9 @@ void saveRecipe() {
   
     SalvataggioRicetta (numRicetta);
   
-    wait_for_confirm(saverecipeLoop, 2, 2, 2);
+    //wait_for_confirm(saverecipeLoop, 2, 2, 2);
   
-    if (saverecipeLoop == false) {
+    if (wait_for_confirm(2, 2, 2) == false) {
       Menu_3();
       Menu_3_4();
       return;
@@ -2143,13 +2154,13 @@ void deleteRecipe() {
 }
 
 void initializeRecipe() {
-  boolean initialize;
+  //boolean initialize;
   
   Inizializzazione();
   
-  wait_for_confirm(initialize, 2, 2, 2);
+  //wait_for_confirm(initialize, 2, 2, 2);
   
-  if (initialize == false) {
+  if (wait_for_confirm(2, 2, 2) == false) {
     Menu_3();
     Menu_3_4();
     return;
@@ -2406,7 +2417,7 @@ void setup() {
 }
 
 void loop() {
-  boolean StartNow = false;
+  //boolean StartNow = false;
     
   pumpTime   = 0;
   TimeSpent  = 0;
@@ -2426,9 +2437,9 @@ void loop() {
     Menu_2();
     
     PartenzaRitardata();
-    wait_for_confirm(StartNow, 2, 2, 2);
+    //wait_for_confirm(StartNow, 2, 2, 2);
     
-    if (!(StartNow)) DelayedMode = true;
+    if (!(wait_for_confirm(2, 2, 2))) DelayedMode = true;
     
     Menu_2();
     auto_mode(); 
