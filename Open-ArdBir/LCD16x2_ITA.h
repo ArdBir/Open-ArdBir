@@ -183,35 +183,37 @@ void Menu_3_1_x(byte i){
   lcd.print(PIDName[i]);
 }  
 void PidSet(int pidSet, byte i) {
-  lcd.setCursor(9, 1);
-  if (i > 0) LCDSpace(2);
-  
-  if (i > 0 && i <= 6) {
-    if (i < 6) LCDSpace(1);
-  
-    if (i  < 4)           pidSet = pidSet - 100;
-    if (i == 4 || i == 5) pidSet = pidSet * 250;
-    
-    FormatNumeri(pidSet, 0);
-  }
-  
-  if(i >= 7){
-    float OffSet = pidSet;
-    if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-    if (i == 8) OffSet =  OffSet / 10.0;
-    
-    FormatNumeri(OffSet, -2);
-    lcd.print(OffSet);
-    return;
-  }
-  
   if (i == 0) {
     lcd.setCursor(7, 1);
+    
     if (pidSet == 0) lcd.print(F("Elettrico"));
     else             lcd.print(F("      Gas"));
-  } else             lcd.print(pidSet);
+  } else { 
+    lcd.setCursor(11, 1);
+  
+    if (i > 0 && i <= 6) {
+      if (i < 6) LCDSpace(1);
+    
+      if (i  < 4)           pidSet = pidSet - 100;
+      if (i == 4 || i == 5) pidSet = pidSet * 250;
+    
+      FormatNumeri(pidSet, 0);
+    }
+  
+    if(i >= 7){
+      float OffSet = pidSet;
+      if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
+      if (i == 8) OffSet =  OffSet / 10.0;
+    
+      FormatNumeri(OffSet, -2);
+      lcd.print(OffSet);
+      return;
+    }
+  
+    lcd.print(pidSet);
 
-  if (i == 6) lcd.print(F("%"));
+    if (i == 6) lcd.print(F("%"));
+  }
 }
 
 void Menu_3_2(){

@@ -48,7 +48,7 @@ byte r_set(int addr){
     Serial.print (F(" byte: "));
     Serial.println (EEPROM.read(addr)); 
   #endif
-  
+
   return EEPROM.read(addr);
 }
 

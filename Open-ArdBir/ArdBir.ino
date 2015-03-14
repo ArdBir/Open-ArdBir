@@ -222,7 +222,7 @@ EEPROM MAP
 
 
 /// FOR DEBUGGING ///
-#define StartSprite   true
+#define StartSprite   false
 #define Sprite        true
 #define Crediti       true
 
@@ -231,6 +231,7 @@ EEPROM MAP
 #define SerialMonitor false
 #define SerialPID     false
 #define PID_FE        false
+
 
 #define ReadWrite     false
 #define TestMemoria   false
@@ -1073,8 +1074,7 @@ void Iodine_Test () {
 
   if (ScaleTemp == 0) Setpoint = r_set_double(StageAddr - 5) / 16.0;
   else                Setpoint = r_set_double(StageAddr - 3) / 16.0;
-  
-  
+
   pump_on();
   pumpTime  = 0;
   TimeSpent = 0;
@@ -1354,15 +1354,17 @@ void auto_mode () {
   
     Resume();
 
-    //wait_for_confirm(resume, 2, 2, 2);
-    if (wait_for_confirm(2, 2, 2) == true) {
+    resume = wait_for_confirm(2, 2, 2);
+    if (resume) {
       //r_set(StageAddr, 85);
       //StageAddr = (StageAddr * 5) + 32;
-      
-      x = r_set(85);
-      StageAddr = (x * 5) + 32;
+      //StageAddr = r_set(85);
+      //StageAddr = (StageAddr * 5) + 32;
       
       //r_set(x, 85);
+      x = r_set(85);
+      
+      StageAddr = (x * 5) + 32;
       b_Enter = true;
     }
   } 
@@ -2008,7 +2010,7 @@ void set_Stages () {
 
 
 byte Congruita(byte& numRicetta, byte Verso) {  
-  if (r_set(89 + numRicetta) == 0) {
+  if (EEPROM.read(89 + numRicetta) == 0) {
     boolean Controllo = true;
     
     while(Controllo) {
@@ -2018,7 +2020,7 @@ byte Congruita(byte& numRicetta, byte Verso) {
       if (Verso == 2) if (numRicetta > 1) numRicetta--;
       else            Controllo = false;
       
-      if (r_set(89 + numRicetta) == 1) { 
+      if (EEPROM.read(89 + numRicetta) == 1) { 
         Controllo = false;
       }
     }
@@ -2034,7 +2036,7 @@ void loadRecipe() {
   RicettaDwn = 0;
   
   for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate 
-    if (r_set(i) == 1) {
+    if (EEPROM.read(i) == 1) {
       RicettaUp = (i - 89);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
@@ -2056,7 +2058,7 @@ void loadRecipe() {
       Set(numRicetta, RicettaUp, RicettaDwn, 1, Timer, Verso);
       
       for (pos = 0; pos < 10; pos++) {
-        LCD_NomeRicetta(pos, r_set(620 + pos + ((numRicetta - 1) * 10)));
+        LCD_NomeRicetta(pos, EEPROM.read(620 + pos + ((numRicetta - 1) * 10)));
       }
       
       Congruita(numRicetta, Verso);
@@ -2091,7 +2093,7 @@ void saveRecipe() {
   byte numRicetta = 0;
    
   for (byte i = 90; i < 100; i++) {//Trova la prima ricetta libera
-    if (r_set(i) == 0) {
+    if (EEPROM.read(i) == 0) {
       numRicetta = (i - 89);
       i = 99;
     }
@@ -2190,7 +2192,7 @@ void deleteRecipe() {
   RicettaDwn = 0;
   
   for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate 
-    if (r_set(i) == 1) {
+    if (EEPROM.read(i) == 1) {
       RicettaUp = (i - 89);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
