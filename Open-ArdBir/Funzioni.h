@@ -1,9 +1,15 @@
 void Buzzer(byte NumBeep, int Period){
   for (byte i = 0; i < NumBeep; i++){
-    digitalWrite (Buzz, HIGH);
-    delay (Period);
-    digitalWrite(Buzz, LOW);
-    delay(100);
+    #if ToneOnBuzzer == false
+      digitalWrite (Buzz, HIGH);
+      delay (Period);
+      digitalWrite(Buzz, LOW);
+      delay(75);
+    #elif ToneOnBuzzer == true
+      tone(Buzz, 600, Period);
+      delay(Period + 75);
+      noTone(Buzz);
+    #endif
   }
 }
 
@@ -15,129 +21,82 @@ void LCDSpace (byte Num){
 
 void FormatNumeri(float Numero, int Offset) {
   byte Spazi = 0;
-  if (Numero <=  -100.0)                    Spazi = 0;
-  if (Numero <=   -10.0 && Numero > -100.0) Spazi = 1;
-  if (Numero <      0.0 && Numero >  -10.0) Spazi = 2;
-  if (Numero <     10.0 && Numero >=   0.0) Spazi = 3;
-  if (Numero <    100.0 && Numero >=  10.0) Spazi = 2;
-  if (Numero >=   100.0)                    Spazi = 1;
+  if (Numero <= -100.0)                    Spazi = 0;
+  if (Numero <=  -10.0 && Numero > -100.0) Spazi = 1;
+  if (Numero <     0.0 && Numero >  -10.0) Spazi = 2;
+  if (Numero <    10.0 && Numero >=   0.0) Spazi = 3;
+  if (Numero <   100.0 && Numero >=  10.0) Spazi = 2;
+  if (Numero <  1000.0 && Numero >= 100.0) Spazi = 1;
+  if (Numero >= 1000.0)                    Spazi = 0;
   
   LCDSpace(Spazi + Offset);
 }
 
+#if TestMemoria == true
 int freeRam() {
-  #if TestMemoria == true
-    extern int __heap_start, *__brkval;
-    int v;
-    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-  #endif
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
+#endif
 
 
-void r_set(byte& data, int addr){
-  data = EEPROM.read(addr);
-
-#if SerialMonitor == true  
+byte r_set(int addr){
   #if ReadWrite   == true  
     Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" byte: "));
-    Serial.println (data); 
-   #endif
- #endif
+    Serial.println (EEPROM.read(addr)); 
+  #endif
+  
+  return EEPROM.read(addr);
 }
 
 void s_set (int addr, byte data){
-  EEPROM.write(addr,data);
-
-#if SerialMonitor == true
   #if ReadWrite   == true
     Serial.print (F("W-> "));
     Serial.print (addr);
     Serial.print (F(" byte: "));
     Serial.println (data);
   #endif
-#endif
-}
-/*
-void read_set(byte& data, int addr){
-  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
- #if SerialMonitor == true
-  #if ReadWrite    == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (data); 
-  #endif
-#endif
-}
-*/
+  EEPROM.write(addr,data);
 
-void read_set(float& data, int addr){
-  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
-  
- #if SerialMonitor == true
+}
+
+float r_set_float(int addr){ 
   #if ReadWrite    == true
     Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" float: "));
-    Serial.println (data); 
+    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1))); 
   #endif
-#endif
+  
+  return word(EEPROM.read(addr),EEPROM.read(addr+1));
 }
 
-void read_set(double& data, int addr){
-  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
-  
-#if SerialMonitor == true  
+double r_set_double(int addr){ 
   #if ReadWrite   == true
     Serial.print (F("R-> "));
     Serial.print (addr);
     Serial.print (F(" double: "));
-    Serial.println (data);
+    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1)));
   #endif
-#endif
-}
-void read_set(int& data, int addr){
-  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
   
-#if SerialMonitor == true
-  #if ReadWrite   == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" int: "));
-    Serial.println (data); 
-  #endif
-#endif
+  return word(EEPROM.read(addr),EEPROM.read(addr+1));
+ 
 }
-
-void read_set(unsigned int& data, int addr){
-  data=word(EEPROM.read(addr),EEPROM.read(addr+1));
-  
-#if SerialMonitor == true  
-  #if ReadWrite   == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" u_int: "));
-    Serial.println (data); 
-  #endif
-#endif
-}
-
 
 void save_set (int addr, int data){
   EEPROM.write(addr,highByte(data));
   EEPROM.write((addr+1),lowByte(data));
   
-#if SerialMonitor == true
   #if ReadWrite   == true
     Serial.print (F("W-> "));
     Serial.print (addr);
     Serial.print (F(" Word: "));
     Serial.println (data); 
   #endif
-#endif
 }  
 
 void CountDown(unsigned long Tempo, byte posX, byte posY, byte numH){

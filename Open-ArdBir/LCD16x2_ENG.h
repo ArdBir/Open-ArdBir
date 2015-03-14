@@ -182,11 +182,12 @@ void Menu_3_1_x(byte i){
   lcd.print(PIDName[i]);
 }  
 void PidSet(int pidSet, byte i){
-  lcd.setCursor(11, 1);
-  if (i > 0 && i < 7) LCDSpace(1);
-  if (i > 0 && i < 4) LCDSpace(1);
- 
+  lcd.setCursor(9, 1);
+  if (i > 0) LCDSpace(2);
+  
   if (i > 0 && i <= 6) {
+    if (i < 6) LCDSpace(1);
+    
     if (i  < 4)           pidSet = pidSet - 100;
     if (i == 4 || i == 5) pidSet = pidSet * 250;
     
@@ -198,7 +199,7 @@ void PidSet(int pidSet, byte i){
     if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
     if (i == 8) OffSet =  OffSet / 10.0;
     
-    FormatNumeri(OffSet, -2);
+    FormatNumeri(OffSet, 0);
     lcd.print(OffSet);
     return;
   }
@@ -261,8 +262,8 @@ void UnitSet(byte unitSet, byte i){
     
     default:
       lcd.setCursor(13,1);
-      if (unitSet==0)lcd.print(F("OFF"));
-      if (unitSet==1)lcd.print(F(" ON"));
+      if (unitSet==0)lcd.print(F("Off"));
+      if (unitSet==1)lcd.print(F(" On"));
       break;
       
     case(12)://Pipe
@@ -275,21 +276,21 @@ void UnitSet(byte unitSet, byte i){
     case(14):
     case(15):
       lcd.setCursor(13,1);
-      if (unitSet==0)lcd.print(F(" NO"));
-      if (unitSet==1)lcd.print(F("YES"));
+      if (unitSet==0)lcd.print(F(" No"));
+      if (unitSet==1)lcd.print(F("Yes"));
       break;
     
     case(16): //Iodio
       if (unitSet==0){
         lcd.setCursor(9,1);
-        lcd.print(F("    OFF"));
+        lcd.print(F("    Off"));
       }else CountDown(unitSet*60,9,1,1);
       break;
       
     case(17):
-      if (unitSet == 0) lcd.print(F("    OFF"));
-      if (unitSet == 1) lcd.print(F("   COLD"));
-      if (unitSet == 2) lcd.print(F("    HOT"));
+      if (unitSet == 0) lcd.print(F("    Off"));
+      if (unitSet == 1) lcd.print(F("   Cold"));
+      if (unitSet == 2) lcd.print(F("    Hot"));
       break;
   }  
 }
@@ -528,15 +529,13 @@ void Credits(){
   lcd.clear();
 }
 
+#if TestMemoria == true
 void Menu_4(){
-  #if TestMemoria == true
     lcd.clear();
     lcd.setCursor(4,0);
     lcd.print(F("TEST RAM"));
-  #endif
 }
 void Menu_4_1(){
-  #if TestMemoria == true
     lcd.clear();
     lcd.setCursor(1,0);
     lcd.print(F("Memoria Libera"));
@@ -550,8 +549,8 @@ void Menu_4_1(){
   
     delay(3500);
     lcd.clear();
-  #endif
 }
+#endif
 
 void Pause_Stage(float Temp, int Time){
   lcd.setCursor(0,0);
@@ -599,7 +598,7 @@ void Iodine(float Temp, int Time){
   lcd.setCursor(1,1);
   lcd.print(F("IODINE"));
   lcd.setCursor(7,1);
-  lcd.print(F(" OK  -- "));
+  lcd.print(F(" Ok  -- "));
 }
 
 void End(){

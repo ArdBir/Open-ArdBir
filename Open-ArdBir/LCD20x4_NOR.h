@@ -30,7 +30,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.3""\xE0""0"));
+  lcd.print(F("2.8.3""\xE0""2"));
   lcd.write(7);
 }
 
@@ -239,33 +239,38 @@ void Menu_3_1_x(byte i){
 }  
 
 void PidSet(int pidSet, byte i){
-  lcd.setCursor(14, 2);
-  if (i > 0)          LCDSpace(1);
-  if (i > 0 && i < 4) LCDSpace(1);
-  
-  if (i > 0 && i <= 6) {
-    if (i  < 4)           pidSet = pidSet - 100;
-    if (i == 4 || i == 5) pidSet = pidSet * 250;
-    
-    FormatNumeri(pidSet, 0);
-  }
-  
-  if(i >= 7){
-    float OffSet = pidSet;
-    if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
-
-    FormatNumeri(OffSet, -2);
-    lcd.print(OffSet);
-    return;
-  }
-  
   if (i == 0) {
-    lcd.setCursor(11, 2);
-    if (pidSet == 0) lcd.print(F("Elektrisk "));
-    else             lcd.print(F("  Gass   "));
-  }else lcd.print(pidSet);
+    lcd.setCursor(10, 2);
+    
+    if (pidSet == 0) lcd.print(F("Elektrisk"));
+    else             lcd.print(F("     Gass"));
+  } else { 
+    lcd.setCursor(12, 2);
+    LCDSpace(2);
+  
+    if (i > 0 && i <= 6) {
+      if (i < 6) LCDSpace(1);
+    
+      if (i  < 4)           pidSet = pidSet - 100;
+      if (i == 4 || i == 5) pidSet = pidSet * 250;
+    
+      FormatNumeri(pidSet, 0);
+    }
+  
+    if(i >= 7){
+      float OffSet = pidSet;
+      if (i == 7) OffSet = (OffSet - 50.0) / 10.0;
+      if (i == 8) OffSet =  OffSet / 10.0;
+    
+      FormatNumeri(OffSet, -2);
+      lcd.print(OffSet);
+      return;
+    }
+  
+    lcd.print(pidSet);
 
-  if (i == 6) lcd.print(F("%"));
+    if (i == 6) lcd.print(F("%"));
+  }
 }
 
 void Menu_3_2(){
@@ -623,32 +628,28 @@ void Credits(){
   Clear_2_3(); 
 }
 
-
+#if TestMemoria == true
 void Menu_4(){
-  #if TestMemoria == true
-    lcd.clear();
-    lcd.setCursor(3,0);
-    lcd.print(F("TEST DELLA RAM"));
-  #endif
+  lcd.clear();
+  lcd.setCursor(3,0);
+  lcd.print(F("TEST DELLA RAM"));
 }
 void Menu_4_1(){
-  #if TestMemoria == true
-    lcd.setCursor(3,1);
-    lcd.print(F("Memoria Libera"));
-    lcd.setCursor(6,2);
+  lcd.setCursor(3,1);
+  lcd.print(F("Memoria Libera"));
+  lcd.setCursor(6,2);
 
-    if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
-    if (freeRam()<10)LCDSpace(2);
-    lcd.print(freeRam());
-    LCDSpace(2);
-    lcd.print(F("byte"));
+  if (freeRam()<100&&freeRam()>=10)LCDSpace(1);
+  if (freeRam()<10)LCDSpace(2);
+  lcd.print(freeRam());
+  LCDSpace(2);
+  lcd.print(F("byte"));
   
-    LCDClear(3);
-    delay(3500);
-    lcd.clear();
-  #endif
+  LCDClear(3);
+  delay(3500);
+  lcd.clear();
 }
-
+#endif
 
 void Pause_Stage(float Temp, int Time){
   PauseScreen();
@@ -699,7 +700,7 @@ void Iodine(float Temp, int Time){
   Watch (Time);
   
   lcd.setCursor(1,3);
-  lcd.print(F("---   ---   OK   ---"));
+  lcd.print(F("---   ---   Ok   ---"));
 }
 
 void End(){
@@ -754,7 +755,7 @@ void ArdBir(){
 
 void PartenzaRitardata(){
   Clear_2_3();
-  lcd.setCursor(3,2);
+  lcd.setCursor(3,1);
   lcd.print(F("Utsett Start"));
   lcd.setCursor(13,3);
   lcd.print(F("Nei  Ja")); 

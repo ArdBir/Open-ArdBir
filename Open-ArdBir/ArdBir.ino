@@ -226,6 +226,8 @@ EEPROM MAP
 #define Sprite        true
 #define Crediti       true
 
+#define ToneOnBuzzer  false
+
 #define SerialMonitor false
 #define SerialPID     false
 #define PID_FE        false
@@ -328,8 +330,8 @@ float Temp_Now;
 
 
 byte x;
-byte ScaleTemp       = EEPROM.read(11);;
-byte SensorType      = EEPROM.read(10);;
+byte ScaleTemp       = EEPROM.read(10);;
+byte SensorType      = EEPROM.read(11);;
 byte UseGAS          = EEPROM.read( 0);
 
 byte stageTime;
@@ -438,9 +440,12 @@ void Temperature() { // reads the DS18B20 temerature probe
     Temp_Now = (raw & 0xFFFC) * 0.0625;
     if (ScaleTemp == 1) Temp_Now = Temp_Now * 1.8 + 32.0;
     
-    byte Correzione;
-    r_set(Correzione, 7);
-    Temp_Now = Temp_Now + ((float)((Correzione - 50) / 10.0));
+    //byte Correzione;
+    //r_set(Correzione, 7);
+    //Temp_Now = Temp_Now + ((float)((Correzione - 50) / 10.0));
+    
+    Temp_Now = Temp_Now + ((float)((r_set(7) - 50) / 10.0));
+    
     
     //Temp_Now = Temp_Now + ((EEPROM.read(6) - 50) / 10.0);
     
@@ -586,23 +591,27 @@ void PID_HEAT (boolean autoMode) {
 }
 
 void load_pid_settings () {
-  byte eepromKp;
-  byte eepromKi;
-  byte eepromKd;  
-  byte SampleTime;
+  //byte eepromKp   = r_set(1);
+  //byte eepromKi   = r_set(2);
+  //byte eepromKd   = r_set(3);  
+  //byte SampleTime = r_set(4);
   
-  r_set(eepromKp, 1);
-  r_set(eepromKi, 2);
-  r_set(eepromKd, 3);
+  //r_set(eepromKp, 1);
+  //r_set(eepromKi, 2);
+  //r_set(eepromKd, 3);
   
-  myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 250.00), eepromKd - 100); // send the PID settings to the PID
+  //myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 250.00), eepromKd - 100); // send the PID settings to the PID
+  myPID.SetTunings(r_set(1) - 100, (double)((r_set(2) - 100.00) / 250.00), r_set(3) - 100); // send the PID settings to the PID
   
-  r_set(SampleTime, 4);
-  r_set(WindowSize, 5);
+  //r_set(SampleTime, 4);
+  //r_set(WindowSize, 5);
+  WindowSize = r_set(5);
     
   //myPID.SetOutputLimits(0.0, 255.0);
   
-  myPID.SetSampleTime(SampleTime * 250);
+  //myPID.SetSampleTime(SampleTime * 250);
+  myPID.SetSampleTime(r_set(4) * 250);
+  
 }  
 
 boolean wait_for_confirm (byte Stato, byte Tipo, byte Display) { 
@@ -724,23 +733,26 @@ void pump_prime() {
 }
 
 void pump_rest (byte stage) {
-  byte TimePumpCycle;
-  byte TimePumpRest;
-  byte PumpPreMash;
-  byte PumpOnMash;
-  byte PumpOnMashOut;
-  byte PumpOnBoil;
+  byte TimePumpCycle = r_set(14);
+  byte TimePumpRest  = r_set(15);
+  byte PumpPreMash   = r_set(16);
+  byte PumpOnMash    = r_set(17);
+  byte PumpOnMashOut = r_set(18);
+  byte PumpOnBoil    = r_set(19);
   byte TempPumpRest;
   
-  r_set(TimePumpCycle, 14);
-  r_set(TimePumpRest,  15);
-  r_set(PumpPreMash,   16);
-  r_set(PumpOnMash,    17);
-  r_set(PumpOnMashOut, 18);
-  r_set(PumpOnBoil,    19);
+  //r_set(TimePumpCycle, 14);
+  //r_set(TimePumpRest,  15);
+  //r_set(PumpPreMash,   16);
+  //r_set(PumpOnMash,    17);
+  //r_set(PumpOnMashOut, 18);
+  //r_set(PumpOnBoil,    19);
   
-  if (ScaleTemp == 0) r_set(TempPumpRest, 20);
-  else                r_set(TempPumpRest, 21);
+  //if (ScaleTemp == 0) r_set(TempPumpRest, 20);
+  //else                r_set(TempPumpRest, 21);
+  
+  if (ScaleTemp == 0) TempPumpRest = r_set(20);
+  else                TempPumpRest = r_set(21);
   
   
   //mpump = true;
@@ -879,7 +891,9 @@ void Timing(byte stage, boolean Test, byte Type) {
 }
 
 void hop_add () {
-  r_set(nmbrHops, 72);
+  //r_set(nmbrHops, 72);
+  nmbrHops = r_set(72);
+  
   
   if (hopAdd < nmbrHops) {
     
@@ -896,7 +910,8 @@ void hop_add () {
       //EEPROM.write(87, hopAdd);
       s_set(87, hopAdd);
       blhpAddr++;
-      r_set(hopTime, blhpAddr);
+      //r_set(hopTime, blhpAddr);
+      hopTime = r_set(blhpAddr);
     }
   } 
 }
@@ -931,10 +946,10 @@ void stage_loop () {
       if (TimeLeft == 0) Buzzer(1, 1000); 
       
       if ((x - 1) == 7 && IodineTest == false ) {
-        byte b_Iodine;
-        r_set(b_Iodine, 25);
-        if (b_Iodine == 0) Iodine_Test();
-        //if (EEPROM.read(25) == 0) Iodine_Test();
+        //byte b_Iodine;
+        //r_set(b_Iodine, 25);
+        //if (b_Iodine == 0) Iodine_Test();
+        if (r_set(25) == 0) Iodine_Test();
       }
 
       if ((x - 1) == 8 && tempBoilReached && Temp_Now >= boilStageTemp) {  //if temp reached during boil
@@ -1045,17 +1060,21 @@ void add_malt () {
 }
 
 void Iodine_Test () {
-  byte IodineTime;   // = EEPROM.read(26);
+  byte IodineTime   = r_set(26);
   byte TempoRimasto = stageTime;
   
-  r_set(IodineTime, 26);
+  //r_set(IodineTime, 26);
   
   boolean Test = true;
   
-  if (ScaleTemp == 0) read_set(Setpoint, StageAddr - 5);
-  else                read_set(Setpoint, StageAddr - 3);
-  Setpoint = Setpoint / 16.0;
+  //if (ScaleTemp == 0) read_set(Setpoint, StageAddr - 5);
+  //else                read_set(Setpoint, StageAddr - 3);
+  //Setpoint = Setpoint / 16.0;
 
+  if (ScaleTemp == 0) Setpoint = r_set_double(StageAddr - 5) / 16.0;
+  else                Setpoint = r_set_double(StageAddr - 3) / 16.0;
+  
+  
   pump_on();
   pumpTime  = 0;
   TimeSpent = 0;
@@ -1076,7 +1095,8 @@ void Iodine_Test () {
     
     quit_mode(Test);  
     
-    if (btn_Press(Button_start, 50) || IodineTime != 0 && TimeSpent >= IodineTime * 60) {
+    //if (btn_Press(Button_start, 50) || IodineTime != 0 && TimeSpent >= IodineTime * 60) {
+    if (btn_Press(Button_start, 50) || r_set(26) != 0 && TimeSpent >= r_set(26) * 60) {  
       Test       = false;
       IodineTest = true;
       TimeSpent  = 0;
@@ -1104,14 +1124,16 @@ void remove_malt () {
   RemoveMalt();
 
   // Pausa senza PID (gli enzimi ormai sono distrutti)
-  byte noPID;
-  r_set(noPID, 22);
-  //if (EEPROM.read(24) == 1 && SensorType == 0) wait_for_confirm(malt, 1, 2, 1);
-  if (noPID == 1 && SensorType == 0) malt = wait_for_confirm(1, 2, 1);
-  else                               malt = wait_for_confirm(2, 2, 1);
+  //byte noPID;
+  //r_set(noPID, 22);
+  //if (noPID == 1 && SensorType == 0) malt = wait_for_confirm(1, 2, 1);
+  
+  if (r_set(22) == 1 && SensorType == 0) malt = wait_for_confirm(1, 2, 1);
+  else                                   malt = wait_for_confirm(2, 2, 1);
   
   if (malt == false) {
-    r_set(stageTime, 73);
+    //r_set(stageTime, 73);
+    stageTime = r_set(73);
     //EEPROM.write(86, stageTime);
     s_set(86, stageTime);
     LCD_Default(Temp_Now);
@@ -1136,7 +1158,8 @@ void manual_mode () {
   
   if (UseGAS == 0)    load_pid_settings();
 
-  r_set(boil_output, 6);
+  //r_set(boil_output, 6);
+  boil_output = r_set(6);
   
   prompt_for_water();
   manualLoop = wait_for_confirm(2, 2, 2);
@@ -1302,22 +1325,23 @@ void WaitStart() {
 
 void Temperatura_Raggiunta() {
   boolean TempRaggiunta = false;
-  byte pmpPreMash;
-  r_set(pmpPreMash, 16);
+  //byte pmpPreMash;
+  //r_set(pmpPreMash, 16);
   
   while (!TempRaggiunta){
     TemperaturaRaggiunta();
 
-    if (pmpPreMash == 1) pump_on();
-    else                 ledPumpStatus(true);
+    //if (pmpPreMash) == 1) pump_on();
+    if (r_set(16) == 1) pump_on();
+    else                ledPumpStatus(true);
     
     TempRaggiunta = wait_for_confirm(1, 1, 1);
   }
 }
 
 void auto_mode () {
-  byte AutoMode;
-  r_set(AutoMode, 84);
+  //byte AutoMode;
+  //r_set(AutoMode, 84);
   
   StageAddr = 32;
   
@@ -1325,18 +1349,20 @@ void auto_mode () {
 
 //  check_for_resume();
   
-  //if (EEPROM.read(84)) { // FLAG Automode Started
-  if (AutoMode) { // FLAG Automode Started
+  //if (AutoMode) { // FLAG Automode Started
+  if (r_set(84)) { // FLAG Automode Started
   
     Resume();
 
     //wait_for_confirm(resume, 2, 2, 2);
     if (wait_for_confirm(2, 2, 2) == true) {
-      r_set(StageAddr, 85);
-      StageAddr = (StageAddr * 5) + 32;
-      //StageAddr = (EEPROM.read(85) * 5) + 32;
+      //r_set(StageAddr, 85);
+      //StageAddr = (StageAddr * 5) + 32;
       
-      r_set(x, 85);
+      x = r_set(85);
+      StageAddr = (x * 5) + 32;
+      
+      //r_set(x, 85);
       b_Enter = true;
     }
   } 
@@ -1366,7 +1392,7 @@ void auto_mode () {
 // ************
 
 // ************  
-//w_StartTime = millis();
+w_StartTime = millis();
 // ************
 
   if (b_Enter) {                     // mash steps
@@ -1383,17 +1409,21 @@ void auto_mode () {
       pumpTime = 0;
       //*****
 
-      if (ScaleTemp == 0) read_set(stageTemp, StageAddr);
-      else                read_set(stageTemp, StageAddr + 2);
-      stageTemp = stageTemp / 16.0;
+      //if (ScaleTemp == 0) read_set(stageTemp, StageAddr);
+      //else                read_set(stageTemp, StageAddr + 2);
+      //stageTemp = stageTemp / 16.0;
 
+      if (ScaleTemp == 0) stageTemp = r_set_float(StageAddr) / 16.0;
+      else                stageTemp = r_set_float(StageAddr + 2) / 16.0;
+      
+      
       if (resume) {                 // on the start of resume gets saved time
-        //stageTime = EEPROM.read(86);
-        r_set(stageTime, 86);
+        stageTime = r_set(86);
+        //r_set(stageTime, 86);
         resume = false;            // clears resume for next loop
       } else {
-        //stageTime = EEPROM.read(StageAddr + 4); // gets stage time
-        r_set(stageTime, StageAddr + 4); // gets stage time
+        stageTime = r_set(StageAddr + 4); // gets stage time
+        //r_set(stageTime, StageAddr + 4); // gets stage time
         
         //EEPROM.write(86, stageTime);   // saves the intial stage time
         s_set(86, stageTime);   // saves the intial stage time
@@ -1434,8 +1464,9 @@ void auto_mode () {
     stageTemp   = boilStageTemp; // was set the intital boil temp to 98 deg c -mdw
     tempReached = false;  
 
-    r_set(nmbrHops, 72);
-    
+    //r_set(nmbrHops, 72);
+    nmbrHops = r_set(72);
+/*    
     if (resume) {
       if (x != 9) r_set(stageTime, 73);
       else        r_set(stageTime, 86);
@@ -1444,10 +1475,25 @@ void auto_mode () {
       //EEPROM.write(86, stageTime);
       s_set(86, stageTime);
     } 
-    r_set(hopAdd, 87);
+*/    
+    if (resume) {
+      if (x != 9) stageTime = r_set(73);
+      else        stageTime = r_set(86);
+    } else {
+      stageTime = r_set(73);
+      //EEPROM.write(86, stageTime);
+      s_set(86, stageTime);
+    } 
+    
+    //r_set(hopAdd, 87);
+    hopAdd = r_set(87);
     blhpAddr = hopAdd + 74;
-    r_set(hopTime, blhpAddr);
-    r_set(boil_output, 6);
+    
+    //r_set(hopTime, blhpAddr);
+    //r_set(boil_output, 6);
+    hopTime = r_set(blhpAddr);
+    boil_output = r_set(6);
+    
     TimeLeft = stageTime * 60;
     
     x = 9;
@@ -1497,10 +1543,10 @@ void Cooling() {
     quit_mode(f_Cooling);
     if ((!(f_Cooling)) || (Temp_Now <= stageTemp)) break;
   }
-  //if (EEPROM.read(27) == 1) Whirlpool();
-  byte b_Whirlpool;
-  r_set(b_Whirlpool, 27);
-  if (b_Whirlpool == 1) Whirlpool();
+  //byte b_Whirlpool;
+  //r_set(b_Whirlpool, 27);
+  //if (b_Whirlpool == 1) Whirlpool();
+  if (r_set(27) == 1) Whirlpool();
 }
 
 void Whirlpool () {  
@@ -1509,10 +1555,11 @@ void Whirlpool () {
   TimeLeft  = 0;
   
   boolean f_Whirlpool = false;
-  byte b_Whirlpool;
-  r_set(b_Whirlpool, 27);
+  //byte b_Whirlpool;
+  //r_set(b_Whirlpool, 27);
   
-  if (b_Whirlpool == 2) {
+  //if (b_Whirlpool == 2) {
+  if (r_set(27) == 2) {
     if (ScaleTemp == 0 ) stageTemp =  85;
     else                 stageTemp = 185;
   } else {
@@ -1557,7 +1604,8 @@ void Whirlpool () {
       if (mpump) Stage(10, stageTemp, Temp_Now);
       else       Stage(11, stageTemp, Temp_Now);
       
-      if (b_Whirlpool == 2) {
+      //if (b_Whirlpool == 2) {
+      if (r_set(27) == 2) {
         if (Temp_Now <=  stageTemp) break;
         else Mulinello = true;
       } else {
@@ -1610,7 +1658,8 @@ void Whirlpool () {
     }
   }
   
-  if (b_Whirlpool == 2) Cooling();
+  //if (b_Whirlpool == 2) Cooling();
+  if (r_set(27) == 2) Cooling();  
 }
 
 void set_PID () {
@@ -1623,7 +1672,8 @@ void set_PID () {
   
   for(byte i = 0; i < 9; i++) {
  
-    r_set(pidSet, i);
+    //r_set(pidSet, i);
+    pidSet = r_set(i);
     
     if (i == 8 && UseGAS == 0) pidLoop = false;
     else                       pidLoop = true;
@@ -1634,12 +1684,21 @@ void set_PID () {
       LeggiPulsante(Verso, Timer);
       
       PidSet(pidSet, i);
+/*      
       if (i == 5) {
-        r_set(Min, i - 1);
+        //r_set(Min, i - 1);
+        Min = r_set(i - 1);
         Set(pidSet, p_PID[i * 3], Min + 2, p_PID[i * 3 + 2], Timer, Verso); 
       } else {
         Set(pidSet, p_PID[i * 3], p_PID[i * 3 + 1], p_PID[i * 3 + 2], Timer, Verso); 
       }
+*/
+
+      if (i == 5) Min = r_set(i - 1) + 2;
+      else        Min = p_PID[i * 3 + 1];
+      
+      Set(pidSet, p_PID[i * 3], Min, p_PID[i * 3 + 2], Timer, Verso); 
+      
       
       quit_mode(pidLoop);
       if (!pidLoop)i = 9;
@@ -1669,11 +1728,18 @@ void set_Unit () {
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
     if (i == 26 && EEPROM.read(i - 1) == 1)      unitLoop = false;
     else                                         unitLoop = true;
-    
+
+/*    
     if (i != 12 && i != 20)                      r_set(unitSet, i);
     else {
       if (ScaleTemp == 0)                        r_set(unitSet, i);
       else                                       r_set(unitSet, i + 1);
+*/
+
+    if (i != 12 && i != 20)                      unitSet = r_set(i);
+    else {
+      if (ScaleTemp == 0)                        unitSet = r_set(i);
+      else                                       unitSet = r_set(i + 1);
     }
     
     while (unitLoop) {
@@ -1721,7 +1787,7 @@ void set_Unit () {
 
 
           if (i == 19) {
-            if (EEPROM.read(i) == 0) { // Controllo sul fermo Pompa
+            if (r_set(i) == 0) { // Controllo sul fermo Pompa
               //°C = 80; //°F = 176
               s_set(i + 1,  80);
               s_set(i + 2, 176);
@@ -1774,19 +1840,25 @@ void set_Stages () {
 
     if (ScaleTemp == 0) {
       
-      read_set(stagetempSet, StageAddr);
+      //read_set(stagetempSet, StageAddr);
+      //if (i > 0) read_set(temp_stageTemp, StageAddr - 5);
+      //temp_stageTemp = temp_stageTemp / 16.0;
      
-      if (i > 0) read_set(temp_stageTemp, StageAddr - 5);
-      temp_stageTemp = temp_stageTemp / 16.0;
+      stagetempSet = r_set_float(StageAddr);
+      if (i > 0) temp_stageTemp = r_set_float(StageAddr - 5) / 16.0;
+
       Max       = p_C[i * 3];
       Min       = p_C[i * 3 + 1];
       Step      = p_C[i * 3 + 2];
       DeltaTemp = 3.5;
     } else { 
-      read_set(stagetempSet, StageAddr + 2);
+      //read_set(stagetempSet, StageAddr + 2);
+      //if (i > 0) read_set(temp_stageTemp, StageAddr - 3);
+      //temp_stageTemp = temp_stageTemp / 16.0;
       
-      if (i > 0) read_set(temp_stageTemp, StageAddr - 3);
-      temp_stageTemp = temp_stageTemp / 16.0;
+      stagetempSet = r_set_float(StageAddr + 2);
+      if (i > 0) temp_stageTemp = r_set_float(StageAddr - 3) / 16.0;
+      
       Max       = p_F[i * 3];
       Min       = p_F[i * 3 + 1];
       Step      = p_F[i * 3 + 2];
@@ -1897,7 +1969,8 @@ void set_Stages () {
 
     if (autoLoop)TempTimeLoop = true;
 
-    r_set(stagetimeSet, StageAddr + 4);
+    //r_set(stagetimeSet, StageAddr + 4);
+    stagetimeSet = r_set(StageAddr + 4);
     
     while (TempTimeLoop) { // loops to adjust time setting
       if (i != 0) {
@@ -1935,7 +2008,7 @@ void set_Stages () {
 
 
 byte Congruita(byte& numRicetta, byte Verso) {  
-  if (EEPROM.read(89 + numRicetta) == 0) {
+  if (r_set(89 + numRicetta) == 0) {
     boolean Controllo = true;
     
     while(Controllo) {
@@ -1945,7 +2018,7 @@ byte Congruita(byte& numRicetta, byte Verso) {
       if (Verso == 2) if (numRicetta > 1) numRicetta--;
       else            Controllo = false;
       
-      if (EEPROM.read(89 + numRicetta) == 1) { 
+      if (r_set(89 + numRicetta) == 1) { 
         Controllo = false;
       }
     }
@@ -1961,7 +2034,7 @@ void loadRecipe() {
   RicettaDwn = 0;
   
   for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate 
-    if (EEPROM.read(i) == 1) {
+    if (r_set(i) == 1) {
       RicettaUp = (i - 89);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
@@ -1983,7 +2056,7 @@ void loadRecipe() {
       Set(numRicetta, RicettaUp, RicettaDwn, 1, Timer, Verso);
       
       for (pos = 0; pos < 10; pos++) {
-        LCD_NomeRicetta(pos, EEPROM.read(620 + pos + ((numRicetta - 1) * 10)));
+        LCD_NomeRicetta(pos, r_set(620 + pos + ((numRicetta - 1) * 10)));
       }
       
       Congruita(numRicetta, Verso);
@@ -2018,7 +2091,7 @@ void saveRecipe() {
   byte numRicetta = 0;
    
   for (byte i = 90; i < 100; i++) {//Trova la prima ricetta libera
-    if (EEPROM.read(i) == 0) {
+    if (r_set(i) == 0) {
       numRicetta = (i - 89);
       i = 99;
     }
@@ -2117,7 +2190,7 @@ void deleteRecipe() {
   RicettaDwn = 0;
   
   for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate 
-    if (EEPROM.read(i) == 1) {
+    if (r_set(i) == 1) {
       RicettaUp = (i - 89);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
@@ -2217,7 +2290,8 @@ void RecipeMenu() {
 void set_hops () {
   boolean hopLoop;
   byte hopSet;
-  r_set(nmbrHops, 72);
+  //r_set(nmbrHops, 72);
+  nmbrHops = r_set(72);
   
   byte TimeUp;
   byte TimeDwn;
@@ -2247,7 +2321,9 @@ void set_hops () {
 
   for (byte i = 0; i < nmbrHops; i++) {
     hopLoop = true;
-    r_set(hopSet,blhpAddr);
+    //r_set(hopSet,blhpAddr);
+    hopSet = r_set(blhpAddr);
+    
     while (hopLoop){
       if (i == 0) {
         Menu_3_3_9();
@@ -2265,9 +2341,13 @@ void set_hops () {
         TimeUp  = 180;
         TimeDwn =  30;
       } else {
-       if (i == 1) r_set(TimeUp, blhpAddr - 1);
-       else        TimeUp = EEPROM.read(blhpAddr - 1) - 1;
-       TimeDwn =  0;
+        TimeUp = r_set(blhpAddr - 1);
+        if (i != 1) TimeUp = TimeUp - 1;
+        
+        //if (i == 1) r_set(TimeUp, blhpAddr - 1);
+        //if (i == 1) TimeUp = r_set(blhpAddr - 1);
+        //else        TimeUp = EEPROM.read(blhpAddr - 1) - 1;
+        TimeDwn =  0;
       }
 
       LeggiPulsante(Verso, Timer);
@@ -2358,6 +2438,8 @@ void setup() {
     Serial.begin(9600);
   #elif PID_FE        == true
     Serial.begin(9600);
+  #elif ReadWrite     == true
+    Serial.begin(9600);
   #endif
   
   
@@ -2371,12 +2453,17 @@ void setup() {
   #if SerialPID == true  
     Serial.println();
     Serial.println(F("CONTROLLO SPERIMENTALE ATTIVITA' P.I.D."));
-    Serial.print (F("ScaleTemp: "));
-    Serial.println  (ScaleTemp);
+    Serial.print (F("ScaleTemp:  "));
+    if (ScaleTemp == 0)  Serial.println ("C");
+    else                 Serial.println ("F");
+    
     Serial.print (F("SensorType: "));
-    Serial.println  (SensorType);
-    Serial.print (F("UseGAS: "));
-    Serial.println  (UseGAS);
+    if (SensorType == 0) Serial.println ("INTERNO");
+    else                 Serial.println ("ESTERNO");
+    
+    Serial.print (F("UseGAS:     "));
+    if (UseGAS == 0)     Serial.println ("ELETTRICO");
+    else                 Serial.println  ("GAS");
   #endif
   
   pinMode (Button_up,    INPUT_PULLUP);
@@ -2386,20 +2473,18 @@ void setup() {
   pinMode (Heat, OUTPUT);
   pinMode (Pump, OUTPUT);
   pinMode (Buzz, OUTPUT);
-  w_StartTime = millis();
+  //w_StartTime = millis();
 
   //tell the PID to range between 0 and the full window size
   myPID.SetMode(AUTOMATIC);
 
   allOFF();
  
-  if (ScaleTemp == 0) {
-    boilStageTemp = EEPROM.read(12);
-    //mset_temp = 35;
-  } else {
-    boilStageTemp = EEPROM.read(13);
-    //mset_temp = 95;
-  }
+  //if (ScaleTemp == 0) boilStageTemp = EEPROM.read(12);
+  //else                boilStageTemp = EEPROM.read(13);
+  
+  if (ScaleTemp == 0) boilStageTemp = r_set_float(12);
+  else                boilStageTemp = r_set_float(13);
   
 //  Sprite screen
   ArdBir();
