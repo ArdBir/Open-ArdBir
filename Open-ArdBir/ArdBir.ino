@@ -542,7 +542,7 @@ void PID_HEAT (boolean autoMode) {
 
   //FASE DI BOIL RAGGIUNTA
   // Il valore di Output viene riassegnato
-  if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output;
+  if (Input >= Setpoint && Setpoint >= boilStageTemp) Output = boil_output * 255 / 100;
   
 // PWM  
   //if (now - w_StartTime > (unsigned int)(WindowSize * 250)) w_StartTime += (unsigned int)(WindowSize * 250); //time to shift the Relay Window
