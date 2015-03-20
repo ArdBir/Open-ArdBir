@@ -1,10 +1,8 @@
 Open ArdBir 2012-2015
 ===========
-Version 2.8.3a4
+Version 2.8.3RC
 
 Source, PCB, Manual (English, Italian, Russian): http://goo.gl/SCM4Yo
-
-
 
 brauduino semi automated single vessel RIMS
 created by s.mathison
