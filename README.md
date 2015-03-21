@@ -4,6 +4,8 @@ Version 2.8.3RC
 
 Source, PCB, Manual (English, Italian, Russian): http://goo.gl/qMhPgu
 
+Compiled on Arduine IDE v1.6.1: http://www.arduino.cc/en/Main/Software
+
 brauduino semi automated single vessel RIMS
 created by s.mathison
 Copyright (C) 2012  Stephen Mathison
@@ -64,4 +66,4 @@ Copyright (C) 2012  Stephen Mathison
  - Italian Language
  - English Language
 
- compiled on Arduino V1.0.5
+ compiled on Arduino V1.6.1
