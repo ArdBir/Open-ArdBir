@@ -244,8 +244,8 @@ void PidSet(int pidSet, byte i) {
     if (pidSet == 0) lcd.print(F(" Eletrico"));
     else             lcd.print(F("      Gas"));
   } else { 
-    lcd.setCursor(12, 2);
-    LCDSpace(2);
+    lcd.setCursor(13, 2);
+    LCDSpace(1);
   
     if (i > 0 && i <= 6) {
       if (i < 6) LCDSpace(1);

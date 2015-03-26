@@ -30,7 +30,7 @@ void Clear_2_3(){
 
 void Version(byte locX, byte locY){
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.3""\xE0"));
+  lcd.print(F("2.8.3RC"));
   lcd.write(7);
 }
 
@@ -243,8 +243,8 @@ void PidSet(int pidSet, byte i){
     if (pidSet == 0) lcd.print(F("  Electric"));
     else             lcd.print(F("       Gas"));
   } else {
-    lcd.setCursor(12, 2);
-    LCDSpace(2);
+    lcd.setCursor(13, 2);
+    LCDSpace(1);
 
     if (i > 0 && i <= 6) {
       if (i < 6) LCDSpace(1);
