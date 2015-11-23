@@ -243,6 +243,10 @@ void PidSet(int pidSet, byte i){
     if (pidSet == 0) lcd.print(F("  Electric"));
     else             lcd.print(F("       Gas"));
   } else {
+    // clear that pesky trailing "c" or "s" from the previous menu
+    lcd.setCursor(19, 2);
+    LCDSpace(1);
+    
     lcd.setCursor(13, 2);
     LCDSpace(1);
 
