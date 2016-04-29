@@ -1,4 +1,4 @@
-Open ArdBir 2012-2015
+PivovArduino 2016
 ===========
 ##[Version 0.9 Beta](https://github.com/race612/PivovArduino/archive/v2.8.3-RC.zip)
 
@@ -94,3 +94,6 @@ Copyright (C) 2012  Stephen Mathison
   - Norwegian Language   (20x4)
 
  compiled on Arduino V1.6
+ 
+ Modified by M.Caiani
+  - Forked project
