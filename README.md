@@ -1,6 +1,6 @@
 Open ArdBir 2012-2015
 ===========
-##[Version 2.8.3-RC](https://github.com/ArdBir/Open-ArdBir/archive/v2.8.3-RC.zip)
+##[Version 0.9 Beta](https://github.com/race612/PivovArduino/archive/v2.8.3-RC.zip)
 
 ####[Source, PCB, Manual (English, Italian, Russian)](http://goo.gl/qMhPgu)
 
