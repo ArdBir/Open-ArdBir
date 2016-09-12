@@ -4,11 +4,10 @@
 // ==============================================
 
 //SET PCB
-// 1 Brauduino Original (Matho's PCB)
-// 2 Brauduino by DanielXan
+// 1 PivovArduino by Race612 for Arduino 101 and I2C Screen
+// 2 PivovArduino by Race612 for Arduino 101
 // 3 ArdBir by DanielXan
-// 4 PivovArduino by Race612 for arduino 101
-#define PCBType 4
+#define PCBType 1
 
 // LANGUAGE
 // 1 English
@@ -122,14 +121,24 @@
   - Moved some function from language file to funzioni.h for all language
   - Add arduino logo option at startup
   - Deleted ArdBir1.h and function moved to presentazione.h
-  - Inverted High Low value in pump ON OFF (REVERTED)
+  - Inverted High Low value in pump ON OFF
+  - EEPROM write problem!
+  - Settings when off moved to VirtualMem Array with function to save and load
+  - I2c Screen compatible with new PCB file
 
   Ideas for Future:
+  - salvare in eeprom ad orgni passagio più bit di stato
+  - recipe functions file
+  - scroll infinito nei menu impostazioni 
+  - funzione controlla settings e ripristina standard settings
+  - calibrazione lampeggia la e finale in pid pwm menù
+  - risposta tasti rapida 
   - real time Clock?
   - tedesco
   - sistemata ita eng
   - Ripulire pcb (solo mio per arduino 101 e arduino uno rev 3)
-  - Nome birreria in accensione
+  - Nome birreria in accensione con opzioni menù
+  - Logo accensione arduino nei menu
   - spostare TUTTE funzioni senza stringhe personalizzate fuori dai file lingue
   - remove warnings
   - uniformare *UP *DOWN up down
@@ -138,102 +147,9 @@
   - lingua cambiabile da menù
   - link BLOG
   - eliminare gestione gas?
-  - i2c screen?
   - controllo fermentazione frigo... e fascia?
 
-  compiled on Arduino V1.6.10
-
-  EEPROM MAP
-  PID MENU
-      0       Use Gas
-      1       kP
-      2       kI
-      3       kD
-      4       SampleTime
-      5       WindowSize
-      6       Boil Heat %
-      7       Offset
-      8       Hysteresi
-      9       [ SPACE ]
-
-  UNIT MENU
-     10       Scale Temp
-     11       Sensor Type
-     12       Temp Boil °C
-     13       Temp Boil °F
-     14       Time Pump Cycle
-     15       Time Pump Rest
-     16       Pump PreMash
-     17       Pump on Mash
-     18       Pump on MashOut
-     19       Pump on Boil
-     20       Temp Pump Rest °C
-     21       Temp Pump Rest °F
-     22       PID Pipe
-     23       Skip Add Malt
-     24       Skip Remove Malt
-     25       Skip Iodine Test
-     26       Iodine Time
-     27       Whirlpool
-     28 -  31 [ SPACE ]
-
-  RUN  (HTemp °C - LTemp °C - HTemp °F - LTemp °F - Time)
-    32 -  36 MashIn
-    37 -  41 Fitasi
-    42 -  46 Glucanasi
-    47 -  51 Proteasi
-    52 -  55 B-Amilasi
-    57 -  61 A-Amilasi 1
-    62 -  66 A-Amilasi 2
-    67 -  71 Mash Out
-
-    72       Numbers of Hops
-    73       Boil Time
-    74       Time Hop  1
-    75       Time Hop  2
-    76       Time Hop  3
-    77       Time Hop  4
-    78       Time Hop  5
-    79       Time Hop  6
-    80       Time Hop  7
-    81       Time Hop  8
-    82       Time Hop  9
-    83       Time Hop 10
-
-    84       FLAG Automode Started
-
-  RESUME
-    85       HANDLE Stage
-    86       HANDLE Time Rest
-    87       Hop Add
-
-    88 -  89 [ SPACE ]
-
-  RECIPE
-    90 -  99 Index 1-10
-   100 - 151 Recipe Data  1
-   152 - 203 Recipe Data  2
-   204 - 255 Recipe Data  3
-   256 - 307 Recipe Data  4
-   308 - 359 Recipe Data  5
-   360 - 411 Recipe Data  6
-   412 - 463 Recipe Data  7
-   464 - 515 Recipe Data  8
-   516 - 567 Recipe Data  9
-   568 - 619 Recipe Data 10
-
-   620 - 629 Recipe Name  1
-   630 - 639 Recipe Name  2
-   640 - 649 Recipe Name  3
-   650 - 659 Recipe Name  4
-   660 - 669 Recipe Name  5
-   670 - 679 Recipe Name  6
-   680 - 689 Recipe Name  7
-   690 - 699 Recipe Name  8
-   700 - 709 Recipe Name  9
-   710 - 719 Recipe Name 10
-
-
+  compiled on Arduino V1.6.11
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -262,32 +178,27 @@
 
 #define ReadWrite     false
 #define TestMemoria   false
+#define EepromTest    false
 /// ------------- ///
 
 
 //libraries
-#include <LiquidCrystal.h>
 #include <OneWire.h>
 #include <PID_v1.h>
 
 // SETTING PCB*****
 #if PCBType == 1
-#include "Pcb_Brauduino_Original.h"
-#include <EEPROM.h>
+#include "Pcb_Pivovarduino_101_i2c.h"
 #elif PCBType == 2
-#include "Pcb_Brauduino_DanielXan.h"
-#include <EEPROM.h>
+#include "Pcb_PivovArduino_101_Race612.h"         // no more tested                      
 #elif PCBType == 3
-#include "Pcb_ArdBir_DanielXan.h"
-#include <EEPROM.h>
-#elif PCBType == 4
-#include "Pcb_PivovArduino_101_Race612.h"
-#include <CurieEEPROM.h>
+#include "Pcb_ArdBir_DanielXan.h"                 // never tested
 #endif
 
 // Code Parts
 #include "Funzioni.h"
 #include "Presentazione.h"
+#include "Memory_Functions.h"
 
 // SETTING Lenguage*****
 #if LCDLanguage == 1
@@ -314,11 +225,11 @@ unsigned long start;
 unsigned long Timer;
 
 byte WindowSize;
+byte VirtualMem[450];
 
 double Setpoint;
 double Input;
 double Output;
-
 
 boolean Conv_start   = false;
 boolean mpump        = false;
@@ -330,17 +241,15 @@ boolean resume       = false;
 boolean IodineTest   = false;
 boolean DelayedMode  = false;
 
-
 //float mset_temp;
 float stageTemp;
 float boilStageTemp;
 float Temp_Now;
 
-
 byte x;
-byte ScaleTemp       = EEPROM.read(10);;
-byte SensorType      = EEPROM.read(11);;
-byte UseGAS          = EEPROM.read( 0);
+byte ScaleTemp       = VirtualMem[10];
+byte SensorType      = VirtualMem[11];
+byte UseGAS          = VirtualMem[0];
 
 byte stageTime;
 byte hopTime;
@@ -470,7 +379,7 @@ void PID_HEAT (boolean autoMode) {
   float Rapporto, Delta, IsteresiProporzionale;
 
   if (UseGAS == 1) {
-    DeltaPID = EEPROM.read(8) / 10;
+    DeltaPID = VirtualMem[8] / 10;
 
     IsteresiProporzionale = DeltaPID / Input;
     myPID.SetSampleTime(8000);
@@ -606,7 +515,6 @@ void load_pid_settings () {
   //r_set(eepromKi, 2);
   //r_set(eepromKd, 3);
 
-  //myPID.SetTunings(eepromKp - 100, (double)((eepromKi - 100.00) / 250.00), eepromKd - 100); // send the PID settings to the PID
   myPID.SetTunings(r_set(1) - 100, (double)((r_set(2) - 100.00) / 250.00), r_set(3) - 100); // send the PID settings to the PID
 
   //r_set(SampleTime, 4);
@@ -718,12 +626,12 @@ void heat_control() {
 }
 
 void pump_on() {
-  digitalWrite(Pump, HIGH);
+  digitalWrite(Pump, LOW);
   ledPumpON();
 }
 
 void pump_off(boolean mpump) {
-  digitalWrite(Pump, LOW);
+  digitalWrite(Pump, HIGH);
   ledPumpStatus(mpump);
 }
 
@@ -993,10 +901,10 @@ void stage_loop () {
         if ((x - 1) == 8) {
           if (ScaleTemp == 0) {
             Max = 110;
-            Min = EEPROM.read(12);
+            Min = VirtualMem[12];
           } else {
             Max = 230;
-            Min = EEPROM.read(13);
+            Min = VirtualMem[13];
           }
           NoBoil();
           tempBoilReached = false;
@@ -1448,13 +1356,13 @@ void auto_mode () {
         //      INSERIMENTO PAUSA AGGIUNTIVA
         Temperatura_Raggiunta();
 
-        if (EEPROM.read(23) == 0) add_malt();
+        if (VirtualMem[23] == 0) add_malt();
         if (!(b_Enter)) break;
 
         Menu_2();
       }
       if (i == 7 && b_Enter) {   // at the end of the last step pauses to remove the malt pipe before the boil
-        if (EEPROM.read(24) == 0) remove_malt();
+        if (VirtualMem[24] == 0) remove_malt();
         if (!(b_Enter)) break;
 
         Menu_2();
@@ -1509,7 +1417,7 @@ void auto_mode () {
     if (b_Enter) {    // finishes the brewing process
       mheat = false;
 
-      if (EEPROM.read(27) == 2) Whirlpool(); // Whirlpool a Caldo
+      if (VirtualMem[27] == 2) Whirlpool(); // Whirlpool a Caldo
       else                      Cooling();
 
       End();
@@ -1733,7 +1641,7 @@ void set_Unit () {
     else                                         unitLoop = true;
 
     // SALTA TEMPO IODIO SE SKIP IODIO ATTIVO
-    if (i == 26 && EEPROM.read(i - 1) == 1)      unitLoop = false;
+    if (i == 26 && VirtualMem[i - 1] == 1)      unitLoop = false;
     else                                         unitLoop = true;
 
     /*
@@ -2015,17 +1923,17 @@ void set_Stages () {
 
 
 byte Congruita(byte& numRicetta, byte Verso) {
-  if (EEPROM.read(89 + numRicetta) == 0) {
+  if (VirtualMem[(94 + numRicetta)] == 0) {
     boolean Controllo = true;
 
     while (Controllo) {
-      if (Verso == 1) if (numRicetta < 10) numRicetta++;
+      if (Verso == 1) if (numRicetta < 5) numRicetta++;
         else Controllo = false;
 
       if (Verso == 2) if (numRicetta > 1) numRicetta--;
         else            Controllo = false;
 
-      if (EEPROM.read(89 + numRicetta) == 1) {
+      if (VirtualMem[94 + numRicetta] == 1) {
         Controllo = false;
       }
     }
@@ -2040,9 +1948,9 @@ void loadRecipe() {
   RicettaUp  = 0;
   RicettaDwn = 0;
 
-  for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate
-    if (EEPROM.read(i) == 1) {
-      RicettaUp = (i - 89);
+  for (byte i = 95; i < 100; i++) {//Assegna il limite di ricette registrate
+    if (VirtualMem[i] == 1) {
+      RicettaUp = (i - 94);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
   }
@@ -2054,8 +1962,8 @@ void loadRecipe() {
   //byte NomeRicetta[10]; unused
   byte pos = 0;
 
-  for (byte i = RicettaDwn + 89; i < RicettaUp + 89 + 1; i++) {//Trova la prima ricetta libera
-    numRicetta = i - 89;
+  for (byte i = RicettaDwn + 94; i < RicettaUp + 94 + 1; i++) {//Trova la prima ricetta libera
+    numRicetta = i - 94;
 
     while (ricettaLoop) {
       Ricetta(numRicetta, 0);
@@ -2063,7 +1971,7 @@ void loadRecipe() {
       Set(numRicetta, RicettaUp, RicettaDwn, 1, Timer, Verso);
 
       for (pos = 0; pos < 10; pos++) {
-        LCD_NomeRicetta(pos, EEPROM.read(620 + pos + ((numRicetta - 1) * 10)));
+        LCD_NomeRicetta(pos, VirtualMem[(360 + pos + ((numRicetta - 1) * 10))]);
       }
 
       Congruita(numRicetta, Verso);
@@ -2081,9 +1989,9 @@ void loadRecipe() {
 
         //Parametri Ricetta
         Da = 100 + ((numRicetta - 1) * 52);
-        for (int j = 30; j < 82; j++) {
+        for (int j = 32; j < 84; j++) {
           //save_set (j, (byte)EEPROM.read(Da));
-          s_set (j, EEPROM.read(Da));
+          s_set (j, VirtualMem[Da]);
           Da++;
         }
         ricettaLoop = false;
@@ -2097,9 +2005,9 @@ void saveRecipe() {
   //boolean saverecipeLoop;
   byte numRicetta = 0;
 
-  for (byte i = 90; i < 100; i++) {//Trova la prima ricetta libera
-    if (EEPROM.read(i) == 0) {
-      numRicetta = (i - 89);
+  for (byte i = 95; i < 100; i++) {//Trova la prima ricetta libera
+    if (VirtualMem[i] == 0) {
+      numRicetta = (i - 94);
       i = 99;
     }
   }
@@ -2171,7 +2079,7 @@ void saveRecipe() {
       Da = 100 + ((numRicetta - 1) * 52);
       for (byte j = 30; j < 82; j++) {
         //save_set (Da, (byte)EEPROM.read(j));
-        s_set (Da, EEPROM.read(j));
+        s_set (Da, VirtualMem[j]);
         Da++;
       }
 
@@ -2179,11 +2087,11 @@ void saveRecipe() {
       //Nome Ricetta
       for (pos = 0; pos < 10; pos++) {
         //save_set(620 + pos + ((numRicetta - 1) * 10), NomeRicetta[pos]);
-        s_set(620 + pos + ((numRicetta - 1) * 10), NomeRicetta[pos]);
+        s_set(360 + pos + ((numRicetta - 1) * 10), NomeRicetta[pos]);
       }
       //Byte di Controllo
       //save_set(89 + numRicetta, (byte)1);
-      s_set(89 + numRicetta, 1);
+      s_set(94 + numRicetta, 1);
     }
   }
 }
@@ -2196,9 +2104,9 @@ void deleteRecipe() {
   RicettaUp  = 0;
   RicettaDwn = 0;
 
-  for (byte i = 90; i < 100; i++) {//Assegna il limite di ricette registrate
-    if (EEPROM.read(i) == 1) {
-      RicettaUp = (i - 89);
+  for (byte i = 95; i < 100; i++) {//Assegna il limite di ricette registrate
+    if (VirtualMem[i] == 1) {
+      RicettaUp = (i - 94);
       if (RicettaDwn == 0) RicettaDwn = RicettaUp;
     }
   }
@@ -2207,8 +2115,8 @@ void deleteRecipe() {
     return;
   }
 
-  for (byte i = RicettaDwn + 89; i < RicettaUp + 89 + 1; i++) { //Trova la prima ricetta libera
-    numRicetta = i - 89;
+  for (byte i = RicettaDwn + 94; i < RicettaUp + 94 + 1; i++) { //Trova la prima ricetta libera
+    numRicetta = i - 94;
 
     while (ricettaLoop) {
       CancelloRicetta(numRicetta);
@@ -2224,8 +2132,7 @@ void deleteRecipe() {
       }
       if (btn_Press(Button_start, 50)) {
         Cancellazione(numRicetta);
-        //save_set(89 + numRicetta, (byte)0);
-        s_set(89 + numRicetta, 0);
+        s_set(94 + numRicetta, 0);
         ricettaLoop = false;
         i = 100;
       }
@@ -2248,7 +2155,7 @@ void initializeRecipe() {
     Inizializza();
     for (byte i = 1; i < 11; i++) {
       //save_set(89 + i,(byte)0);
-      s_set(89 + i, 0);
+      s_set(94 + i, 0);
     }
   }
 }
@@ -2451,8 +2358,14 @@ void setup() {
 
 
   // SETTING LCD*****
-  lcd.begin(20, 4);
 
+  if(PCBType == 1){
+    lcd.init();
+    lcd.backlight();
+  } else {
+    lcd.begin(20, 4);
+  }
+  
 #if SerialPID == true
   Serial.println();
   Serial.println(F("CONTROLLO SPERIMENTALE ATTIVITA' P.I.D."));
@@ -2488,7 +2401,7 @@ void setup() {
 
   if (ScaleTemp == 0) boilStageTemp = r_set_float(12);
   else                boilStageTemp = r_set_float(13);
-
+   
   // Arduino Logo at Startup
   #if StartSprite == true
     Presentazione();
@@ -2496,10 +2409,14 @@ void setup() {
   
   PivovarduinoLogo();
 
+  #if EepromTest == true
+    eepromTest(true);
+  #endif
+  
   Gradi();
+  EepromLoad(VirtualMem);
+  lcd.clear();
   // write custom symbol to LCD
-  //lcd.createChar(0, deg);        // Celsius
-  //lcd.createChar(1, degF);       // Faherenheit
   lcd.createChar(2, SP_Symbol);    // Set Point
   lcd.createChar(3, PumpONOFF);    // Pump
   lcd.createChar(4, RevPumpONOFF); // Pump
@@ -2545,13 +2462,16 @@ void loop() {
       break;
 
     case (4):
-#if TestMemoria == true
+    #if TestMemoria == true
       Menu_4();
       TestRam();
       mainMenu = 0;
       break;
-#endif
-
+    #endif
+      EepromSave(VirtualMem);
+      SavingOFF();
+      mainMenu = 0;
+      break;
 
     default:
       DelayedMode = false;
@@ -2563,12 +2483,13 @@ void loop() {
       Temperature();
       LCD_Default(Temp_Now);
 
-      if (btn_Press(Button_dn, 500))    mainMenu = 1;
-      if (btn_Press(Button_start, 500)) mainMenu = 2;
-      if (btn_Press(Button_enter, 500)) mainMenu = 3;
-#if TestMemoria == true
+      if (btn_Press(Button_dn, 400))    mainMenu = 1;
+      if (btn_Press(Button_start, 400)) mainMenu = 2;
+      if (btn_Press(Button_enter, 400)) mainMenu = 3;
+  #if TestMemoria == true
       if (btn_Press(Button_up, 2500)) mainMenu = 4;
-#endif
+  #endif
+      if (btn_Press(Button_up, 400)) mainMenu = 4;
       break;
   }
 }
@@ -2684,4 +2605,63 @@ void SerialSend()
 }
 #endif
 
+//////////////////////////////////////////////////////////////////////////////////////////
+
+byte r_set(int addr){
+  #if ReadWrite   == true  
+    Serial.print (F("R-> "));
+    Serial.print (addr);
+    Serial.print (F(" byte: "));
+    Serial.println (VirtualMem[addr]); 
+  #endif
+
+  return VirtualMem[addr];
+}
+
+void s_set (int addr, byte dat){
+  #if ReadWrite   == true
+    Serial.print (F("W-> "));
+    Serial.print (addr);
+    Serial.print (F(" byte: "));
+    Serial.println (dat);
+  #endif
+  
+  VirtualMem[addr]=dat;
+
+}
+
+float r_set_float(int addr){ 
+  #if ReadWrite    == true
+    Serial.print (F("R-> "));
+    Serial.print (addr);
+    Serial.print (F(" float: "));
+    Serial.println (word(VirtualMem[addr], VirtualMem[addr+1])); 
+  #endif
+  
+  return word(VirtualMem[addr], VirtualMem[addr+1]);
+}
+
+double r_set_double(int addr){ 
+  #if ReadWrite   == true
+    Serial.print (F("R-> "));
+    Serial.print (addr);
+    Serial.print (F(" double: "));
+    Serial.println (word(VirtualMem[addr], VirtualMem[addr+1]));
+  #endif
+  
+  return word(VirtualMem[addr], VirtualMem[addr+1]);
+ 
+}
+
+void save_set (int addr, int dat){
+  VirtualMem[addr]=highByte(dat);
+  VirtualMem[addr+1]=lowByte(dat);
+  
+  #if ReadWrite   == true
+    Serial.print (F("W-> "));
+    Serial.print (addr);
+    Serial.print (F(" Word: "));
+    Serial.println (dat); 
+  #endif
+}  
 

@@ -4,7 +4,19 @@ const char *unitName[]  ={"Scala Gradi", "Sensore    ", "Ebollizione", "Ebollizi
 
 byte HeatONOFF[8]    = {B00000, B01110, B01010, B01010, B01100, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10001, B10101, B10101, B10011, B10101, B10101, B11111};  // [6] reverse HEAT symbol
-byte Language[8]     = {B00000, B10000, B11111, B10000, B00000, B11111, B00000, B00000};  // [7] ITA symbol
+byte Language[8]     = {B10101, B10101, B11111, B00000, B01110, B10001, B10001, B11111};  // [7] DE symbol
+
+
+void PrintTemp(byte PosX, byte PosY, float Temp, byte dec) {
+  if (PosY < 4) lcd.setCursor(PosX, PosY);
+  
+  FormatNumeri(Temp, -1);
+  //if (Temp<10.0)LCDSpace(2);
+  //if (Temp>=10.0 && Temp<100.0)LCDSpace(1);
+  
+  lcd.print(Temp, dec);
+  lcd.write((byte)0);
+}
 
 void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
@@ -18,14 +30,6 @@ void Intestazione() {
   Version(14, 0);
 }
 
-void PrintTemp(byte PosX, byte PosY, float Temp, byte dec) {
-  if (PosY < 4) lcd.setCursor(PosX, PosY);
-  
-  FormatNumeri(Temp, -1);
-  lcd.print(Temp, dec);
-  lcd.write((byte)0);
-}
-
 void LCD_Procedo() {
   lcd.setCursor(1, 3);
   lcd.print(F("Procedo->  Ok Esci"));
@@ -34,12 +38,13 @@ void LCD_Procedo() {
 void LCD_Default(float Temp) {
   Intestazione();
 
+  //lcd.setCursor(6,1);
   PrintTemp(6, 1, Temp, 2);
 
   LCDClear(2);
   
   lcd.setCursor(1, 3);
-  lcd.print(F("OFF MAN AUTO SETUP"));
+  lcd.print(F("---  MAN AUTO SETUP"));
 }
 
 void LCD_QQSO() {
@@ -80,7 +85,7 @@ void Manuale(float Set, float Temp,float TempBoil) {
   lcd.write(2);
   
   lcd.setCursor(1, 3);
-  lcd.print(F("Su  Giu   Res  Pmp"));
+  lcd.print(F("SU* *GIU  Res  Pmp"));
 }
 
 void Menu_2() {
@@ -281,7 +286,14 @@ void UnitSet(byte unitSet, byte i) {
       if (unitSet == 0) lcd.print(F("Off"));
       if (unitSet == 1) lcd.print(F(" On"));
       break;
-       
+ 
+/* 
+    case(10):
+    case(11):
+      LCDSpace(3);
+      PrintTemp(9, 9, unitSet, 0);
+      break;
+*/      
     case(12)://Pipe
       if (unitSet == 0) lcd.print(F("Passivo"));
       else              lcd.print(F(" Attivo"));
@@ -672,21 +684,13 @@ void ImpostaWhirlpool(unsigned long Time) {
   
   LCD_SGEO();
 }
-///////////////////NUOVA///////////////////////////////////////////////////////
-void SavingOFF() {
-    lcd.clear();
-    lcd.setCursor(0,1);
-    lcd.print("Impostazioni Salvate");
-    lcd.setCursor(0,2);
-    lcd.print(" Ora puoi spegnere  ");
-    lcd.setCursor(0,3);
-    lcd.print("   PivovArduino!    ");
-    delay(2500);
-    lcd.clear();
-}
 /////////////////////////////////////////////////////////////////////////////////
 //                          Non spostabili                                     //
 /////////////////////////////////////////////////////////////////////////////////
+void StageSet(float Temp) {
+  //lcd.setCursor(12,2);
+  PrintTemp(12, 2, Temp, 2);
+}
 
 void TimeSet(int Time){
   lcd.setCursor(12,2);
@@ -704,7 +708,3 @@ void Temp_Wait(float Temp) {
   PrintTemp(1, 1, Temp, 2);
 }
 
-void StageSet(float Temp) {
-  //lcd.setCursor(12,2);
-  PrintTemp(12, 2, Temp, 2);
-}

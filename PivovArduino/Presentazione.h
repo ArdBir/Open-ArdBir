@@ -1,5 +1,5 @@
 void Presentazione(){   
-  
+
   // Arduino Symbol
   byte Arduino1[8] = {B00000, B00001, B00011, B00111, B01111, B01100, B11011, B10111};
   byte Arduino2[8] = {B00000, B11111, B11111, B11111, B11111, B01110, B10101, B11011};
@@ -59,7 +59,7 @@ void  PivovarduinoLogo(){
   }
   display_lcd(4,2,"PivovArduino",0);
   display_lcd(4,3,"versione 0.9",5000);
- // Buzzer(5, 100);
+  Buzzer(5, 100);
 }
 
 

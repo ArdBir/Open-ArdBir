@@ -40,65 +40,6 @@ int freeRam() {
 }
 #endif
 
-
-byte r_set(int addr){
-  #if ReadWrite   == true  
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (EEPROM.read(addr)); 
-  #endif
-
-  return EEPROM.read(addr);
-}
-
-void s_set (int addr, byte data){
-  #if ReadWrite   == true
-    Serial.print (F("W-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (data);
-  #endif
-  
-  EEPROM.write(addr,data);
-
-}
-
-float r_set_float(int addr){ 
-  #if ReadWrite    == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" float: "));
-    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1))); 
-  #endif
-  
-  return word(EEPROM.read(addr),EEPROM.read(addr+1));
-}
-
-double r_set_double(int addr){ 
-  #if ReadWrite   == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" double: "));
-    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1)));
-  #endif
-  
-  return word(EEPROM.read(addr),EEPROM.read(addr+1));
- 
-}
-
-void save_set (int addr, int data){
-  EEPROM.write(addr,highByte(data));
-  EEPROM.write((addr+1),lowByte(data));
-  
-  #if ReadWrite   == true
-    Serial.print (F("W-> "));
-    Serial.print (addr);
-    Serial.print (F(" Word: "));
-    Serial.println (data); 
-  #endif
-}  
-
 void CountDown(unsigned long Tempo, byte posX, byte posY, byte numH){
   //numH = 1 Ore a 1 cifra
   //numH = 2 Ore a 2 cifre
@@ -145,30 +86,30 @@ byte btn_Repeat (byte Button_press){
   return 0;
 }
 
-byte LeggiPulsante(byte& Verso, unsigned long& Timer ){	
+void LeggiPulsante(byte& Verso, unsigned long& Timer ){	
   // Verso=1 UP
   // Verso=2 DWN
   
   boolean f_btnUp,f_btnDn;
   
   if (digitalRead (Button_up)==0){	//Pressione specifica del pulsante UP
-    if(Verso!=1)Timer=millis();		//Se non esiste pressione precedente parte il conteggio del tempo
+    if(Verso!=1)Timer=millis();		  //Se non esiste pressione precedente parte il conteggio del tempo
     f_btnUp=true;
-    Verso=1;		//Sentinella pulsante premuto
+    Verso=1;		                    //Sentinella pulsante premuto
     delay(35);
   }else f_btnUp=false;
   
-  if (digitalRead (Button_dn)==0){	//Pressione specifica del pulsante UP
-    if(Verso!=2)Timer=millis();		//Se non esiste pressione precedente parte il conteggio del tempo
+  if (digitalRead (Button_dn)==0){	//Pressione specifica del pulsante DOWN
+    if(Verso!=2)Timer=millis();		  //Se non esiste pressione precedente parte il conteggio del tempo
     f_btnDn=true;
-    Verso=2;		//Sentinella pulsante premuto
+    Verso=2;		                    //Sentinella pulsante premuto
     delay(35); 
   }else f_btnDn=false;
   
-  if(digitalRead (Button_up)==0)f_btnUp=true;	//Legge lo stato del pulsante allâ€™uscita per aggiornare il flag
+  if(digitalRead (Button_up)==0)f_btnUp=true;	//Legge lo stato del pulsante all'uscita per aggiornare il flag
   else f_btnUp=false;
   
-  if(digitalRead (Button_dn)==0)f_btnDn=true;	//Legge lo stato del pulsante allâ€™uscita per aggiornare il flag
+  if(digitalRead (Button_dn)==0)f_btnDn=true;	//Legge lo stato del pulsante all'uscita per aggiornare il flag
   else f_btnDn=false;
   	
   if(f_btnUp==false && f_btnDn==false)Verso=0;	//Confronta lo stato dei pulsanti per assegnare la NON pressione
@@ -184,13 +125,13 @@ float Arrotonda025(float& Num){
   Num=Appoggio+int((Num-Appoggio)*1000/225)*0.25;
 }
 
-float ConvertiCtoF(float& Num){        
+void ConvertiCtoF(float& Num){        
   Num = Num/16;              // Recupero il valore
   Num = (Num*1.8)+32;          // Converto in °F
   Arrotonda025(Num);
   Num = Num*16;              // Preparo il valore per la registrazione
 }
-float ConvertiFtoC(float& Num){
+void ConvertiFtoC(float& Num){
   Num = Num/16;              // Recupero il valore
   Num = (Num-32)/1.8;            // Converto in °C
   Arrotonda025(Num);

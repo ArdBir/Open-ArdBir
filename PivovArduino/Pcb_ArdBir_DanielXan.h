@@ -1,3 +1,6 @@
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
+
 // sensor and lcd
 OneWire ds(7);
 LiquidCrystal lcd(A4, A5, 2, 3, 4, 5);

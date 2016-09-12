@@ -1,15 +1,15 @@
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include <CurieEEPROM.h>
 
 // sensor and lcd
 OneWire ds(7);
-LiquidCrystal lcd(A4, A5, 2, 3, 4, 5);
+LiquidCrystal_I2C lcd(0x3F,20,4); 
 
 // push buttons
 const char Button_up    = A0;
-const char Button_dn    = A1;
-const char Button_start = A2;
+const char Button_dn    = A2;
 const char Button_enter = A3;
+const char Button_start = A1;
 
 // outputs
 const byte Pump = 6;
