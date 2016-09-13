@@ -40,65 +40,6 @@ int freeRam() {
 }
 #endif
 
-
-byte r_set(int addr){
-  #if ReadWrite   == true  
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (EEPROM.read(addr)); 
-  #endif
-
-  return EEPROM.read(addr);
-}
-
-void s_set (int addr, byte data){
-  #if ReadWrite   == true
-    Serial.print (F("W-> "));
-    Serial.print (addr);
-    Serial.print (F(" byte: "));
-    Serial.println (data);
-  #endif
-  
-  EEPROM.write(addr,data);
-
-}
-
-float r_set_float(int addr){ 
-  #if ReadWrite    == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" float: "));
-    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1))); 
-  #endif
-  
-  return word(EEPROM.read(addr),EEPROM.read(addr+1));
-}
-
-double r_set_double(int addr){ 
-  #if ReadWrite   == true
-    Serial.print (F("R-> "));
-    Serial.print (addr);
-    Serial.print (F(" double: "));
-    Serial.println (word(EEPROM.read(addr),EEPROM.read(addr+1)));
-  #endif
-  
-  return word(EEPROM.read(addr),EEPROM.read(addr+1));
- 
-}
-
-void save_set (int addr, int data){
-  EEPROM.write(addr,highByte(data));
-  EEPROM.write((addr+1),lowByte(data));
-  
-  #if ReadWrite   == true
-    Serial.print (F("W-> "));
-    Serial.print (addr);
-    Serial.print (F(" Word: "));
-    Serial.println (data); 
-  #endif
-}  
-
 void CountDown(unsigned long Tempo, byte posX, byte posY, byte numH){
   //numH = 1 Ore a 1 cifra
   //numH = 2 Ore a 2 cifre
@@ -145,30 +86,30 @@ byte btn_Repeat (byte Button_press){
   return 0;
 }
 
-byte LeggiPulsante(byte& Verso, unsigned long& Timer ){	
+void LeggiPulsante(byte& Verso, unsigned long& Timer ){	
   // Verso=1 UP
   // Verso=2 DWN
   
   boolean f_btnUp,f_btnDn;
   
   if (digitalRead (Button_up)==0){	//Pressione specifica del pulsante UP
-    if(Verso!=1)Timer=millis();		//Se non esiste pressione precedente parte il conteggio del tempo
+    if(Verso!=1)Timer=millis();		  //Se non esiste pressione precedente parte il conteggio del tempo
     f_btnUp=true;
-    Verso=1;		//Sentinella pulsante premuto
+    Verso=1;		                    //Sentinella pulsante premuto
     delay(35);
   }else f_btnUp=false;
   
-  if (digitalRead (Button_dn)==0){	//Pressione specifica del pulsante UP
-    if(Verso!=2)Timer=millis();		//Se non esiste pressione precedente parte il conteggio del tempo
+  if (digitalRead (Button_dn)==0){	//Pressione specifica del pulsante DOWN
+    if(Verso!=2)Timer=millis();		  //Se non esiste pressione precedente parte il conteggio del tempo
     f_btnDn=true;
-    Verso=2;		//Sentinella pulsante premuto
+    Verso=2;		                    //Sentinella pulsante premuto
     delay(35); 
   }else f_btnDn=false;
   
-  if(digitalRead (Button_up)==0)f_btnUp=true;	//Legge lo stato del pulsante allâ€™uscita per aggiornare il flag
+  if(digitalRead (Button_up)==0)f_btnUp=true;	//Legge lo stato del pulsante all'uscita per aggiornare il flag
   else f_btnUp=false;
   
-  if(digitalRead (Button_dn)==0)f_btnDn=true;	//Legge lo stato del pulsante allâ€™uscita per aggiornare il flag
+  if(digitalRead (Button_dn)==0)f_btnDn=true;	//Legge lo stato del pulsante all'uscita per aggiornare il flag
   else f_btnDn=false;
   	
   if(f_btnUp==false && f_btnDn==false)Verso=0;	//Confronta lo stato dei pulsanti per assegnare la NON pressione
@@ -184,13 +125,13 @@ float Arrotonda025(float& Num){
   Num=Appoggio+int((Num-Appoggio)*1000/225)*0.25;
 }
 
-float ConvertiCtoF(float& Num){        
+void ConvertiCtoF(float& Num){        
   Num = Num/16;              // Recupero il valore
   Num = (Num*1.8)+32;          // Converto in °F
   Arrotonda025(Num);
   Num = Num*16;              // Preparo il valore per la registrazione
 }
-float ConvertiFtoC(float& Num){
+void ConvertiFtoC(float& Num){
   Num = Num/16;              // Recupero il valore
   Num = (Num-32)/1.8;            // Converto in °C
   Arrotonda025(Num);
@@ -199,7 +140,7 @@ float ConvertiFtoC(float& Num){
 
 int Set(int& Set, int Up, int Low, int Step, long Timer, byte Verso){
   int step_size;
-  int ControllaPulsante;
+  int ControllaPulsante=0;
   
   if(Set>Up)Set=Up;
   if(Set<Low)Set=Low;
@@ -230,7 +171,7 @@ int Set(int& Set, int Up, int Low, int Step, long Timer, byte Verso){
 
 float Set(float& Set, float Up, float Low, float Step, long Timer, byte Verso){
   float step_size;
-  int ControllaPulsante;
+  int ControllaPulsante=0;
 
   if(Set>Up)Set=Up;
   if(Set<Low)Set=Low;
@@ -261,7 +202,7 @@ float Set(float& Set, float Up, float Low, float Step, long Timer, byte Verso){
 
 byte Set(byte& Set, byte Up, byte Low, byte Step, long Timer, byte Verso){
   int step_size;
-  int ControllaPulsante;
+  int ControllaPulsante=0;
 
   if(Set>Up)Set=Up;
   if(Set<Low)Set=Low;
@@ -297,3 +238,82 @@ void display_lcd (byte posX , byte posY ,const char* lable, int Pausa){
 }
 
 
+//                      Funzioni Stampa LCD                     //
+//--------------------------------------------------------------//
+
+void LCDClear(byte Riga){
+  lcd.setCursor(0,Riga);
+  LCDSpace(20);
+}
+
+void Clear_2_3(){
+  LCDClear(2);
+  LCDClear(3);
+}
+
+void ledHeatON(){
+  lcd.setCursor(0,2);
+  lcd.write(6);
+}
+
+void ledHeatStatus(boolean mheat){
+  lcd.setCursor(0,2);
+  if (mheat)lcd.write(5);
+  else LCDSpace(1);
+}
+
+void ledPumpON(){
+  lcd.setCursor(19,2);
+  lcd.write(4);
+}
+
+void ledPumpStatus(boolean mpump){
+  lcd.setCursor(19,2);
+  if (mpump)lcd.write(3);
+  else LCDSpace(1);
+}
+
+void LCD_NomeRicetta(byte pos, byte Lettera){
+  lcd.setCursor(pos+7,2);
+  lcd.print((char)Lettera);
+}
+
+void TimeHops(int Time){
+  lcd.setCursor(15,2);
+  FormatNumeri(Time, -1);
+  //if (Time<10)LCDSpace(2);
+  //if (Time>=10 && Time<100)LCDSpace(1);
+  lcd.print(Time);   
+  lcd.print(F("'"));
+}
+
+void NumHops(byte SetNumHops) {
+  lcd.setCursor(17, 2);
+  if (SetNumHops < 10) LCDSpace(1);
+  lcd.print(SetNumHops);   
+}
+
+void NoBoil() {
+  lcd.setCursor(1, 2);
+  LCDSpace(9);
+}
+
+void CntDwn(int Time) {
+  CountDown(Time, 11, 2, 2);
+}
+
+void Watch(int Time) {
+  CountDown(Time, 6, 2, 2);
+}
+
+void PauseScreen() {
+  lcd.setCursor(0, 0);
+  lcd.print(F("-----  "));
+  lcd.setCursor(14, 0);
+  lcd.print(F(" -----"));
+
+  lcd.setCursor(1, 2);
+  lcd.print(F("----"));
+  lcd.setCursor(14, 2);
+  lcd.print(F(" ----"));
+}

@@ -1,20 +1,15 @@
-char *PIDName[]   ={"Use ", "Constant  kP", "Constant  kI", "Constant  kD", "SampleTime  ", "WindowSet ms", "Heat in Boil", "Calibration " , "Hysteresi  "};
-char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
-char *unitName[]  ={"Set Degrees", "Sensor     ", "Temp Boil  ", "Temp Boil  ", "Pump Cycle ", "Pump Rest  ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Pump Stop  ", "Pump Stop  ", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "IodineTime " , "Whirlpool "};
+const char *PIDName[]   ={"Use ", "Constant  kP", "Constant  kI", "Constant  kD", "SampleTime  ", "WindowSet ms", "Heat in Boil", "Calibration " , "Hysteresi  "};
+const char *stageName[] ={"Mash In   ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "aAmylase2 ", "Mash Out  ", "Boil      ", "Cooling   ", "Whirlpool "};
+const char *unitName[]  ={"Set Degrees", "Sensor     ", "Temp Boil  ", "Temp Boil  ", "Pump Cycle ", "Pump Rest  ", "Pmp PreMash", "Pmp on Mash", "Pmp MashOut", "Pmp on Boil", "Pump Stop  ", "Pump Stop  ", "PID Pipe   ", "Skip Add   ", "Skip Remove", "Skip Iodine", "IodineTime " , "Whirlpool "};
 
-//char *PIDName[]   ={"Constant   P", "Constant   I", "Constant   D", " Windowset ms ", "   PWM %     ", " Ka\xBB\xB8\xB2""po\xB3""ka  ", "Hysteresi  "};
-//char *stageName[] ={"t\x99  \xB7""ac\xC3\xBE\xB8 ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "Ocaxap-\xBD\xB8""e ", " M\xC5\xC1""-ay\xBF   ", "Bap\xBA""a      ", "Cooling   ", "Whirlpool "};
-//char *unitName[]  ={"\xA9""c\xBF""a\xBD" ".\xB4""pa\xE3"".", "Tep\xBC \xE3""a\xBF\xC0\xB8\xBA", " t\x99 \xBA\xB8\xBE""e\xBD\xB8\xC7  ", " t\x99 \xBA\xB8\xBE""e\xBD\xB8\xC7  ", "\xE1\xB8\xBA\xBB \xBD""acoca  ", "\xA8""ay\xB7""a \xBD""acoc", "Hacoc-\xB3""ap\xBA""a", "t\x99 o\xBF\xBA\xBB \xBD""acoca ", "PID Pipe   ", "\xA8""po\xB2""a \xB9""o\xE3  "};
+//const char *PIDName[]   ={"Constant   P", "Constant   I", "Constant   D", " Windowset ms ", "   PWM %     ", " Ka\xBB\xB8\xB2""po\xB3""ka  ", "Hysteresi  "};
+//const char *stageName[] ={"t\x99  \xB7""ac\xC3\xBE\xB8 ", "Phytase   ", "Glucanase ", "Protease  ", "bAmylase  ", "aAmylase1 ", "Ocaxap-\xBD\xB8""e ", " M\xC5\xC1""-ay\xBF   ", "Bap\xBA""a      ", "Cooling   ", "Whirlpool "};
+//const char *unitName[]  ={"\xA9""c\xBF""a\xBD" ".\xB4""pa\xE3"".", "Tep\xBC \xE3""a\xBF\xC0\xB8\xBA", " t\x99 \xBA\xB8\xBE""e\xBD\xB8\xC7  ", " t\x99 \xBA\xB8\xBE""e\xBD\xB8\xC7  ", "\xE1\xB8\xBA\xBB \xBD""acoca  ", "\xA8""ay\xB7""a \xBD""acoc", "Hacoc-\xB3""ap\xBA""a", "t\x99 o\xBF\xBA\xBB \xBD""acoca ", "PID Pipe   ", "\xA8""po\xB2""a \xB9""o\xE3  "};
 
 byte HeatONOFF[8]    = {B00000, B01010, B01010, B01110, B01110, B01010, B01010, B00000};  // [5] HEAT symbol
 byte RevHeatONOFF[8] = {B11111, B10101, B10101, B10001, B10001, B10101, B10101, B11111};  // [6] reverse HEAT symbol
 byte Language[8]     = {B11110, B00001, B00001, B11110, B00000, B11101, B10110, B11111};  // [7] RU symbol
 
-
-void LCDClear(byte Riga){
-  lcd.setCursor(0,Riga);
-  LCDSpace(20);
-}
 
 void PrintTemp(byte PosX, byte PosY, float Temp, byte dec){
   if (PosY<4) lcd.setCursor(PosX,PosY);
@@ -27,23 +22,17 @@ void PrintTemp(byte PosX, byte PosY, float Temp, byte dec){
   lcd.write((byte)0);
 }
 
-void Clear_2_3(){
-  LCDClear(2);
-  LCDClear(3);
-}
-
-void Version(byte locX, byte locY){
+void Version(byte locX, byte locY) {
   lcd.setCursor(locX, locY);
-  lcd.print(F("2.8.3RC"));
+  lcd.print(F("0.9B "));
   lcd.write(7);
 }
 
-void Intestazione(){ 
-  lcd.setCursor(0,0);
-  lcd.print(F("Open ArdBir "));
-  Version(12,0);
+void Intestazione() { 
+  lcd.setCursor(0, 0);
+  lcd.print(F("PivovArduino  "));
+  Version(14, 0);
 }
-
 void LCD_Procedo(){
   lcd.setCursor(0,3);
   lcd.print(F(" \xA8""po\xE3""o\xBB\xB6\xB8\xBF\xC4"": \xE0""A HET"));//Continue: Yes  No
@@ -60,26 +49,6 @@ void LCD_Default(float Temp){
   
   lcd.setCursor(0,3);
   lcd.print(F("--- Py\xC0"". A\xB3\xBF"". Hac\xBF""p."));
-}
-
-void CntDwn(int Time){
-  CountDown(Time,11,2,2);
-}
-
-void Watch(int Time){
-  CountDown(Time,6,2,2);
-}
-
-void PauseScreen(){
-  lcd.setCursor(0,0);
-  lcd.print(F("-----  "));
-  lcd.setCursor(14,0);
-  lcd.print(F(" -----"));
-
-  lcd.setCursor(1,2);
-  lcd.print(F("----"));
-  lcd.setCursor(14,2);
-  lcd.print(F(" ----"));
 }
 
 void LCD_QQSO(){
@@ -199,11 +168,6 @@ void Boil(float Heat, float Temp, byte Tipo){
   lcd.print(Heat,0);       //Display output%
   lcd.print(F("% ")); 
 } 
-
-void NoBoil(){
-  lcd.setCursor(1,2);
-  LCDSpace(9);
-}
 
 void HopAdd(byte HopAdd){
   lcd.setCursor(10,0);
@@ -401,16 +365,10 @@ void TimeSet(int Time){
   LCD_QQxO();
 }
 
-
 void Menu_3_3_8(){
   lcd.setCursor(1,2);
   lcd.print(F("Ko\xBB\xBB"". x\xBC""e\xBB\xC7  "));
   LCD_QQxO();
-} 
-void NumHops(byte SetNumHops){
-  lcd.setCursor(17,2);
-  if(SetNumHops<10)LCDSpace(1);
-  lcd.print(SetNumHops);   
 }
 
 void Menu_3_3_9(){
@@ -428,17 +386,6 @@ void Menu_3_3_10(byte SetHop){
   lcd.print(F(")  "));
   LCD_QQxO();
 } 
-
-void TimeHops(int Time){
-  lcd.setCursor(15,2);
-  FormatNumeri(Time, -1);
-  //if (Time<10)LCDSpace(2);
-  //if (Time>=10 && Time<100)LCDSpace(1);
-  lcd.print(Time);   
-  lcd.print(F("'"));
-}
-
-
 
 void Menu_3_4(){
   lcd.setCursor(0,1);
@@ -477,7 +424,6 @@ void NoRecipe(){
   lcd.setCursor(0,3);
   lcd.print(F("   He\xBF coxpa\xBD""e\xBD\xB8\xB9   "));
   
-  
   delay(1500);
 }
 
@@ -495,11 +441,6 @@ void Ricetta(byte numRicetta, byte Tipo){
     lcd.setCursor(1,3);
     lcd.print(F(" \x87""   \x86""     \x14""    ok "));
   }
-}
-
-void LCD_NomeRicetta(byte pos, byte Lettera){
-  lcd.setCursor(pos+7,2);
-  lcd.print((char)Lettera);
 }
 
 void LeggoRicetta(byte Ricetta){
@@ -609,35 +550,35 @@ void Menu_3_5(){
   LCD_SxEO();
 }     
 
-void Credits(){
+void Credits() {
   lcd.clear();
   
   Intestazione();
   delay(1500);
   
-  display_lcd(7,2,"Code :",750);
-  display_lcd(5,3,"S.Mathison",2000);
-  display_lcd(5,3," M.Wilson ",1750);
-  display_lcd(6,3," M.Nevi ",1750);
+  display_lcd(5, 2, "   Code:  ",  750);
+  display_lcd(5, 3, "S.Mathison", 2000);
+  display_lcd(5, 3, " M.Wilson ", 2000);
+  display_lcd(5, 3, "  M.Nevi  ", 2000);
+  display_lcd(5, 3, " M.Caiani ", 2000);
   
   Clear_2_3();
   
-  display_lcd(3, 2, "PCB  &  Tests:", 750);
-  display_lcd(3, 3, "  Daniel Xan  ", 999);
-  display_lcd(3, 3, "Savio Thechnic", 999);
-  display_lcd(3, 3, "   A. Tidei   ", 999);
-  display_lcd(4, 3, "D. Arzarello", 999);
-  display_lcd(4, 3, "L. DiMichele", 999);
+  display_lcd(3, 2, "PCB  &  Tests:",  750);
+  display_lcd(3, 3, "  Daniel Xan  ", 1000);
+  display_lcd(3, 3, "Savio Thechnic", 1000);
+  display_lcd(3, 3, "   A. Tidei   ", 1000);
+  display_lcd(3, 3, " D. Arzarello ", 1000);
+  display_lcd(3, 3, " L. DiMichele ", 1000);
   
   Clear_2_3();    
   
-  display_lcd(3,2,"Translations:",750);
-  display_lcd(4,3,"A. Moiseyev",999);//Russo
-  display_lcd(4,3,"A. Mondejar",999);//Spagnolo
-  display_lcd(4,3,"C.M. Macedo",999);//Portoghese 20x4
-  display_lcd(3,3,"F.A. Oliveira",999);//Portugues 16x2
-  display_lcd(3,3,"G.  Santaella",999);//Portuguese 20x4 (new)
-  display_lcd(3,3,"  E. Eduard  ",999);//Norvegese  20x4 (new)
+  display_lcd(3, 2, " Traslations:",  750);
+  display_lcd(3, 3, " A. Moiseyev ", 1000);//Russo
+  display_lcd(3, 3, " A. Mondejar ", 1000);//Spagnolo
+  display_lcd(3, 3, " C.M. Macedo ", 1000);//Portoghese 20x4
+  display_lcd(3, 3, "G.  Santaella", 1000);//Portuguese 20x4 (new)
+  display_lcd(3, 3, "  E. Eduard  ", 1000);//Norvegese  20x4
   
   Clear_2_3(); 
 }
@@ -736,38 +677,6 @@ void PumpPrime(){
   lcd.print(F("\xA8""poka\xC0""ka \xBD""acoca"));  // priming the pump
 }  
 
-void ledHeatON(){
-  lcd.setCursor(0,2);
-  lcd.write(6);
-}
-
-void ledHeatStatus(boolean mheat){
-  lcd.setCursor(0,2);
-  if (mheat)lcd.write(5);
-  else LCDSpace(1);
-}
-
-void ledPumpON(){
-  lcd.setCursor(19,2);
-  lcd.write(4);
-}
-
-void ledPumpStatus(boolean mpump){
-  lcd.setCursor(19,2);
-  if (mpump)lcd.write(3);
-  else LCDSpace(1);
-}
-
-void ArdBir(){
-  #if StartSprite == true
-    Presentazione(2,1);
-  #endif
-  
-  #if Sprite == true
-    ArdBir1(6,1);
-  #endif
-}
-
 void PartenzaRitardata(){
   Clear_2_3();
   lcd.setCursor(2,1);
@@ -808,4 +717,3 @@ void ImpostaWhirlpool(unsigned long Time) {
   
   LCD_SGEO();
 }
-

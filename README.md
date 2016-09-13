@@ -1,12 +1,10 @@
-Open ArdBir 2012-2015
+PivovArduino 2016
 ===========
-##[Version 2.8.3-RC](https://github.com/ArdBir/Open-ArdBir/archive/v2.8.3-RC.zip)
+##[Version 0.9 Beta](https://github.com/race612/PivovArduino/archive/v2.8.3-RC.zip)
 
-####[Source, PCB, Manual (English, Italian, Russian)](http://goo.gl/qMhPgu)
+####Avaible Language: Italian, English, Spanish, Portuguese, Russian, Norwegian.
 
-####Avaible Language: Italian, English, Spanish, Portuguese, Russian (20x4), Norwegian (20x4).
-
-####Compiled on [Arduine IDE v1.6.1](http://www.arduino.cc/en/Main/Software).
+####Compiled on [Arduino IDE v1.6.10](http://www.arduino.cc/en/Main/Software).
 
 brauduino semi automated single vessel RIMS
 created by s.mathison
@@ -93,4 +91,9 @@ Copyright (C) 2012  Stephen Mathison
   - Russian Language     (20x4)
   - Norwegian Language   (20x4)
 
- compiled on Arduino V1.6
+###Modified by M.Caiani
+  - Forked project
+  - Deleted 16x2 language file
+  - PCB file for Arduino/Genuino 101 board
+  - New Startup Logo
+  - Add Arduino logo option at startup
